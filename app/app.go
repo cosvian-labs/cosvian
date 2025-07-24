@@ -53,7 +53,7 @@ const (
 	// Name is the name of the application.
 	Name = "bitora"
 	// AccountAddressPrefix is the prefix for accounts addresses.
-	AccountAddressPrefix = "cosmos"
+	AccountAddressPrefix = "bto"
 	// ChainCoinType is the coin type of the chain.
 	ChainCoinType = 118
 )
@@ -107,7 +107,7 @@ type App struct {
 
 func init() {
 
-	sdk.DefaultBondDenom = "stake"
+	sdk.DefaultBondDenom = "ubto"
 
 	var err error
 	clienthelpers.EnvPrefix = Name

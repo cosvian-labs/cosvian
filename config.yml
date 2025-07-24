@@ -1,27 +1,57 @@
 version: 1
 validation: sovereign
-default_denom: stake
+default_denom: ubto
+
 accounts: 
-- name: alice
-  coins:
-  - 20000token
-  - 200000000stake
-- name: bob
-  coins:
-  - 10000token
-  - 100000000stake
+  - name: alice
+    coins:
+      - 50000000000000ubto
+  - name: bob
+    coins:
+      - 30000000000000ubto
+  - name: treasury
+    coins:
+      - 20000000000000ubto
+
 client:
   openapi:
     path: docs/static/openapi.json
-faucet:
-  name: bob
-  coins:
-  - 5token
-  - 100000stake
+
 validators:
-- name: alice
-  bonded: 100000000stake
-- name: validator1
-  bonded: 200000000stake
-- name: validator2
-  bonded: 100000000stake
+  - name: alice
+    bonded: 10000000000000ubto
+  - name: validator1
+    bonded: 10000000000000ubto
+  - name: validator2
+    bonded: 10000000000000ubto
+
+genesis:
+  app_state:
+    distribution:
+      params:
+        base_proposer_reward: "0.0"
+        bonus_proposer_reward: "0.0"
+        community_tax: "0.0"
+    mint:
+      minter:
+        inflation: "0.000000000000000000"
+      params:
+        inflation_max: "0.000000000000000000"
+        inflation_min: "0.000000000000000000"
+        mint_denom: "ubto"
+        inflation_rate_change: "0.000000000000000000"
+    staking:
+      params:
+        bond_denom: "ubto"
+    bank:
+      denom_metadata:
+        - description: "Bitora native token"
+          denom_units:
+            - denom: "ubto"
+              exponent: 0
+            - denom: "BTO"
+              exponent: 6
+          base: "ubto"
+          display: "BTO"
+          name: "Bitora Token"
+          symbol: "BTO"
