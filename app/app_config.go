@@ -3,6 +3,8 @@ package app
 import (
 	_ "bitora/x/bitora/module"
 	bitoramoduletypes "bitora/x/bitora/types"
+	_ "bitora/x/token/module"
+	tokenmoduletypes "bitora/x/token/types"
 	"time"
 
 	runtimev1alpha1 "cosmossdk.io/api/cosmos/app/runtime/v1alpha1"
@@ -127,6 +129,7 @@ var (
 						ibcexported.ModuleName,
 						// chain modules
 						bitoramoduletypes.ModuleName,
+						tokenmoduletypes.ModuleName,
 						// this line is used by starport scaffolding # stargate/app/beginBlockers
 					},
 					EndBlockers: []string{
@@ -136,6 +139,7 @@ var (
 						group.ModuleName,
 						// chain modules
 						bitoramoduletypes.ModuleName,
+						tokenmoduletypes.ModuleName,
 						// this line is used by starport scaffolding # stargate/app/endBlockers
 					},
 					// The following is mostly only needed when ModuleName != StoreKey name.
@@ -173,6 +177,7 @@ var (
 						icatypes.ModuleName,
 						// chain modules
 						bitoramoduletypes.ModuleName,
+						tokenmoduletypes.ModuleName,
 						// this line is used by starport scaffolding # stargate/app/initGenesis
 					},
 				}),
@@ -272,6 +277,10 @@ var (
 			{
 				Name:   bitoramoduletypes.ModuleName,
 				Config: appconfig.WrapAny(&bitoramoduletypes.Module{}),
+			},
+			{
+				Name:   tokenmoduletypes.ModuleName,
+				Config: appconfig.WrapAny(&tokenmoduletypes.Module{}),
 			},
 			// this line is used by starport scaffolding # stargate/app/moduleConfig
 		},
