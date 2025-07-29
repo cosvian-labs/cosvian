@@ -27,4 +27,5 @@ lint:
         - FILE_LOWER_SNAKE_CASE
 modules:
     - path: proto
+      name: buf.build/bitora/bitora-blockchain
 version: v2
