@@ -59,6 +59,21 @@ func (am AppModule) WeightedOperations(simState module.SimulationState) []simtyp
 		weightMsgBurn,
 		tokensimulation.SimulateMsgBurn(am.authKeeper, am.bankKeeper, am.keeper, simState.TxConfig),
 	))
+	const (
+		opWeightMsgFinalizeToken          = "op_weight_msg_token"
+		defaultWeightMsgFinalizeToken int = 100
+	)
+
+	var weightMsgFinalizeToken int
+	simState.AppParams.GetOrGenerate(opWeightMsgFinalizeToken, &weightMsgFinalizeToken, nil,
+		func(_ *rand.Rand) {
+			weightMsgFinalizeToken = defaultWeightMsgFinalizeToken
+		},
+	)
+	operations = append(operations, simulation.NewWeightedOperation(
+		weightMsgFinalizeToken,
+		tokensimulation.SimulateMsgFinalizeToken(am.authKeeper, am.bankKeeper, am.keeper, simState.TxConfig),
+	))
 
 	return operations
 }

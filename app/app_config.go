@@ -3,6 +3,8 @@ package app
 import (
 	_ "bitora/x/bitora/module"
 	bitoramoduletypes "bitora/x/bitora/types"
+	_ "bitora/x/oracle/module"
+	oraclemoduletypes "bitora/x/oracle/types"
 	_ "bitora/x/token/module"
 	tokenmoduletypes "bitora/x/token/types"
 	"time"
@@ -86,6 +88,8 @@ var (
 		{Account: ibctransfertypes.ModuleName, Permissions: []string{authtypes.Minter, authtypes.Burner}},
 		{Account: icatypes.ModuleName},
 		{Account: tokenmoduletypes.ModuleName, Permissions: []string{authtypes.Minter, authtypes.Burner}},
+		{Account: "treasury"},
+		{Account: "infrastructure"},
 		// this line is used by starport scaffolding # stargate/app/maccPerms
 	}
 
@@ -131,6 +135,8 @@ var (
 						// chain modules
 						bitoramoduletypes.ModuleName,
 						tokenmoduletypes.ModuleName,
+
+						oraclemoduletypes.ModuleName,
 						// this line is used by starport scaffolding # stargate/app/beginBlockers
 					},
 					EndBlockers: []string{
@@ -141,6 +147,8 @@ var (
 						// chain modules
 						bitoramoduletypes.ModuleName,
 						tokenmoduletypes.ModuleName,
+
+						oraclemoduletypes.ModuleName,
 						// this line is used by starport scaffolding # stargate/app/endBlockers
 					},
 					// The following is mostly only needed when ModuleName != StoreKey name.
@@ -179,6 +187,8 @@ var (
 						// chain modules
 						bitoramoduletypes.ModuleName,
 						tokenmoduletypes.ModuleName,
+
+						oraclemoduletypes.ModuleName,
 						// this line is used by starport scaffolding # stargate/app/initGenesis
 					},
 				}),
@@ -282,6 +292,11 @@ var (
 			{
 				Name:   tokenmoduletypes.ModuleName,
 				Config: appconfig.WrapAny(&tokenmoduletypes.Module{}),
+			},
+
+			{
+				Name:   oraclemoduletypes.ModuleName,
+				Config: appconfig.WrapAny(&oraclemoduletypes.Module{}),
 			},
 			// this line is used by starport scaffolding # stargate/app/moduleConfig
 		},

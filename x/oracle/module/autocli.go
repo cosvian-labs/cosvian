@@ -1,9 +1,9 @@
-package token
+package oracle
 
 import (
 	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
 
-	"bitora/x/token/types"
+	"bitora/x/oracle/types"
 )
 
 // AutoCLIOptions implements the autocli.HasAutoCLIConfig interface.
@@ -29,22 +29,10 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					Skip:      true, // skipped because authority gated
 				},
 				{
-					RpcMethod:      "Mint",
-					Use:            "mint [to] [amount]",
-					Short:          "Send a mint tx",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{{ProtoField: "to"}, {ProtoField: "amount"}},
-				},
-				{
-					RpcMethod:      "Burn",
-					Use:            "burn [to] [amount]",
-					Short:          "Send a burn tx",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{{ProtoField: "to"}, {ProtoField: "amount"}},
-				},
-				{
-					RpcMethod:      "FinalizeToken",
-					Use:            "finalize-token [denom] [make-public]",
-					Short:          "Send a finalize-token tx",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{{ProtoField: "denom"}, {ProtoField: "make_public"}},
+					RpcMethod:      "SetPrice",
+					Use:            "set-price [denom] [price]",
+					Short:          "Send a set-price tx",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{{ProtoField: "denom"}, {ProtoField: "price"}},
 				},
 				// this line is used by ignite scaffolding # autocli/tx
 			},

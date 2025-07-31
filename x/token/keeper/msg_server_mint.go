@@ -24,7 +24,7 @@ func (k msgServer) Mint(goCtx context.Context, msg *types.MsgMint) (*types.MsgMi
 
 	// Create coin for mint
 	coin := sdk.NewCoin("ubto", sdkmath.NewIntFromUint64(msg.Amount))
-	
+
 	// Mint coins to module account using bankKeeper from Keeper
 	err = k.bankKeeper.MintCoins(goCtx, types.ModuleName, sdk.NewCoins(coin))
 	if err != nil {
