@@ -25,6 +25,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/x/auth"
+	"github.com/cosmos/cosmos-sdk/x/auth/ante"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	authsims "github.com/cosmos/cosmos-sdk/x/auth/simulation"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -201,6 +202,20 @@ func New(
 	if err := app.registerIBCModules(appOpts); err != nil {
 		panic(err)
 	}
+
+	// Setup Zero Gas Fee Ante Handler
+	anteHandlerOptions := AnteHandlerOptions{
+		AccountKeeper:  app.AuthKeeper,
+		BankKeeper:     app.BankKeeper,
+		IBCKeeper:      app.IBCKeeper,
+		SigGasConsumer: ante.DefaultSigVerificationGasConsumer,
+	}
+
+	anteHandler, err := NewAnteHandler(anteHandlerOptions)
+	if err != nil {
+		panic(err)
+	}
+	app.SetAnteHandler(anteHandler)
 
 	/****  Module Options ****/
 
