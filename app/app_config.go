@@ -5,6 +5,8 @@ import (
 	bitoramoduletypes "bitora/x/bitora/types"
 	_ "bitora/x/oracle/module"
 	oraclemoduletypes "bitora/x/oracle/types"
+	_ "bitora/x/pricefeed/module"
+	pricefeedmoduletypes "bitora/x/pricefeed/types"
 	_ "bitora/x/token/module"
 	tokenmoduletypes "bitora/x/token/types"
 	"time"
@@ -137,6 +139,7 @@ var (
 						tokenmoduletypes.ModuleName,
 
 						oraclemoduletypes.ModuleName,
+						pricefeedmoduletypes.ModuleName,
 						// this line is used by starport scaffolding # stargate/app/beginBlockers
 					},
 					EndBlockers: []string{
@@ -149,6 +152,7 @@ var (
 						tokenmoduletypes.ModuleName,
 
 						oraclemoduletypes.ModuleName,
+						pricefeedmoduletypes.ModuleName,
 						// this line is used by starport scaffolding # stargate/app/endBlockers
 					},
 					// The following is mostly only needed when ModuleName != StoreKey name.
@@ -189,6 +193,7 @@ var (
 						tokenmoduletypes.ModuleName,
 
 						oraclemoduletypes.ModuleName,
+						pricefeedmoduletypes.ModuleName,
 						// this line is used by starport scaffolding # stargate/app/initGenesis
 					},
 				}),
@@ -297,6 +302,10 @@ var (
 			{
 				Name:   oraclemoduletypes.ModuleName,
 				Config: appconfig.WrapAny(&oraclemoduletypes.Module{}),
+			},
+			{
+				Name:   pricefeedmoduletypes.ModuleName,
+				Config: appconfig.WrapAny(&pricefeedmoduletypes.Module{}),
 			},
 			// this line is used by starport scaffolding # stargate/app/moduleConfig
 		},

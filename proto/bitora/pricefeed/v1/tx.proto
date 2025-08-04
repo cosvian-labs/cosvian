@@ -1,0 +1,84 @@
+syntax = "proto3";
+
+package bitora.pricefeed.v1;
+
+import "amino/amino.proto";
+import "bitora/pricefeed/v1/params.proto";
+import "cosmos/msg/v1/msg.proto";
+import "cosmos_proto/cosmos.proto";
+import "gogoproto/gogo.proto";
+
+option go_package = "bitora/x/pricefeed/types";
+
+// Msg defines the Msg service.
+service Msg {
+  option (cosmos.msg.v1.service) = true;
+
+  // UpdateParams defines a (governance) operation for updating the module
+  // parameters. The authority defaults to the x/gov module account.
+  rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
+
+  // SendOracleRequest defines the SendOracleRequest RPC.
+  rpc SendOracleRequest(MsgSendOracleRequest) returns (MsgSendOracleRequestResponse);
+
+  // SendOracleResponse defines the SendOracleResponse RPC.
+  rpc SendOracleResponse(MsgSendOracleResponse) returns (MsgSendOracleResponseResponse);
+}
+
+// MsgUpdateParams is the Msg/UpdateParams request type.
+message MsgUpdateParams {
+  option (cosmos.msg.v1.signer) = "authority";
+  option (amino.name) = "bitora/x/pricefeed/MsgUpdateParams";
+
+  // authority is the address that controls the module (defaults to x/gov unless overwritten).
+  string authority = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+
+  // params defines the module parameters to update.
+
+  // NOTE: All parameters must be supplied.
+  Params params = 2 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
+// MsgUpdateParamsResponse defines the response structure for executing a
+// MsgUpdateParams message.
+message MsgUpdateParamsResponse {}
+
+// MsgSendOracleRequest defines the MsgSendOracleRequest message.
+message MsgSendOracleRequest {
+  option (cosmos.msg.v1.signer) = "creator";
+  uint64 oracle_script_id = 5;
+  string calldata = 6;
+  string symbols = 7;
+  uint64 ask_count = 8;
+  uint64 min_count = 9;
+  string fee_limit = 10;
+  uint64 prepare_gas = 11;
+  uint64 execute_gas = 12;
+  string client_id = 13;
+  string creator = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  string port = 2;
+  string channelID = 3;
+  uint64 timeoutTimestamp = 4;
+}
+
+// MsgSendOracleRequestResponse defines the MsgSendOracleRequestResponse message.
+message MsgSendOracleRequestResponse {}
+
+// MsgSendOracleResponse defines the MsgSendOracleResponse message.
+message MsgSendOracleResponse {
+  option (cosmos.msg.v1.signer) = "creator";
+  uint64 request_id = 5;
+  string prices = 6;
+  string rates = 7;
+  string error = 8;
+  string creator = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  string port = 2;
+  string channelID = 3;
+  uint64 timeoutTimestamp = 4;
+}
+
+// MsgSendOracleResponseResponse defines the MsgSendOracleResponseResponse message.
+message MsgSendOracleResponseResponse {}

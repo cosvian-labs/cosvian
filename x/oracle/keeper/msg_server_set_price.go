@@ -13,7 +13,7 @@ import (
 
 func (k msgServer) SetPrice(ctx context.Context, msg *types.MsgSetPrice) (*types.MsgSetPriceResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	
+
 	// Validate creator address
 	_, err := k.addressCodec.StringToBytes(msg.Creator)
 	if err != nil {

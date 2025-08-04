@@ -9,7 +9,7 @@ import (
 // ErrOraclePriceUnavailable oracle price unavailable error
 var ErrOraclePriceUnavailable = errors.Register("token", 1101, "oracle price unavailable")
 
-// ErrInsufficientFunds insufficient funds error  
+// ErrInsufficientFunds insufficient funds error
 var ErrInsufficientFunds = errors.Register("token", 1102, "insufficient funds")
 
 // InfrastructureModuleAccount module account name for infrastructure
@@ -37,8 +37,8 @@ func (k Keeper) ChargeAndSplitFee(ctx sdk.Context, sender sdk.AccAddress, usdAmo
 	// 3. Cek apakah sender memiliki saldo yang cukup
 	balance := k.bankKeeper.SpendableCoins(ctx, sender)
 	if balance.AmountOf("ubto").LT(feeCoin.Amount) {
-		return errors.Wrapf(ErrInsufficientFunds, 
-			"insufficient funds: required %s, available %s ubto", 
+		return errors.Wrapf(ErrInsufficientFunds,
+			"insufficient funds: required %s, available %s ubto",
 			feeCoin.Amount.String(), balance.AmountOf("ubto").String())
 	}
 
@@ -101,7 +101,7 @@ func (k Keeper) GetFeeInUBTO(ctx sdk.Context, usdAmount math.LegacyDec) (sdk.Coi
 	// Ambil harga BTO/USD dari oracle
 	oracleKeeper := k.getOracleKeeper(ctx)
 	btoPrice := oracleKeeper.GetBTOPerUSD(ctx)
-	
+
 	if btoPrice.IsZero() {
 		return sdk.Coin{}, errors.Wrapf(ErrOraclePriceUnavailable, "BTO price unavailable")
 	}

@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package bitora.pricefeed.v1;
+
+option go_package = "bitora/x/pricefeed/types";
+
+// PricefeedPacketData defines the Pricefeed data packet.
+message PricefeedPacketData {
+  oneof packet {
+    NoData noData = 1;
+    OracleRequestPacketData oracle_request_packet = 2;
+    OracleResponsePacketData oracle_response_packet = 3;
+  }
+}
+
+// NoData defines an empty data packet.
+message NoData {}
+
+// OracleRequestPacketData defines a struct for the packet payload
+message OracleRequestPacketData {
+  uint64 oracle_script_id = 1;
+  string calldata = 2;
+  string symbols = 3;
+  uint64 ask_count = 4;
+  uint64 min_count = 5;
+  string fee_limit = 6;
+  uint64 prepare_gas = 7;
+  uint64 execute_gas = 8;
+  string client_id = 9;
+}
+
+// OracleRequestPacketAck defines a struct for the packet acknowledgment
+message OracleRequestPacketAck {}
+
+// OracleResponsePacketData defines a struct for the packet payload
+message OracleResponsePacketData {
+  uint64 request_id = 1;
+  string prices = 2;
+  string rates = 3;
+  string error = 4;
+}
+
+// OracleResponsePacketAck defines a struct for the packet acknowledgment
+message OracleResponsePacketAck {}

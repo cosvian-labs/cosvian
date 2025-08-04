@@ -14,10 +14,10 @@ import (
 
 // AnteHandlerOptions holds the options for creating the ante handler
 type AnteHandlerOptions struct {
-	AccountKeeper   authkeeper.AccountKeeper
-	BankKeeper      types.BankKeeper
-	IBCKeeper       *ibckeeper.Keeper
-	SigGasConsumer  ante.SignatureVerificationGasConsumer
+	AccountKeeper  authkeeper.AccountKeeper
+	BankKeeper     types.BankKeeper
+	IBCKeeper      *ibckeeper.Keeper
+	SigGasConsumer ante.SignatureVerificationGasConsumer
 }
 
 // NewAnteHandler creates a new zero gas fee ante handler for bitora blockchain
@@ -27,24 +27,24 @@ func NewAnteHandler(options AnteHandlerOptions) (sdk.AnteHandler, error) {
 	return sdk.ChainAnteDecorators(
 		// 1. Setup context with infinite gas meter (zero gas consumption)
 		NewZeroGasSetupContextDecorator(),
-		
+
 		// 2. Basic transaction validation (no gas consumption)
 		ante.NewExtensionOptionsDecorator(nil),
 		ante.NewValidateBasicDecorator(),
 		ante.NewTxTimeoutHeightDecorator(),
 		ante.NewValidateMemoDecorator(options.AccountKeeper),
-		
+
 		// 3. Skip fee deduction entirely - this is key for zero gas fee
 		NewZeroGasFeeDecorator(),
-		
+
 		// 4. Public key and signature handling (no gas consumption)
 		ante.NewSetPubKeyDecorator(options.AccountKeeper),
 		ante.NewValidateSigCountDecorator(options.AccountKeeper),
 		NewZeroGasSigVerificationDecorator(options.AccountKeeper),
-		
+
 		// 5. Increment sequence for replay protection
 		ante.NewIncrementSequenceDecorator(options.AccountKeeper),
-		
+
 		// 6. IBC ante decorator for IBC transactions
 		ibcante.NewRedundantRelayDecorator(options.IBCKeeper),
 	), nil
@@ -60,15 +60,15 @@ func NewZeroGasSetupContextDecorator() ZeroGasSetupContextDecorator {
 func (zgsd ZeroGasSetupContextDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (newCtx sdk.Context, err error) {
 	// Create infinite gas meter to eliminate all gas consumption
 	infiniteGasMeter := storetypes.NewInfiniteGasMeter()
-	
+
 	// Set infinite gas meter in context
 	newCtx = ctx.WithGasMeter(infiniteGasMeter)
-	
+
 	// Set block gas meter to infinite as well
 	if ctx.BlockGasMeter() != nil {
 		newCtx = newCtx.WithBlockGasMeter(storetypes.NewInfiniteGasMeter())
 	}
-	
+
 	return next(newCtx, tx, simulate)
 }
 
@@ -83,7 +83,7 @@ func (zgfd ZeroGasFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate 
 	// Skip all fee deduction logic
 	// In bitora blockchain, we use custom application-level fees instead of gas fees
 	// This decorator ensures no gas fees are charged at the protocol level
-	
+
 	return next(ctx, tx, simulate)
 }
 
@@ -101,7 +101,7 @@ func NewZeroGasSigVerificationDecorator(ak authkeeper.AccountKeeper) ZeroGasSigV
 func (zgsv ZeroGasSigVerificationDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (newCtx sdk.Context, err error) {
 	// Use standard signature verification but with zero gas consumption
 	// The infinite gas meter set in ZeroGasSetupContextDecorator ensures no gas is consumed
-	
+
 	sigTx, ok := tx.(authsigning.SigVerifiableTx)
 	if !ok {
 		return ctx, sdkerrors.ErrTxDecode.Wrap("invalid transaction type")

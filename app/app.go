@@ -49,6 +49,7 @@ import (
 	"bitora/docs"
 	bitoramodulekeeper "bitora/x/bitora/keeper"
 	oraclemodulekeeper "bitora/x/oracle/keeper"
+	pricefeedmodulekeeper "bitora/x/pricefeed/keeper"
 	tokenmodulekeeper "bitora/x/token/keeper"
 )
 
@@ -104,7 +105,8 @@ type App struct {
 	BitoraKeeper bitoramodulekeeper.Keeper
 	TokenKeeper  tokenmodulekeeper.Keeper
 
-	OracleKeeper oraclemodulekeeper.Keeper
+	OracleKeeper    oraclemodulekeeper.Keeper
+	PricefeedKeeper pricefeedmodulekeeper.Keeper
 	// this line is used by starport scaffolding # stargate/app/keeperDeclaration
 
 	// simulation manager
@@ -187,6 +189,7 @@ func New(
 		&app.BitoraKeeper,
 		&app.OracleKeeper,
 		&app.TokenKeeper,
+		&app.PricefeedKeeper,
 	); err != nil {
 		panic(err)
 	}
