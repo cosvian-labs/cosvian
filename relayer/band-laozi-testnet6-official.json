@@ -1,0 +1,20 @@
+{
+  "type": "cosmos",
+  "value": {
+    "key-directory": "/home/munra/.relayer/keys/band-testnet6",
+    "key": "default",
+    "chain-id": "band-laozi-testnet6",
+    "rpc-addr": "https://rpc.laozi-testnet6.bandchain.org:443",
+    "account-prefix": "band",
+    "keyring-backend": "test",
+    "gas-adjustment": 1.2,
+    "gas-prices": "0.01uband",
+    "min-gas-amount": 1,
+    "debug": true,
+    "timeout": "30s",
+    "output-format": "json",
+    "sign-mode": "direct",
+    "coin-type": 494,
+    "broadcast-mode": "batch"
+  }
+}
