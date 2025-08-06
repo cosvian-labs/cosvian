@@ -8,14 +8,19 @@ import (
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	authsigning "github.com/cosmos/cosmos-sdk/x/auth/signing"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	ibcante "github.com/cosmos/ibc-go/v10/modules/core/ante"
 	ibckeeper "github.com/cosmos/ibc-go/v10/modules/core/keeper"
+
+	tokenkeeper "bitora/x/token/keeper"
+	tokentypes "bitora/x/token/types"
 )
 
 // AnteHandlerOptions holds the options for creating the ante handler
 type AnteHandlerOptions struct {
 	AccountKeeper  authkeeper.AccountKeeper
 	BankKeeper     types.BankKeeper
+	TokenKeeper    tokenkeeper.Keeper
 	IBCKeeper      *ibckeeper.Keeper
 	SigGasConsumer ante.SignatureVerificationGasConsumer
 }
@@ -34,18 +39,21 @@ func NewAnteHandler(options AnteHandlerOptions) (sdk.AnteHandler, error) {
 		ante.NewTxTimeoutHeightDecorator(),
 		ante.NewValidateMemoDecorator(options.AccountKeeper),
 
-		// 3. Skip fee deduction entirely - this is key for zero gas fee
+		// 3. Custom transaction type fee detection and charging
+		NewTransactionTypeFeeDecorator(options.TokenKeeper),
+
+		// 4. Skip fee deduction entirely - this is key for zero gas fee
 		NewZeroGasFeeDecorator(),
 
-		// 4. Public key and signature handling (no gas consumption)
+		// 5. Public key and signature handling (no gas consumption)
 		ante.NewSetPubKeyDecorator(options.AccountKeeper),
 		ante.NewValidateSigCountDecorator(options.AccountKeeper),
 		NewZeroGasSigVerificationDecorator(options.AccountKeeper),
 
-		// 5. Increment sequence for replay protection
+		// 6. Increment sequence for replay protection
 		ante.NewIncrementSequenceDecorator(options.AccountKeeper),
 
-		// 6. IBC ante decorator for IBC transactions
+		// 7. IBC ante decorator for IBC transactions
 		ibcante.NewRedundantRelayDecorator(options.IBCKeeper),
 	), nil
 }
@@ -136,6 +144,107 @@ func (zgsv ZeroGasSigVerificationDecorator) AnteHandle(ctx sdk.Context, tx sdk.T
 			// Note: The actual signature verification is skipped here for simplicity
 			// In production, you might want to implement proper signature verification
 			// without gas consumption using the account's public key
+		}
+	}
+
+	return next(ctx, tx, simulate)
+}
+
+// TransactionTypeFeeDecorator detects transaction type and charges appropriate fixed USD fees
+type TransactionTypeFeeDecorator struct {
+	tokenKeeper tokenkeeper.Keeper
+}
+
+func NewTransactionTypeFeeDecorator(tokenKeeper tokenkeeper.Keeper) TransactionTypeFeeDecorator {
+	return TransactionTypeFeeDecorator{
+		tokenKeeper: tokenKeeper,
+	}
+}
+
+func (tfd TransactionTypeFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (newCtx sdk.Context, err error) {
+	// Skip fee charging in simulation mode
+	if simulate {
+		return next(ctx, tx, simulate)
+	}
+
+	// Get transaction signer (fee payer)
+	signers, err := tx.(authsigning.SigVerifiableTx).GetSigners()
+	if err != nil {
+		return ctx, sdkerrors.ErrInvalidAddress.Wrap("failed to get transaction signers")
+	}
+	
+	if len(signers) == 0 {
+		return ctx, sdkerrors.ErrInvalidAddress.Wrap("no signers found in transaction")
+	}
+	
+	sender := signers[0] // First signer pays the fee
+
+	// Analyze each message in the transaction and charge appropriate fees
+	for _, message := range tx.GetMsgs() {
+		switch message.(type) {
+		case *banktypes.MsgSend:
+			// Native Token Transfer: $1.00 → 100% Treasury
+			metadata := map[string]interface{}{}
+			err = tfd.tokenKeeper.ChargeAndDistributeFeeByType(ctx, sender, tokenkeeper.FeeTypeNativeTransfer, metadata)
+			if err != nil {
+				return ctx, sdkerrors.ErrInsufficientFunds.Wrapf("failed to charge native transfer fee: %v", err)
+			}
+			
+		case *tokentypes.MsgMint:
+			// Token Minting: Free (part of Token Creation Wizard)
+			// Skip fee charging for token minting as it's part of token creation process
+			continue
+			
+		case *tokentypes.MsgBurn:
+			// Token Burning: Free (internal token operation, not interaction)
+			// Skip fee charging for token burning
+			continue
+			
+		case *tokentypes.MsgFinalizeToken:
+			// Token Creation Wizard: Free
+			// Skip fee charging for token finalization as per Fee.txt requirements
+			continue
+			
+		// Future: Add proper token interaction cases (transfer/swap/call)
+		// case *tokentypes.MsgTransfer:
+		//     // Token Interaction (transfer): $3.00 → 50% Treasury, 50% Token Developer
+		//     metadata := map[string]interface{}{
+		//         "token_creator": "creator_address", // Get from token metadata
+		//     }
+		//     err = tfd.tokenKeeper.ChargeAndDistributeFeeByType(ctx, sender, tokenkeeper.FeeTypeTokenInteraction, metadata)
+		
+		// Future: Add POS payment case when POS module is implemented
+		// case *postypes.MsgPayment:
+		//     // POS Payment: $0.15 → 50% Treasury, 50% Retail Wallet (locked 6mo)
+		//     metadata := map[string]interface{}{
+		//         "retail_wallet": "retail_wallet_address",
+		//     }
+		//     err = tfd.tokenKeeper.ChargeAndDistributeFeeByType(ctx, sender, tokenkeeper.FeeTypePOSPayment, metadata)
+		
+		// Future: Add DEX swap cases when DEX module is implemented
+		// case *dextypes.MsgSwapNative:
+		//     // DEX Swap (native): $1.00 → 100% Treasury
+		//     metadata := map[string]interface{}{}
+		//     err = tfd.tokenKeeper.ChargeAndDistributeFeeByType(ctx, sender, tokenkeeper.FeeTypeDEXSwapNative, metadata)
+		
+		// case *dextypes.MsgSwapUserToken:
+		//     // DEX Swap (user tokens): $3.00 → 50% Treasury, 50% Token Creator
+		//     metadata := map[string]interface{}{
+		//         "token_creator": "creator_address", // Get from token metadata
+		//     }
+		//     err = tfd.tokenKeeper.ChargeAndDistributeFeeByType(ctx, sender, tokenkeeper.FeeTypeDEXSwapUser, metadata)
+		
+		default:
+			// For unknown message types, no fee is charged
+			// This includes:
+			// - Smart Contract Deployment (EVM/CW): Free
+			// - Token Creation operations: Free
+			// - Other system operations: Free
+			continue
+		}
+		
+		if err != nil {
+			return ctx, err
 		}
 	}
 

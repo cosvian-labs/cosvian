@@ -48,9 +48,13 @@ import (
 
 	"bitora/docs"
 	bitoramodulekeeper "bitora/x/bitora/keeper"
+
+	// conversionpoolmodulekeeper "bitora/x/conversionpool/keeper" // Temporarily commented for testing
 	oraclemodulekeeper "bitora/x/oracle/keeper"
 	pricefeedmodulekeeper "bitora/x/pricefeed/keeper"
+	registrymodulekeeper "bitora/x/registry/keeper"
 	tokenmodulekeeper "bitora/x/token/keeper"
+	// treasurymodulekeeper "bitora/x/treasury/keeper" // Temporarily commented for testing
 )
 
 const (
@@ -105,8 +109,11 @@ type App struct {
 	BitoraKeeper bitoramodulekeeper.Keeper
 	TokenKeeper  tokenmodulekeeper.Keeper
 
-	OracleKeeper    oraclemodulekeeper.Keeper
-	PricefeedKeeper pricefeedmodulekeeper.Keeper
+	OracleKeeper         oraclemodulekeeper.Keeper
+	PricefeedKeeper      pricefeedmodulekeeper.Keeper
+	// TreasuryKeeper       treasurymodulekeeper.Keeper // Temporarily commented for testing
+	// ConversionpoolKeeper conversionpoolmodulekeeper.Keeper // Temporarily commented for testing
+	RegistryKeeper       registrymodulekeeper.Keeper
 	// this line is used by starport scaffolding # stargate/app/keeperDeclaration
 
 	// simulation manager
@@ -190,6 +197,9 @@ func New(
 		&app.OracleKeeper,
 		&app.TokenKeeper,
 		&app.PricefeedKeeper,
+		// &app.TreasuryKeeper, // Temporarily commented for testing
+		// &app.ConversionpoolKeeper, // Temporarily commented for testing
+		&app.RegistryKeeper,
 	); err != nil {
 		panic(err)
 	}
@@ -210,6 +220,7 @@ func New(
 	anteHandlerOptions := AnteHandlerOptions{
 		AccountKeeper:  app.AuthKeeper,
 		BankKeeper:     app.BankKeeper,
+		TokenKeeper:    app.TokenKeeper,
 		IBCKeeper:      app.IBCKeeper,
 		SigGasConsumer: ante.DefaultSigVerificationGasConsumer,
 	}

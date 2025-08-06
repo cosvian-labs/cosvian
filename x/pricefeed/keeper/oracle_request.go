@@ -37,7 +37,7 @@ func (k Keeper) OnRecvOracleRequestPacket(ctx context.Context, packet channeltyp
 
 	// This function should only be called on Band Protocol chain
 	// For now, we just acknowledge receipt and let Band Protocol handle the oracle request
-	
+
 	return packetAck, nil
 }
 

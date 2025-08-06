@@ -6,7 +6,6 @@ import (
 
 	"bitora/x/token/types"
 
-	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	errorsmod "cosmossdk.io/errors"
@@ -16,17 +15,13 @@ func (k msgServer) FinalizeToken(ctx context.Context, msg *types.MsgFinalizeToke
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
 	// Validate creator address
-	creatorAddr, err := k.addressCodec.StringToBytes(msg.Creator)
+	_, err := k.addressCodec.StringToBytes(msg.Creator)
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "invalid creator address")
 	}
 
-	// Charge finalization fee of $3 USD
-	feeUSD := math.LegacyNewDec(3) // $3 USD fee for token finalization
-	err = k.ChargeAndSplitFee(sdkCtx, creatorAddr, feeUSD)
-	if err != nil {
-		return nil, errorsmod.Wrap(err, "failed to charge finalization fee")
-	}
+	// Token Creation/Finalization is FREE according to Fee.txt
+	// No fee charged for finalize-token operation
 
 	// TODO: Implement token finalization logic here
 	// - Update token metadata
@@ -39,7 +34,7 @@ func (k msgServer) FinalizeToken(ctx context.Context, msg *types.MsgFinalizeToke
 			sdk.NewAttribute("creator", msg.Creator),
 			sdk.NewAttribute("denom", msg.Denom),
 			sdk.NewAttribute("make_public", strconv.FormatBool(msg.MakePublic)),
-			sdk.NewAttribute("fee_charged", feeUSD.String()),
+			sdk.NewAttribute("fee_charged", "0"), // Free token creation
 		),
 	)
 

@@ -31,14 +31,14 @@ func (k Keeper) RequestPriceData(ctx context.Context, symbols []string, channelI
 		Port:             types.PortID,
 		ChannelID:        channelID,
 		TimeoutTimestamp: uint64(sdk.UnwrapSDKContext(ctx).BlockTime().Unix()) + 3600, // 1 hour timeout
-		OracleScriptId:   37,                                    // Band Protocol standard price oracle script
-		Calldata:         hex.EncodeToString(calldataBytes),     // Hex encoded calldata
-		Symbols:          fmt.Sprintf("%v", symbols),            // Comma separated symbols
-		AskCount:         4,                                     // Ask 4 validators
-		MinCount:         3,                                     // Need minimum 3 responses
-		FeeLimit:         "100000uband",                         // Fee limit in uband
-		PrepareGas:       50000,                                 // Gas for prepare phase
-		ExecuteGas:       300000,                                // Gas for execute phase
+		OracleScriptId:   37,                                                          // Band Protocol standard price oracle script
+		Calldata:         hex.EncodeToString(calldataBytes),                           // Hex encoded calldata
+		Symbols:          fmt.Sprintf("%v", symbols),                                  // Comma separated symbols
+		AskCount:         4,                                                           // Ask 4 validators
+		MinCount:         3,                                                           // Need minimum 3 responses
+		FeeLimit:         "100000uband",                                               // Fee limit in uband
+		PrepareGas:       50000,                                                       // Gas for prepare phase
+		ExecuteGas:       300000,                                                      // Gas for execute phase
 		ClientId:         fmt.Sprintf("bitora-price-req-%d", sdk.UnwrapSDKContext(ctx).BlockHeight()),
 	}
 
@@ -56,9 +56,9 @@ func (k Keeper) RequestPriceData(ctx context.Context, symbols []string, channelI
 func (k Keeper) IntegrateWithOracleModule(ctx context.Context, symbols []string) error {
 	// This method integrates with the existing oracle module for fallback price data
 	// In case Band Protocol is not available, we can fallback to the local oracle
-	
+
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	
+
 	// Emit event that we're attempting price request
 	sdkCtx.EventManager().EmitEvent(
 		sdk.NewEvent(
@@ -85,7 +85,7 @@ func (k Keeper) ProcessPriceResponse(ctx context.Context, response types.OracleR
 	}
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	
+
 	// Store price data and emit events
 	for symbol, price := range priceData {
 		sdkCtx.EventManager().EmitEvent(
