@@ -9,9 +9,12 @@ import (
 	"cosmossdk.io/log"
 	storetypes "cosmossdk.io/store/types"
 	circuitkeeper "cosmossdk.io/x/circuit/keeper"
+	feegrantkeeper "cosmossdk.io/x/feegrant/keeper"
 	upgradekeeper "cosmossdk.io/x/upgrade/keeper"
 
+	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	abci "github.com/cometbft/cometbft/abci/types"
+	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
@@ -57,7 +60,7 @@ const (
 	// AccountAddressPrefix is the prefix for accounts addresses.
 	AccountAddressPrefix = "bto"
 	// ChainCoinType is the coin type of the chain.
-	ChainCoinType = 118
+	ChainCoinType = 90
 )
 
 // DefaultNodeHome default home directories for the application daemon
@@ -93,7 +96,6 @@ type App struct {
 	ConsensusParamsKeeper consensuskeeper.Keeper
 	CircuitBreakerKeeper  circuitkeeper.Keeper
 	ParamsKeeper          paramskeeper.Keeper
-
 	// ibc keepers
 	IBCKeeper           *ibckeeper.Keeper
 	ICAControllerKeeper icacontrollerkeeper.Keeper
@@ -103,7 +105,12 @@ type App struct {
 	BitoraKeeper bitoramodulekeeper.Keeper
 	TokenKeeper  tokenmodulekeeper.Keeper
 
-	OracleKeeper oraclemodulekeeper.Keeper
+	OracleKeeper   oraclemodulekeeper.Keeper
+	FeeGrantKeeper feegrantkeeper.Keeper
+
+	// CosmWasm
+	WasmKeeper wasmkeeper.Keeper
+
 	// this line is used by starport scaffolding # stargate/app/keeperDeclaration
 
 	// simulation manager
@@ -185,7 +192,7 @@ func New(
 		&app.ParamsKeeper,
 		&app.BitoraKeeper,
 		&app.OracleKeeper,
-		&app.TokenKeeper,
+		&app.TokenKeeper, &app.FeeGrantKeeper,
 	); err != nil {
 		panic(err)
 	}
@@ -224,6 +231,9 @@ func New(
 	})
 
 	if err := app.Load(loadLatest); err != nil {
+		panic(err)
+	}
+	if err := app.WasmKeeper.InitializePinnedCodes(app.NewUncachedContext(true, tmproto.Header{})); err != nil {
 		panic(err)
 	}
 

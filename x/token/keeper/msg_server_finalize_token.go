@@ -14,7 +14,7 @@ import (
 
 func (k msgServer) FinalizeToken(ctx context.Context, msg *types.MsgFinalizeToken) (*types.MsgFinalizeTokenResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	
+
 	// Validate creator address
 	creatorAddr, err := k.addressCodec.StringToBytes(msg.Creator)
 	if err != nil {

@@ -70,13 +70,13 @@ func (k Keeper) GetBTOPerUSD(ctx sdk.Context) math.LegacyDec {
 		// Return zero decimal if price not found
 		return math.LegacyZeroDec()
 	}
-	
+
 	price, err := math.LegacyNewDecFromStr(priceStr)
 	if err != nil {
 		// Return zero decimal if price is invalid
 		return math.LegacyZeroDec()
 	}
-	
+
 	return price
 }
 
@@ -94,7 +94,7 @@ func (k Keeper) GetExchangeRate(ctx sdk.Context, symbol string) (math.LegacyDec,
 		}
 		return price, nil
 	}
-	
+
 	// For other symbols, you could integrate with Band Protocol here
 	// For now, return error for unsupported symbols
 	return math.LegacyZeroDec(), fmt.Errorf("unsupported symbol: %s", symbol)

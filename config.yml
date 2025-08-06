@@ -1,57 +1,93 @@
 version: 1
-validation: sovereign
-default_denom: ubto
+validation: "sovereign"
 
-accounts: 
-  - name: alice
-    coins:
-      - 50000000000000ubto
-  - name: bob
-    coins:
-      - 30000000000000ubto
-  - name: treasury
-    coins:
-      - 20000000000000ubto
+default_denom: "ubto"
 
-client:
-  openapi:
-    path: docs/static/openapi.json
+accounts:
+  - name: conversion_pool
+    coins: ["25000000000000ubto"]  # 25M BTO
+
+  - name: pos_infra
+    coins: ["10000000000000ubto"]  # 10M BTO
+
+  - name: exchange_fund
+    coins: ["5000000000000ubto"]   # 5M BTO
+
+  - name: norix_ecosystem
+    coins: ["5000000000000ubto"]   # 5M BTO
+
+  - name: infra_validators
+    coins: ["6000000000000ubto"]   # 6M BTO
+
+  - name: education_ops
+    coins: ["4000000000000ubto"]   # 4M BTO
+
+  - name: compliance_vault
+    coins: ["5000000000000ubto"]   # 5M BTO
+
+  - name: emergency_reserve
+    coins: ["5000000000000ubto"]   # 5M BTO
+
+  - name: strategic_growth
+    coins: ["5000000000000ubto"]   # 5M BTO
+
+  - name: team
+    coins: ["8000000000000ubto"]   # 8M BTO
+
+  - name: dao_reserve
+    coins: ["4000000000000ubto"]   # 4M BTO
+
+  - name: public_sale
+    coins: ["18000000000000ubto"]  # 18M BTO
+
+faucet:
+  name: public_sale
+  coins: ["1000000000000ubto"]      # 1M BTO
+  coins_max: ["5000000000000ubto"]  # 5M BTO
+  port: 4500
 
 validators:
-  - name: alice
-    bonded: 10000000000000ubto
-  - name: validator1
-    bonded: 10000000000000ubto
-  - name: validator2
-    bonded: 10000000000000ubto
+  - name: infra_validators
+    bonded: "6000000000000ubto"
+    app:
+      pruning: "nothing"
+    config:
+      moniker: "infra-validator"
+    client:
+      output: "json"
 
 genesis:
   app_state:
+    staking:
+      params:
+        bond_denom: "ubto"
+    mint:
+      minter:
+        inflation: "0.000000000000000000"
+      params:
+        inflation_rate_change: "0.000000000000000000"
+        inflation_max: "0.000000000000000000"
+        inflation_min: "0.000000000000000000"
+        mint_denom: "ubto"
     distribution:
       params:
         base_proposer_reward: "0.0"
         bonus_proposer_reward: "0.0"
         community_tax: "0.0"
-    mint:
-      minter:
-        inflation: "0.000000000000000000"
-      params:
-        inflation_max: "0.000000000000000000"
-        inflation_min: "0.000000000000000000"
-        mint_denom: "ubto"
-        inflation_rate_change: "0.000000000000000000"
-    staking:
-      params:
-        bond_denom: "ubto"
     bank:
       denom_metadata:
-        - description: "Bitora native token"
+        - base: "ubto"
+          display: "BTO"
+          name: "Bitora Token"
+          symbol: "BTO"
+          description: "Bitora native token"
           denom_units:
             - denom: "ubto"
               exponent: 0
             - denom: "BTO"
               exponent: 6
-          base: "ubto"
-          display: "BTO"
-          name: "Bitora Token"
-          symbol: "BTO"
+    wasm:
+      params:
+        code_upload_access:
+          permission: "Everybody"
+        instantiate_default_permission: "Everybody"
