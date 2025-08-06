@@ -103,3 +103,13 @@ govulncheck:
 	@govulncheck ./...
 
 .PHONY: govet govulncheck
+
+#######################
+### Cross-Compile   ###
+#######################
+
+build-linux:
+	@echo "🔧 Building $(APPNAME)d for Linux (amd64)..."
+	GOOS=linux GOARCH=amd64 go build $(BUILD_FLAGS) -mod=readonly -o build/$(APPNAME)d-linux ./cmd/$(APPNAME)d
+
+.PHONY: build-linux
