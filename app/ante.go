@@ -179,6 +179,45 @@ func (tfd TransactionTypeFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, si
 	
 	sender := signers[0] // First signer pays the fee
 
+	// Check transaction memo for mock fee testing
+	var txMemo string
+	if authTx, ok := tx.(interface{ GetMemo() string }); ok {
+		txMemo = authTx.GetMemo()
+	}
+	
+	switch txMemo {
+	case "MOCK_DEX_SWAP_NATIVE":
+		// Mock DEX Swap (native): $1.00 → 100% Treasury
+		metadata := map[string]interface{}{}
+		err = tfd.tokenKeeper.ChargeAndDistributeFeeByType(ctx, sender, tokenkeeper.FeeTypeDEXSwapNative, metadata)
+		if err != nil {
+			return ctx, sdkerrors.ErrInsufficientFunds.Wrapf("failed to charge mock DEX swap native fee: %v", err)
+		}
+		return next(ctx, tx, simulate) // Skip normal message processing
+		
+	case "MOCK_DEX_SWAP_USER":
+		// Mock DEX Swap (user tokens): $3.00 → 50% Treasury, 50% Token Developer
+		metadata := map[string]interface{}{
+			"token_creator": sdk.AccAddress(sender).String(), // Mock: use sender as token creator
+		}
+		err = tfd.tokenKeeper.ChargeAndDistributeFeeByType(ctx, sender, tokenkeeper.FeeTypeDEXSwapUser, metadata)
+		if err != nil {
+			return ctx, sdkerrors.ErrInsufficientFunds.Wrapf("failed to charge mock DEX swap user fee: %v", err)
+		}
+		return next(ctx, tx, simulate) // Skip normal message processing
+		
+	case "MOCK_POS_PAYMENT":
+		// Mock POS Payment: $0.15 → 50% Treasury, 50% Retail Wallet (locked 6mo)
+		metadata := map[string]interface{}{
+			"retail_wallet": sdk.AccAddress(sender).String(), // Mock: use sender as retail wallet
+		}
+		err = tfd.tokenKeeper.ChargeAndDistributeFeeByType(ctx, sender, tokenkeeper.FeeTypePOSPayment, metadata)
+		if err != nil {
+			return ctx, sdkerrors.ErrInsufficientFunds.Wrapf("failed to charge mock POS payment fee: %v", err)
+		}
+		return next(ctx, tx, simulate) // Skip normal message processing
+	}
+
 	// Analyze each message in the transaction and charge appropriate fees
 	for _, message := range tx.GetMsgs() {
 		switch message.(type) {
