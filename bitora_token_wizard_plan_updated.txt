@@ -1,0 +1,135 @@
+📘 Bitora 5-Step Token Wizard (Simple Mode)
+Implementation Plan (using existing `x/token` module)
+
+🎯 Goal
+Enable users to create native Bitora tokens via a simple 5-step wizard in Norix Wallet — no smart contract required. All logic is implemented via Cosmos SDK (`x/token`), enabling seamless mint, transfer, and registration.
+
+✅ Overview
+- Built on top of existing `x/token` module
+- Reuses `MintToken` and `BurnToken` logic
+- Adds `MsgCreateToken` to support token instantiation
+- Integrated with:
+  - `x/tokenregistry` (for POS/wallet compatibility)
+  - `x/treasury` (optional, for fee subsidy or routing)
+  - `x/token/fees.go` (fee logic handled here; no oracle needed)
+
+🧱 New Message Type: `MsgCreateToken`
+
+Structure:
+type MsgCreateToken struct {
+  Name           string
+  Symbol         string
+  Decimals       uint32
+  InitialSupply  sdk.Int
+  MaxSupply      sdk.Int
+  Mintable       bool
+  POSCompatible  bool
+  Creator        sdk.AccAddress
+  IconURI        string // Optional
+  Description    string // Optional
+}
+
+🆔 Token ID Generation Strategy:
+- Use configurable prefix (e.g. "bto_", "token_") + sequential number
+- Format: {prefix}{sequence_number} (e.g. "bto_1", "bto_2", etc.)
+- Prefix stored in module params for flexibility
+- Sequential counter stored in KVStore: TokenSequenceKey -> uint64
+
+Handler Logic:
+func (k Keeper) HandleMsgCreateToken(ctx sdk.Context, msg MsgCreateToken) error {
+  // 1. Validate name + symbol uniqueness (lowercase, global)
+  // 2. Check anti-spam limits (max tokens per creator)
+  // 3. Charge creation fee via existing x/token/fees.go logic
+  // 4. Generate tokenID using configurable prefix + sequence
+  // 5. Store TokenMetadata in KVStore
+  // 6. Call k.MintToken(ctx, msg.Creator, tokenID, initialSupply)
+  // 7. If POSCompatible, register tokenID in x/tokenregistry
+  // 8. Emit EventTokenCreated
+}
+
+🗂️ Token Metadata Structure
+type TokenMetadata struct {
+  TokenID         string      // Generated: {prefix}{sequence}
+  Name            string
+  Symbol          string
+  Decimals        uint32
+  MaxSupply       sdk.Int
+  CurrentSupply   sdk.Int
+  Mintable        bool
+  Creator         sdk.AccAddress
+  POSCompatible   bool
+  IconURI         string
+  Description     string
+  CreatedAt       time.Time
+}
+Stored at: storeKey: TokenMetadataPrefix + tokenID
+
+🗂️ Additional KV Store Entries:
+- TokenSequenceKey -> uint64 (next available sequence number)
+- SymbolIndexPrefix + symbol -> tokenID (for uniqueness validation)
+- CreatorIndexPrefix + creator + sequence -> tokenID (for creator's token list)
+
+🧩 Integration Points
+Module              Purpose
+------------------  --------------------------------------------
+x/tokenregistry     Auto-register compatible tokens for POS/Wallet
+x/token/fees.go     Use existing fee logic (follow x/token fee structure)
+x/treasury          Optional fee routing/subsidy
+x/dao (optional)    DAO can later verify tokens via governance
+
+💰 Fee Configuration:
+- Follow existing x/token/fees.go structure and logic
+- Configurable via module parameters (not hardcoded)
+- Fee destination follows x/token fee routing (treasury/burn/validators)
+
+🔄 Reused Logic
+Action    Call
+--------  -------------------------------------
+Minting   k.MintToken(ctx, address, tokenID, amount)
+Burning   k.BurnToken(ctx, address, tokenID, amount)
+Transfer  Built-in transfer logic from x/token
+
+📲 Wizard Frontend Flow
+1. Token Identity        - Name, Symbol, Decimals
+2. Supply Setup          - Initial amount, Max cap, Mintable toggle
+3. Ownership             - Wallet address is owner
+4. POS Compatibility     - Toggle for POS, Optional icon + description (IPFS)
+5. Confirm & Launch      - Sign MsgCreateToken → token live in wallet
+
+📜 Events Emitted
+EventTokenCreated {
+  token_id
+  creator
+  symbol
+  supply
+}
+
+🔐 Security Constraints
+- Anti-spam: Limit max number of tokens per creator address (configurable param)
+- Global uniqueness of symbol (lowercased), reject reserved names (configurable list)
+- Mintable = false → InitialSupply == MaxSupply
+- Mintable = true → InitialSupply <= MaxSupply
+- Metadata immutable after creation (or short update window)
+- Only creator can mint additional tokens (creator-only minting rights)
+- Mint allowed until MaxSupply is reached
+- Reserved symbols list stored in module params (e.g. ["btc", "eth", "bto", "sbtc"])
+
+🛠️ Next Steps
+- [ ] Write .proto for MsgCreateToken and query services
+- [ ] Implement handler in x/token
+- [ ] Add TokenMetadata KV store + indexing (symbol, creator)
+- [ ] Add module parameters (token_prefix, max_tokens_per_creator, reserved_symbols)
+- [ ] Integrate x/tokenregistry call for POS tokens
+- [ ] Hook existing x/token/fees.go logic for creation fees
+- [ ] Add TokenID generation with configurable prefix + sequence
+- [ ] Write CLI + frontend wireframe spec
+- [ ] Prepare simulation tests for supply/mint
+- [ ] Add anti-spam validation logic
+
+📋 Module Parameters to Add:
+type Params struct {
+  TokenPrefix         string   // e.g. "bto_"
+  MaxTokensPerCreator uint64   // e.g. 10
+  ReservedSymbols     []string // e.g. ["btc", "eth", "bto"]
+  CreationFeeAmount   sdk.Int  // Integration with fees.go
+}
