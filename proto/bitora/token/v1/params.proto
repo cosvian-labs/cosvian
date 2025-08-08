@@ -11,17 +11,14 @@ message Params {
   option (amino.name) = "bitora/x/token/Params";
   option (gogoproto.equal) = true;
   
-  // Token ID prefix for generated tokens (e.g. "bto_")
-  string token_prefix = 1;
-  
   // Maximum number of tokens a single creator can create
-  uint64 max_tokens_per_creator = 2;
+  uint64 max_tokens_per_creator = 1;
   
   // List of reserved symbols that cannot be used
-  repeated string reserved_symbols = 3;
+  repeated string reserved_symbols = 2;
   
   // Token creation fee amount in ubto
-  string creation_fee_amount = 4 [
+  string creation_fee_amount = 3 [
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false
   ];

@@ -12,10 +12,6 @@ func RegisterInterfaces(registrar codectypes.InterfaceRegistry) {
 	)
 
 	registrar.RegisterImplementations((*sdk.Msg)(nil),
-		&MsgFinalizeToken{},
-	)
-
-	registrar.RegisterImplementations((*sdk.Msg)(nil),
 		&MsgBurn{},
 	)
 

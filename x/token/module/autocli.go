@@ -41,12 +41,6 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{{ProtoField: "to"}, {ProtoField: "amount"}},
 				},
 				{
-					RpcMethod:      "FinalizeToken",
-					Use:            "finalize-token [denom] [make-public]",
-					Short:          "Send a finalize-token tx",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{{ProtoField: "denom"}, {ProtoField: "make_public"}},
-				},
-				{
 			RpcMethod: "CreateToken",
 			Use: "create-token [name] [symbol] [decimals] [initial-supply] [max-supply] [mintable] [pos-compatible] [icon-uri] [description]",
 			Short: "Send a create-token tx",

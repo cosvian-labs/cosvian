@@ -239,11 +239,6 @@ func (tfd TransactionTypeFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, si
 			// Skip fee charging for token burning
 			continue
 			
-		case *tokentypes.MsgFinalizeToken:
-			// Token Creation Wizard: Free
-			// Skip fee charging for token finalization as per Fee.txt requirements
-			continue
-			
 		// Future: Add proper token interaction cases (transfer/swap/call)
 		// case *tokentypes.MsgTransfer:
 		//     // Token Interaction (transfer): $3.00 → 50% Treasury, 50% Token Developer

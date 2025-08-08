@@ -1,10 +1,11 @@
 package token
 
 import (
+	"math/rand"
+
 	"github.com/cosmos/cosmos-sdk/types/module"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/cosmos/cosmos-sdk/x/simulation"
-	"math/rand"
 
 	tokensimulation "bitora/x/token/simulation"
 	"bitora/x/token/types"
@@ -57,21 +58,6 @@ func (am AppModule) WeightedOperations(simState module.SimulationState) []simtyp
 	operations = append(operations, simulation.NewWeightedOperation(
 		weightMsgBurn,
 		tokensimulation.SimulateMsgBurn(am.authKeeper, am.bankKeeper, am.keeper, simState.TxConfig),
-	))
-	const (
-		opWeightMsgFinalizeToken          = "op_weight_msg_token"
-		defaultWeightMsgFinalizeToken int = 100
-	)
-
-	var weightMsgFinalizeToken int
-	simState.AppParams.GetOrGenerate(opWeightMsgFinalizeToken, &weightMsgFinalizeToken, nil,
-		func(_ *rand.Rand) {
-			weightMsgFinalizeToken = defaultWeightMsgFinalizeToken
-		},
-	)
-	operations = append(operations, simulation.NewWeightedOperation(
-		weightMsgFinalizeToken,
-		tokensimulation.SimulateMsgFinalizeToken(am.authKeeper, am.bankKeeper, am.keeper, simState.TxConfig),
 	))
 	const (
 		opWeightMsgCreateToken          = "op_weight_msg_token"

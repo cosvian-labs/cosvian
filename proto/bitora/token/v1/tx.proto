@@ -24,9 +24,6 @@ service Msg {
   // Burn defines the Burn RPC.
   rpc Burn (MsgBurn) returns (MsgBurnResponse);
   
-  // FinalizeToken defines the FinalizeToken RPC.
-  rpc FinalizeToken (MsgFinalizeToken) returns (MsgFinalizeTokenResponse);
-  
   // CreateToken defines the CreateToken RPC.
   rpc CreateToken (MsgCreateToken) returns (MsgCreateTokenResponse);
 }
@@ -69,17 +66,6 @@ message MsgBurn {
 
 // MsgBurnResponse defines the MsgBurnResponse message.
 message MsgBurnResponse {}
-
-// MsgFinalizeToken defines the MsgFinalizeToken message.
-message MsgFinalizeToken {
-  option (cosmos.msg.v1.signer) = "creator";
-  string creator     = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
-  string denom       = 2;
-  bool   make_public = 3;
-}
-
-// MsgFinalizeTokenResponse defines the MsgFinalizeTokenResponse message.
-message MsgFinalizeTokenResponse {}
 
 // MsgCreateToken defines the MsgCreateToken message.
 message MsgCreateToken {

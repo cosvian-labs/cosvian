@@ -7,9 +7,8 @@ import (
 // NewParams creates a new Params instance.
 func NewParams() Params {
 	return Params{
-		TokenPrefix:         "bto_",
 		MaxTokensPerCreator: 10,
-		ReservedSymbols:     []string{"btc", "eth", "bto", "sbtc", "usdt", "usdc", "bnb"},
+		ReservedSymbols:     []string{"bto"}, // Only reserve native token
 		CreationFeeAmount:   math.NewInt(3_000_000), // 3 BTO (with 6 decimals)
 	}
 }
@@ -21,9 +20,6 @@ func DefaultParams() Params {
 
 // Validate validates the set of params.
 func (p Params) Validate() error {
-	if p.TokenPrefix == "" {
-		return ErrInvalidTokenName
-	}
 	if p.MaxTokensPerCreator == 0 {
 		return ErrInvalidMaxSupply
 	}
