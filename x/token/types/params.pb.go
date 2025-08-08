@@ -4,6 +4,7 @@
 package types
 
 import (
+	cosmossdk_io_math "cosmossdk.io/math"
 	fmt "fmt"
 	_ "github.com/cosmos/cosmos-sdk/types/tx/amino"
 	_ "github.com/cosmos/gogoproto/gogoproto"
@@ -26,6 +27,14 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 // Params defines the parameters for the module.
 type Params struct {
+	// Token ID prefix for generated tokens (e.g. "bto_")
+	TokenPrefix string `protobuf:"bytes,1,opt,name=token_prefix,json=tokenPrefix,proto3" json:"token_prefix,omitempty"`
+	// Maximum number of tokens a single creator can create
+	MaxTokensPerCreator uint64 `protobuf:"varint,2,opt,name=max_tokens_per_creator,json=maxTokensPerCreator,proto3" json:"max_tokens_per_creator,omitempty"`
+	// List of reserved symbols that cannot be used
+	ReservedSymbols []string `protobuf:"bytes,3,rep,name=reserved_symbols,json=reservedSymbols,proto3" json:"reserved_symbols,omitempty"`
+	// Token creation fee amount in ubto
+	CreationFeeAmount cosmossdk_io_math.Int `protobuf:"bytes,4,opt,name=creation_fee_amount,json=creationFeeAmount,proto3,customtype=cosmossdk.io/math.Int" json:"creation_fee_amount"`
 }
 
 func (m *Params) Reset()         { *m = Params{} }
@@ -61,6 +70,27 @@ func (m *Params) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_Params proto.InternalMessageInfo
 
+func (m *Params) GetTokenPrefix() string {
+	if m != nil {
+		return m.TokenPrefix
+	}
+	return ""
+}
+
+func (m *Params) GetMaxTokensPerCreator() uint64 {
+	if m != nil {
+		return m.MaxTokensPerCreator
+	}
+	return 0
+}
+
+func (m *Params) GetReservedSymbols() []string {
+	if m != nil {
+		return m.ReservedSymbols
+	}
+	return nil
+}
+
 func init() {
 	proto.RegisterType((*Params)(nil), "bitora.token.v1.Params")
 }
@@ -68,17 +98,28 @@ func init() {
 func init() { proto.RegisterFile("bitora/token/v1/params.proto", fileDescriptor_bc2a06463c82d3e0) }
 
 var fileDescriptor_bc2a06463c82d3e0 = []byte{
-	// 155 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0x92, 0x49, 0xca, 0x2c, 0xc9,
-	0x2f, 0x4a, 0xd4, 0x2f, 0xc9, 0xcf, 0x4e, 0xcd, 0xd3, 0x2f, 0x33, 0xd4, 0x2f, 0x48, 0x2c, 0x4a,
-	0xcc, 0x2d, 0xd6, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0xe2, 0x87, 0xc8, 0xea, 0x81, 0x65, 0xf5,
-	0xca, 0x0c, 0xa5, 0x04, 0x13, 0x73, 0x33, 0xf3, 0xf2, 0xf5, 0xc1, 0x24, 0x44, 0x8d, 0x94, 0x48,
-	0x7a, 0x7e, 0x7a, 0x3e, 0x98, 0xa9, 0x0f, 0x62, 0x41, 0x44, 0x95, 0x34, 0xb8, 0xd8, 0x02, 0xc0,
-	0x26, 0x59, 0xc9, 0xbd, 0x58, 0x20, 0xcf, 0xd8, 0xf5, 0x7c, 0x83, 0x96, 0x28, 0xd4, 0xaa, 0x0a,
-	0xa8, 0x65, 0x10, 0x79, 0x27, 0xbd, 0x13, 0x8f, 0xe4, 0x18, 0x2f, 0x3c, 0x92, 0x63, 0x7c, 0xf0,
-	0x48, 0x8e, 0x71, 0xc2, 0x63, 0x39, 0x86, 0x0b, 0x8f, 0xe5, 0x18, 0x6e, 0x3c, 0x96, 0x63, 0x88,
-	0x12, 0x41, 0xd3, 0x50, 0x52, 0x59, 0x90, 0x5a, 0x9c, 0xc4, 0x06, 0xb6, 0xc0, 0x18, 0x10, 0x00,
-	0x00, 0xff, 0xff, 0xd8, 0x90, 0xb1, 0x2c, 0xba, 0x00, 0x00, 0x00,
+	// 324 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x5c, 0x90, 0xb1, 0x4e, 0x2a, 0x41,
+	0x14, 0x86, 0x77, 0x2e, 0x84, 0x84, 0xbd, 0x26, 0xc8, 0x02, 0x66, 0x43, 0x74, 0x40, 0x2b, 0xb4,
+	0xd8, 0x0d, 0xa1, 0xb3, 0x13, 0x13, 0x13, 0x0b, 0x13, 0xb2, 0x5a, 0xd9, 0x4c, 0x06, 0x38, 0xe0,
+	0x06, 0x67, 0xcf, 0x66, 0x66, 0x24, 0xcb, 0x2b, 0x58, 0xf9, 0x08, 0x3e, 0x82, 0x8f, 0x41, 0x49,
+	0x69, 0x2c, 0x88, 0x81, 0x42, 0x9f, 0xc1, 0xca, 0x30, 0x03, 0x8d, 0xcd, 0xe4, 0xe4, 0xfb, 0xe7,
+	0x3b, 0x99, 0xf9, 0xdd, 0xc3, 0x7e, 0xac, 0x51, 0xf2, 0x50, 0xe3, 0x04, 0x92, 0x70, 0xda, 0x0e,
+	0x53, 0x2e, 0xb9, 0x50, 0x41, 0x2a, 0x51, 0xa3, 0x57, 0xb2, 0x69, 0x60, 0xd2, 0x60, 0xda, 0xae,
+	0x97, 0xb9, 0x88, 0x13, 0x0c, 0xcd, 0x69, 0xef, 0xd4, 0xab, 0x63, 0x1c, 0xa3, 0x19, 0xc3, 0xcd,
+	0x64, 0xe9, 0xc9, 0x0f, 0x71, 0x0b, 0x3d, 0xb3, 0xca, 0x3b, 0x76, 0xf7, 0x8c, 0xcf, 0x52, 0x09,
+	0xa3, 0x38, 0xf3, 0x49, 0x93, 0xb4, 0x8a, 0xd1, 0x7f, 0xc3, 0x7a, 0x06, 0x79, 0x1d, 0xf7, 0x40,
+	0xf0, 0x8c, 0x19, 0xa4, 0x58, 0x0a, 0x92, 0x0d, 0x24, 0x70, 0x8d, 0xd2, 0xff, 0xd7, 0x24, 0xad,
+	0x7c, 0x54, 0x11, 0x3c, 0xbb, 0x33, 0x61, 0x0f, 0xe4, 0xa5, 0x8d, 0xbc, 0x53, 0x77, 0x5f, 0x82,
+	0x02, 0x39, 0x85, 0x21, 0x53, 0x33, 0xd1, 0xc7, 0x47, 0xe5, 0xe7, 0x9a, 0xb9, 0x56, 0x31, 0x2a,
+	0xed, 0xf8, 0xad, 0xc5, 0xde, 0x8d, 0x5b, 0x31, 0x0b, 0x63, 0x4c, 0xd8, 0x08, 0x80, 0x71, 0x81,
+	0x4f, 0x89, 0xf6, 0xf3, 0x9b, 0x97, 0x74, 0x8f, 0xe6, 0xcb, 0x86, 0xf3, 0xb1, 0x6c, 0xd4, 0x06,
+	0xa8, 0x04, 0x2a, 0x35, 0x9c, 0x04, 0x31, 0x86, 0x82, 0xeb, 0x87, 0xe0, 0x3a, 0xd1, 0x51, 0x79,
+	0x67, 0x5e, 0x01, 0x5c, 0x18, 0xef, 0x9c, 0x7e, 0xbf, 0x36, 0xc8, 0xf3, 0xd7, 0xdb, 0x59, 0x6d,
+	0xdb, 0x5e, 0xb6, 0xed, 0xcf, 0xfe, 0xb8, 0x1b, 0xcc, 0x57, 0x94, 0x2c, 0x56, 0x94, 0x7c, 0xae,
+	0x28, 0x79, 0x59, 0x53, 0x67, 0xb1, 0xa6, 0xce, 0xfb, 0x9a, 0x3a, 0xf7, 0xd5, 0x3f, 0x82, 0x9e,
+	0xa5, 0xa0, 0xfa, 0x05, 0xd3, 0x59, 0xe7, 0x37, 0x00, 0x00, 0xff, 0xff, 0x60, 0xde, 0x5b, 0x86,
+	0x8d, 0x01, 0x00, 0x00,
 }
 
 func (this *Params) Equal(that interface{}) bool {
@@ -98,6 +139,23 @@ func (this *Params) Equal(that interface{}) bool {
 	if that1 == nil {
 		return this == nil
 	} else if this == nil {
+		return false
+	}
+	if this.TokenPrefix != that1.TokenPrefix {
+		return false
+	}
+	if this.MaxTokensPerCreator != that1.MaxTokensPerCreator {
+		return false
+	}
+	if len(this.ReservedSymbols) != len(that1.ReservedSymbols) {
+		return false
+	}
+	for i := range this.ReservedSymbols {
+		if this.ReservedSymbols[i] != that1.ReservedSymbols[i] {
+			return false
+		}
+	}
+	if !this.CreationFeeAmount.Equal(that1.CreationFeeAmount) {
 		return false
 	}
 	return true
@@ -122,6 +180,37 @@ func (m *Params) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
+	{
+		size := m.CreationFeeAmount.Size()
+		i -= size
+		if _, err := m.CreationFeeAmount.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintParams(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x22
+	if len(m.ReservedSymbols) > 0 {
+		for iNdEx := len(m.ReservedSymbols) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.ReservedSymbols[iNdEx])
+			copy(dAtA[i:], m.ReservedSymbols[iNdEx])
+			i = encodeVarintParams(dAtA, i, uint64(len(m.ReservedSymbols[iNdEx])))
+			i--
+			dAtA[i] = 0x1a
+		}
+	}
+	if m.MaxTokensPerCreator != 0 {
+		i = encodeVarintParams(dAtA, i, uint64(m.MaxTokensPerCreator))
+		i--
+		dAtA[i] = 0x10
+	}
+	if len(m.TokenPrefix) > 0 {
+		i -= len(m.TokenPrefix)
+		copy(dAtA[i:], m.TokenPrefix)
+		i = encodeVarintParams(dAtA, i, uint64(len(m.TokenPrefix)))
+		i--
+		dAtA[i] = 0xa
+	}
 	return len(dAtA) - i, nil
 }
 
@@ -142,6 +231,21 @@ func (m *Params) Size() (n int) {
 	}
 	var l int
 	_ = l
+	l = len(m.TokenPrefix)
+	if l > 0 {
+		n += 1 + l + sovParams(uint64(l))
+	}
+	if m.MaxTokensPerCreator != 0 {
+		n += 1 + sovParams(uint64(m.MaxTokensPerCreator))
+	}
+	if len(m.ReservedSymbols) > 0 {
+		for _, s := range m.ReservedSymbols {
+			l = len(s)
+			n += 1 + l + sovParams(uint64(l))
+		}
+	}
+	l = m.CreationFeeAmount.Size()
+	n += 1 + l + sovParams(uint64(l))
 	return n
 }
 
@@ -180,6 +284,123 @@ func (m *Params) Unmarshal(dAtA []byte) error {
 			return fmt.Errorf("proto: Params: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TokenPrefix", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowParams
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthParams
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthParams
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.TokenPrefix = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field MaxTokensPerCreator", wireType)
+			}
+			m.MaxTokensPerCreator = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowParams
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.MaxTokensPerCreator |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ReservedSymbols", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowParams
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthParams
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthParams
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ReservedSymbols = append(m.ReservedSymbols, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field CreationFeeAmount", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowParams
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthParams
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthParams
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.CreationFeeAmount.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skipParams(dAtA[iNdEx:])

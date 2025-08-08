@@ -115,16 +115,28 @@ EventTokenCreated {
 - Reserved symbols list stored in module params (e.g. ["btc", "eth", "bto", "sbtc"])
 
 🛠️ Next Steps
-- [ ] Write .proto for MsgCreateToken and query services
-- [ ] Implement handler in x/token
-- [ ] Add TokenMetadata KV store + indexing (symbol, creator)
-- [ ] Add module parameters (token_prefix, max_tokens_per_creator, reserved_symbols)
+- [x] Write .proto for MsgCreateToken and query services
+- [x] Implement handler in x/token
+- [x] Add TokenMetadata KV store + indexing (symbol, creator)
+- [x] Add module parameters (token_prefix, max_tokens_per_creator, reserved_symbols)
 - [ ] Integrate x/tokenregistry call for POS tokens
-- [ ] Hook existing x/token/fees.go logic for creation fees
-- [ ] Add TokenID generation with configurable prefix + sequence
+- [x] Hook existing x/token/fees.go logic for creation fees
+- [x] Add TokenID generation with configurable prefix + sequence
 - [ ] Write CLI + frontend wireframe spec
 - [ ] Prepare simulation tests for supply/mint
-- [ ] Add anti-spam validation logic
+- [x] Add anti-spam validation logic
+
+✅ Implementation Progress (as of current commit):
+- ✅ MsgCreateToken proto definition with proper types
+- ✅ Go struct generation and validation
+- ✅ Error definitions for all validation cases
+- ✅ Module parameters (TokenPrefix, MaxTokensPerCreator, ReservedSymbols)
+- ✅ TokenMetadata struct and KV store keys
+- ✅ Basic handler logic with fee integration
+- ✅ Symbol uniqueness and anti-spam validation
+- ✅ Token ID generation with configurable prefix
+- ✅ Integration with existing MintToken functionality
+- 🔄 Ready for testing with `ignite chain serve`
 
 📋 Module Parameters to Add:
 type Params struct {

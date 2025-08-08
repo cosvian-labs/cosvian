@@ -10,4 +10,19 @@ option go_package = "bitora/x/token/types";
 message Params {
   option (amino.name) = "bitora/x/token/Params";
   option (gogoproto.equal) = true;
+  
+  // Token ID prefix for generated tokens (e.g. "bto_")
+  string token_prefix = 1;
+  
+  // Maximum number of tokens a single creator can create
+  uint64 max_tokens_per_creator = 2;
+  
+  // List of reserved symbols that cannot be used
+  repeated string reserved_symbols = 3;
+  
+  // Token creation fee amount in ubto
+  string creation_fee_amount = 4 [
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
 }
