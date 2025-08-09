@@ -7,10 +7,10 @@ import (
 )
 
 // ErrOraclePriceUnavailable oracle price unavailable error
-var ErrOraclePriceUnavailable = errors.Register("token", 1101, "oracle price unavailable")
+var ErrOraclePriceUnavailable = errors.Register("token", 2001, "oracle price unavailable")
 
 // ErrInsufficientFunds insufficient funds error
-var ErrInsufficientFunds = errors.Register("token", 1102, "insufficient funds")
+var ErrInsufficientFunds = errors.Register("token", 2002, "insufficient funds")
 
 // InfrastructureModuleAccount module account name for infrastructure
 const InfrastructureModuleAccount = "infrastructure"
