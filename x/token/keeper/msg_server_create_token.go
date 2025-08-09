@@ -83,8 +83,12 @@ func (k msgServer) CreateToken(ctx context.Context,  msg *types.MsgCreateToken) 
 		return nil, errorsmod.Wrap(err, "failed to store token metadata")
 	}
 	
-	// 6. Call k.MintToken(ctx, msg.Creator, tokenID, initialSupply)
-	// TODO: Implement this based on existing MintToken logic
+	// 6. Mint initial supply to creator
+	if msg.InitialSupply > 0 {
+		if err := k.mintInitialSupply(ctx, creator, tokenID, msg.InitialSupply, msg.Symbol); err != nil {
+			return nil, errorsmod.Wrap(err, "failed to mint initial supply")
+		}
+	}
 	
 	// 7. If POSCompatible, register tokenID in x/tokenregistry
 	if msg.PosCompatible {
@@ -229,6 +233,25 @@ func (k msgServer) storeTokenMetadata(ctx context.Context, tokenID, lowerSymbol 
 	
 	countValue := sdk.Uint64ToBigEndian(count)
 	if err := store.Set(countKey, countValue); err != nil {
+		return err
+	}
+	
+	return nil
+}
+
+// mintInitialSupply mints initial token supply to creator
+func (k msgServer) mintInitialSupply(ctx context.Context, creator sdk.AccAddress, tokenID string, amount uint64, symbol string) error {
+	// Create proper denom format: u + lowercase symbol
+	denom := "u" + strings.ToLower(symbol)
+	coin := sdk.NewCoin(denom, math.NewIntFromUint64(amount))
+	
+	// Mint coins to module account
+	if err := k.bankKeeper.MintCoins(ctx, types.ModuleName, sdk.NewCoins(coin)); err != nil {
+		return err
+	}
+	
+	// Transfer coins from module account to creator
+	if err := k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, creator, sdk.NewCoins(coin)); err != nil {
 		return err
 	}
 	
