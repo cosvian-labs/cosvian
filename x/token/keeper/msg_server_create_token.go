@@ -52,10 +52,8 @@ func (k msgServer) CreateToken(ctx context.Context,  msg *types.MsgCreateToken) 
 		return nil, err
 	}
 	
-	// 3. Charge creation fee via existing x/token/fees.go logic
-	if err := k.ChargeAndSplitFee(sdkCtx, creator, math.LegacyNewDecFromInt(params.CreationFeeAmount)); err != nil {
-		return nil, errorsmod.Wrap(err, "failed to charge creation fee")
-	}
+	// 3. Token creation is FREE - no fee charging (gasless design)
+	// Note: Fee charging disabled for user-friendly token creation
 	
 	// 4. Generate tokenID using fixed format "token_XXX"
 	tokenID, err := k.generateTokenID(ctx)
@@ -85,7 +83,7 @@ func (k msgServer) CreateToken(ctx context.Context,  msg *types.MsgCreateToken) 
 	
 	// 6. Mint initial supply to creator
 	if msg.InitialSupply > 0 {
-		if err := k.mintInitialSupply(ctx, creator, tokenID, msg.InitialSupply, msg.Symbol); err != nil {
+		if err := k.mintInitialSupply(ctx, creator, msg.InitialSupply, msg.Symbol); err != nil {
 			return nil, errorsmod.Wrap(err, "failed to mint initial supply")
 		}
 	}
@@ -240,7 +238,7 @@ func (k msgServer) storeTokenMetadata(ctx context.Context, tokenID, lowerSymbol 
 }
 
 // mintInitialSupply mints initial token supply to creator
-func (k msgServer) mintInitialSupply(ctx context.Context, creator sdk.AccAddress, tokenID string, amount uint64, symbol string) error {
+func (k msgServer) mintInitialSupply(ctx context.Context, creator sdk.AccAddress, amount uint64, symbol string) error {
 	// Create proper denom format: u + lowercase symbol
 	denom := "u" + strings.ToLower(symbol)
 	coin := sdk.NewCoin(denom, math.NewIntFromUint64(amount))
