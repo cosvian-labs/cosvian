@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
 
 	"cosmossdk.io/collections"
@@ -61,4 +63,22 @@ func NewKeeper(
 // GetAuthority returns the module's authority.
 func (k Keeper) GetAuthority() []byte {
 	return k.authority
+}
+
+// GetTokenMetadata retrieves token metadata by token ID
+func (k Keeper) GetTokenMetadata(ctx context.Context, tokenID string) (*types.TokenMetadata, error) {
+	store := k.storeService.OpenKVStore(ctx)
+	key := append([]byte("tm_"), []byte(tokenID)...)
+	bz, err := store.Get(key)
+	if err != nil {
+		return nil, err
+	}
+	if bz == nil {
+		return nil, types.ErrTokenNotFound
+	}
+	var meta types.TokenMetadata
+	if err := json.Unmarshal(bz, &meta); err != nil {
+		return nil, err
+	}
+	return &meta, nil
 }

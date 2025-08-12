@@ -51,6 +51,7 @@ message MsgMint {
   string creator = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   string to      = 2;
   uint64 amount  = 3;
+  string token_id = 4;
 }
 
 // MsgMintResponse defines the MsgMintResponse message.
@@ -62,6 +63,7 @@ message MsgBurn {
   string creator = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   string to      = 2;
   uint64 amount  = 3;
+  string token_id = 4;
 }
 
 // MsgBurnResponse defines the MsgBurnResponse message.
