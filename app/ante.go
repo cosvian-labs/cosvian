@@ -1,7 +1,12 @@
 package app
 
 import (
+	corestoretypes "cosmossdk.io/core/store"
 	storetypes "cosmossdk.io/store/types"
+	circuitante "cosmossdk.io/x/circuit/ante"
+	circuitkeeper "cosmossdk.io/x/circuit/keeper"
+	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
+	wasmTypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
@@ -18,42 +23,65 @@ import (
 
 // AnteHandlerOptions holds the options for creating the ante handler
 type AnteHandlerOptions struct {
-	AccountKeeper  authkeeper.AccountKeeper
-	BankKeeper     types.BankKeeper
-	TokenKeeper    tokenkeeper.Keeper
-	IBCKeeper      *ibckeeper.Keeper
-	SigGasConsumer ante.SignatureVerificationGasConsumer
+	AccountKeeper         authkeeper.AccountKeeper
+	BankKeeper            types.BankKeeper
+	TokenKeeper           tokenkeeper.Keeper
+	IBCKeeper             *ibckeeper.Keeper
+	SigGasConsumer        ante.SignatureVerificationGasConsumer
+	NodeConfig            *wasmTypes.NodeConfig
+	WasmKeeper            *wasmkeeper.Keeper
+	TXCounterStoreService corestoretypes.KVStoreService
+	CircuitKeeper         *circuitkeeper.Keeper
 }
 
 // NewAnteHandler creates a new zero gas fee ante handler for bitora blockchain
 // This implementation completely bypasses gas consumption for a true gasless experience
 func NewAnteHandler(options AnteHandlerOptions) (sdk.AnteHandler, error) {
-	// Simple validation without nil checks since these are value types in newer SDK versions
+	// Validation for required WASM components
+	if options.NodeConfig == nil {
+		return nil, sdkerrors.ErrInvalidRequest.Wrap("wasm node config is required for ante builder")
+	}
+	if options.TXCounterStoreService == nil {
+		return nil, sdkerrors.ErrInvalidRequest.Wrap("wasm store service is required for ante builder")
+	}
+	if options.CircuitKeeper == nil {
+		return nil, sdkerrors.ErrInvalidRequest.Wrap("circuit keeper is required for ante builder")
+	}
+
 	return sdk.ChainAnteDecorators(
 		// 1. Setup context with infinite gas meter (zero gas consumption)
 		NewZeroGasSetupContextDecorator(),
 
-		// 2. Basic transaction validation (no gas consumption)
+		// 2. WASM decorators with zero gas consumption
+		wasmkeeper.NewLimitSimulationGasDecorator(options.NodeConfig.SimulationGasLimit),
+		wasmkeeper.NewCountTXDecorator(options.TXCounterStoreService),
+		wasmkeeper.NewGasRegisterDecorator(options.WasmKeeper.GetGasRegister()),
+		wasmkeeper.NewTxContractsDecorator(),
+
+		// 3. Circuit breaker for emergency stops
+		circuitante.NewCircuitBreakerDecorator(options.CircuitKeeper),
+
+		// 4. Basic transaction validation (no gas consumption)
 		ante.NewExtensionOptionsDecorator(nil),
 		ante.NewValidateBasicDecorator(),
 		ante.NewTxTimeoutHeightDecorator(),
 		ante.NewValidateMemoDecorator(options.AccountKeeper),
 
-		// 3. Custom transaction type fee detection and charging
+		// 5. Custom transaction type fee detection and charging
 		NewTransactionTypeFeeDecorator(options.TokenKeeper),
 
-		// 4. Skip fee deduction entirely - this is key for zero gas fee
+		// 6. Skip fee deduction entirely - this is key for zero gas fee
 		NewZeroGasFeeDecorator(),
 
-		// 5. Public key and signature handling (no gas consumption)
+		// 7. Public key and signature handling (no gas consumption)
 		ante.NewSetPubKeyDecorator(options.AccountKeeper),
 		ante.NewValidateSigCountDecorator(options.AccountKeeper),
 		NewZeroGasSigVerificationDecorator(options.AccountKeeper),
 
-		// 6. Increment sequence for replay protection
+		// 8. Increment sequence for replay protection
 		ante.NewIncrementSequenceDecorator(options.AccountKeeper),
 
-		// 7. IBC ante decorator for IBC transactions
+		// 9. IBC ante decorator for IBC transactions
 		ibcante.NewRedundantRelayDecorator(options.IBCKeeper),
 	), nil
 }
@@ -172,11 +200,11 @@ func (tfd TransactionTypeFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, si
 	if err != nil {
 		return ctx, sdkerrors.ErrInvalidAddress.Wrap("failed to get transaction signers")
 	}
-	
+
 	if len(signers) == 0 {
 		return ctx, sdkerrors.ErrInvalidAddress.Wrap("no signers found in transaction")
 	}
-	
+
 	sender := signers[0] // First signer pays the fee
 
 	// Check transaction memo for mock fee testing
@@ -184,7 +212,7 @@ func (tfd TransactionTypeFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, si
 	if authTx, ok := tx.(interface{ GetMemo() string }); ok {
 		txMemo = authTx.GetMemo()
 	}
-	
+
 	switch txMemo {
 	case "MOCK_DEX_SWAP_NATIVE":
 		// Mock DEX Swap (native): $1.00 → 100% Treasury
@@ -194,7 +222,7 @@ func (tfd TransactionTypeFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, si
 			return ctx, sdkerrors.ErrInsufficientFunds.Wrapf("failed to charge mock DEX swap native fee: %v", err)
 		}
 		return next(ctx, tx, simulate) // Skip normal message processing
-		
+
 	case "MOCK_DEX_SWAP_USER":
 		// Mock DEX Swap (user tokens): $3.00 → 50% Treasury, 50% Token Developer
 		metadata := map[string]interface{}{
@@ -205,7 +233,7 @@ func (tfd TransactionTypeFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, si
 			return ctx, sdkerrors.ErrInsufficientFunds.Wrapf("failed to charge mock DEX swap user fee: %v", err)
 		}
 		return next(ctx, tx, simulate) // Skip normal message processing
-		
+
 	case "MOCK_POS_PAYMENT":
 		// Mock POS Payment: $0.15 → 50% Treasury, 50% Retail Wallet (locked 6mo)
 		metadata := map[string]interface{}{
@@ -228,17 +256,47 @@ func (tfd TransactionTypeFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, si
 			if err != nil {
 				return ctx, sdkerrors.ErrInsufficientFunds.Wrapf("failed to charge native transfer fee: %v", err)
 			}
-			
+
 		case *tokentypes.MsgMint:
 			// Token Minting: Free (part of Token Creation Wizard)
 			// Skip fee charging for token minting as it's part of token creation process
 			continue
-			
+
 		case *tokentypes.MsgBurn:
 			// Token Burning: Free (internal token operation, not interaction)
 			// Skip fee charging for token burning
 			continue
-			
+
+		case *wasmTypes.MsgStoreCode:
+			// Smart Contract Deployment: Free
+			// Skip fee charging for smart contract deployment
+			continue
+
+		case *wasmTypes.MsgInstantiateContract:
+			// Smart Contract Instantiation: Free
+			// Skip fee charging for smart contract instantiation
+			continue
+
+		case *wasmTypes.MsgExecuteContract:
+			// Smart Contract Execution: Free
+			// Skip fee charging for smart contract execution
+			continue
+
+		case *wasmTypes.MsgMigrateContract:
+			// Smart Contract Migration: Free
+			// Skip fee charging for smart contract migration
+			continue
+
+		case *wasmTypes.MsgUpdateAdmin:
+			// Smart Contract Admin Update: Free
+			// Skip fee charging for smart contract admin updates
+			continue
+
+		case *wasmTypes.MsgClearAdmin:
+			// Smart Contract Clear Admin: Free
+			// Skip fee charging for smart contract admin clearing
+			continue
+
 		// Future: Add proper token interaction cases (transfer/swap/call)
 		// case *tokentypes.MsgTransfer:
 		//     // Token Interaction (transfer): $3.00 → 50% Treasury, 50% Token Developer
@@ -246,7 +304,7 @@ func (tfd TransactionTypeFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, si
 		//         "token_creator": "creator_address", // Get from token metadata
 		//     }
 		//     err = tfd.tokenKeeper.ChargeAndDistributeFeeByType(ctx, sender, tokenkeeper.FeeTypeTokenInteraction, metadata)
-		
+
 		// Future: Add POS payment case when POS module is implemented
 		// case *postypes.MsgPayment:
 		//     // POS Payment: $0.15 → 50% Treasury, 50% Retail Wallet (locked 6mo)
@@ -254,20 +312,20 @@ func (tfd TransactionTypeFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, si
 		//         "retail_wallet": "retail_wallet_address",
 		//     }
 		//     err = tfd.tokenKeeper.ChargeAndDistributeFeeByType(ctx, sender, tokenkeeper.FeeTypePOSPayment, metadata)
-		
+
 		// Future: Add DEX swap cases when DEX module is implemented
 		// case *dextypes.MsgSwapNative:
 		//     // DEX Swap (native): $1.00 → 100% Treasury
 		//     metadata := map[string]interface{}{}
 		//     err = tfd.tokenKeeper.ChargeAndDistributeFeeByType(ctx, sender, tokenkeeper.FeeTypeDEXSwapNative, metadata)
-		
+
 		// case *dextypes.MsgSwapUserToken:
 		//     // DEX Swap (user tokens): $3.00 → 50% Treasury, 50% Token Creator
 		//     metadata := map[string]interface{}{
 		//         "token_creator": "creator_address", // Get from token metadata
 		//     }
 		//     err = tfd.tokenKeeper.ChargeAndDistributeFeeByType(ctx, sender, tokenkeeper.FeeTypeDEXSwapUser, metadata)
-		
+
 		default:
 			// For unknown message types, no fee is charged
 			// This includes:
@@ -276,7 +334,7 @@ func (tfd TransactionTypeFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, si
 			// - Other system operations: Free
 			continue
 		}
-		
+
 		if err != nil {
 			return ctx, err
 		}

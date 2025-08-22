@@ -108,18 +108,13 @@ type App struct {
 	ICAHostKeeper       icahostkeeper.Keeper
 	TransferKeeper      ibctransferkeeper.Keeper
 
-	BitoraKeeper   bitoramodulekeeper.Keeper
-	TokenKeeper    tokenmodulekeeper.Keeper
-	FeeGrantKeeper feegrantkeeper.Keeper
+	BitoraKeeper bitoramodulekeeper.Keeper
+	TokenKeeper  tokenmodulekeeper.Keeper
 
-	// CosmWasm
-	WasmKeeper wasmkeeper.Keeper
-
-	OracleKeeper         oraclemodulekeeper.Keeper
-	PricefeedKeeper      pricefeedmodulekeeper.Keeper
+	PricefeedKeeper pricefeedmodulekeeper.Keeper
 	// TreasuryKeeper       treasurymodulekeeper.Keeper // Temporarily commented for testing
 	// ConversionpoolKeeper conversionpoolmodulekeeper.Keeper // Temporarily commented for testing
-	RegistryKeeper       registrymodulekeeper.Keeper
+	RegistryKeeper registrymodulekeeper.Keeper
 	OracleKeeper   oraclemodulekeeper.Keeper
 	FeeGrantKeeper feegrantkeeper.Keeper
 
