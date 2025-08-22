@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"strings"
 
 	"bitora/x/token/types"
 
@@ -22,8 +23,20 @@ func (k msgServer) Mint(goCtx context.Context, msg *types.MsgMint) (*types.MsgMi
 		return nil, err
 	}
 
-	// Create coin for mint
-	coin := sdk.NewCoin("ubto", sdkmath.NewIntFromUint64(msg.Amount))
+	// Get token metadata to determine the correct denom
+	tokenMeta, err := k.GetTokenMetadata(goCtx, msg.TokenId)
+	if err != nil {
+		return nil, errorsmod.Wrap(err, "failed to get token metadata")
+	}
+
+	// Check if token is mintable
+	if !tokenMeta.Mintable {
+		return nil, errorsmod.Wrap(types.ErrUnauthorizedMinter, "token is not mintable")
+	}
+
+	// Create denom from token symbol
+	denom := "u" + strings.ToLower(tokenMeta.Symbol)
+	coin := sdk.NewCoin(denom, sdkmath.NewIntFromUint64(msg.Amount))
 
 	// Mint coins to module account using bankKeeper from Keeper
 	err = k.bankKeeper.MintCoins(goCtx, types.ModuleName, sdk.NewCoins(coin))

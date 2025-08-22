@@ -1,6 +1,9 @@
 package app
 
 import (
+	pricefeedmodule "bitora/x/pricefeed/module"
+	pricefeedmoduletypes "bitora/x/pricefeed/types"
+
 	"cosmossdk.io/core/appmodule"
 	storetypes "cosmossdk.io/store/types"
 	"github.com/CosmWasm/wasmd/x/wasm"
@@ -125,6 +128,8 @@ func (app *App) registerIBCModules(appOpts servertypes.AppOptions) error {
 	}
 	ibcRouter.AddRoute(wasmtypes.ModuleName, wasmStack)
 
+	pricefeedIBCModule := pricefeedmodule.NewIBCModule(app.appCodec, app.PricefeedKeeper)
+	ibcRouter.AddRoute(pricefeedmoduletypes.ModuleName, pricefeedIBCModule)
 	// this line is used by starport scaffolding # ibc/app/module
 
 	app.IBCKeeper.SetRouter(ibcRouter)

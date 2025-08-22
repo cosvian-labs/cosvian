@@ -3,10 +3,20 @@ package app
 import (
 	_ "bitora/x/bitora/module"
 	bitoramoduletypes "bitora/x/bitora/types"
+
+	// _ "bitora/x/conversionpool/module" // Temporarily commented for testing
+	// conversionpoolmoduletypes "bitora/x/conversionpool/types" // Temporarily commented for testing
 	_ "bitora/x/oracle/module"
 	oraclemoduletypes "bitora/x/oracle/types"
+	_ "bitora/x/pricefeed/module"
+	pricefeedmoduletypes "bitora/x/pricefeed/types"
+	_ "bitora/x/registry/module"
+	registrymoduletypes "bitora/x/registry/types"
 	_ "bitora/x/token/module"
 	tokenmoduletypes "bitora/x/token/types"
+
+	// _ "bitora/x/treasury/module" // Temporarily commented for testing
+	// treasurymoduletypes "bitora/x/treasury/types" // Temporarily commented for testing
 	"time"
 
 	runtimev1alpha1 "cosmossdk.io/api/cosmos/app/runtime/v1alpha1"
@@ -92,6 +102,15 @@ var (
 		{Account: "treasury"},
 		{Account: "infrastructure"},
 		{Account: wasmtypes.ModuleName, Permissions: []string{authtypes.Burner}},
+		// New module accounts for enhanced fee distribution system
+		{Account: "retail_rewards", Permissions: []string{authtypes.Minter}},
+		{Account: "token_creators", Permissions: []string{authtypes.Minter}},
+		{Account: "validator_rewards", Permissions: []string{authtypes.Minter}},
+		{Account: "pos_rewards", Permissions: []string{authtypes.Minter}},
+		{Account: "locked_rewards", Permissions: []string{authtypes.Minter, authtypes.Burner}},
+		// {Account: treasurymoduletypes.ModuleName, Permissions: []string{authtypes.Minter, authtypes.Burner, authtypes.Staking}},
+		// {Account: conversionpoolmoduletypes.ModuleName, Permissions: []string{authtypes.Minter, authtypes.Burner, authtypes.Staking}}, // Temporarily commented for testing
+		{Account: registrymoduletypes.ModuleName, Permissions: []string{authtypes.Minter, authtypes.Burner, authtypes.Staking}},
 		// this line is used by starport scaffolding # stargate/app/maccPerms
 	}
 
@@ -140,6 +159,10 @@ var (
 
 						oraclemoduletypes.ModuleName,
 						wasmtypes.ModuleName,
+						pricefeedmoduletypes.ModuleName,
+						// treasurymoduletypes.ModuleName, // Temporarily commented for testing
+						// conversionpoolmoduletypes.ModuleName, // Temporarily commented for testing
+						registrymoduletypes.ModuleName,
 						// this line is used by starport scaffolding # stargate/app/beginBlockers
 					},
 					EndBlockers: []string{
@@ -153,6 +176,10 @@ var (
 
 						oraclemoduletypes.ModuleName,
 						wasmtypes.ModuleName,
+						pricefeedmoduletypes.ModuleName,
+						// treasurymoduletypes.ModuleName,
+						// conversionpoolmoduletypes.ModuleName, // Temporarily commented for testing
+						registrymoduletypes.ModuleName,
 						// this line is used by starport scaffolding # stargate/app/endBlockers
 					},
 					// The following is mostly only needed when ModuleName != StoreKey name.
@@ -194,6 +221,10 @@ var (
 
 						oraclemoduletypes.ModuleName,
 						wasmtypes.ModuleName,
+						pricefeedmoduletypes.ModuleName,
+						// treasurymoduletypes.ModuleName,
+						// conversionpoolmoduletypes.ModuleName, // Temporarily commented for testing
+						registrymoduletypes.ModuleName,
 						// this line is used by starport scaffolding # stargate/app/initGenesis
 					},
 				}),
@@ -302,6 +333,22 @@ var (
 			{
 				Name:   oraclemoduletypes.ModuleName,
 				Config: appconfig.WrapAny(&oraclemoduletypes.Module{}),
+			},
+			{
+				Name:   pricefeedmoduletypes.ModuleName,
+				Config: appconfig.WrapAny(&pricefeedmoduletypes.Module{}),
+			},
+			// {
+			// 	Name:   treasurymoduletypes.ModuleName,
+			// 	Config: appconfig.WrapAny(&treasurymoduletypes.Module{}),
+			// },
+			// {
+			// 	Name:   conversionpoolmoduletypes.ModuleName,
+			// 	Config: appconfig.WrapAny(&conversionpoolmoduletypes.Module{}),
+			// }, // Temporarily commented for testing
+			{
+				Name:   registrymoduletypes.ModuleName,
+				Config: appconfig.WrapAny(&registrymoduletypes.Module{}),
 			},
 			// this line is used by starport scaffolding # stargate/app/moduleConfig
 		},

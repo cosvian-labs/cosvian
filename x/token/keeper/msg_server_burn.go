@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"strings"
 
 	"bitora/x/token/types"
 
@@ -17,8 +18,15 @@ func (k msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.MsgBu
 		return nil, errorsmod.Wrap(err, "invalid sender address")
 	}
 
-	// Create coin for burn
-	coin := sdk.NewCoin("ubto", sdkmath.NewIntFromUint64(msg.Amount))
+	// Get token metadata to determine the correct denom
+	tokenMeta, err := k.GetTokenMetadata(goCtx, msg.TokenId)
+	if err != nil {
+		return nil, errorsmod.Wrap(err, "failed to get token metadata")
+	}
+
+	// Create denom from token symbol
+	denom := "u" + strings.ToLower(tokenMeta.Symbol)
+	coin := sdk.NewCoin(denom, sdkmath.NewIntFromUint64(msg.Amount))
 
 	// Transfer coins from user account to module account
 	err = k.bankKeeper.SendCoinsFromAccountToModule(goCtx, from, types.ModuleName, sdk.NewCoins(coin))

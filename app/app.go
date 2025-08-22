@@ -28,6 +28,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/x/auth"
+	"github.com/cosmos/cosmos-sdk/x/auth/ante"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	authsims "github.com/cosmos/cosmos-sdk/x/auth/simulation"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -50,8 +51,13 @@ import (
 
 	"bitora/docs"
 	bitoramodulekeeper "bitora/x/bitora/keeper"
+
+	// conversionpoolmodulekeeper "bitora/x/conversionpool/keeper" // Temporarily commented for testing
 	oraclemodulekeeper "bitora/x/oracle/keeper"
+	pricefeedmodulekeeper "bitora/x/pricefeed/keeper"
+	registrymodulekeeper "bitora/x/registry/keeper"
 	tokenmodulekeeper "bitora/x/token/keeper"
+	// treasurymodulekeeper "bitora/x/treasury/keeper" // Temporarily commented for testing
 )
 
 const (
@@ -102,9 +108,18 @@ type App struct {
 	ICAHostKeeper       icahostkeeper.Keeper
 	TransferKeeper      ibctransferkeeper.Keeper
 
-	BitoraKeeper bitoramodulekeeper.Keeper
-	TokenKeeper  tokenmodulekeeper.Keeper
+	BitoraKeeper   bitoramodulekeeper.Keeper
+	TokenKeeper    tokenmodulekeeper.Keeper
+	FeeGrantKeeper feegrantkeeper.Keeper
 
+	// CosmWasm
+	WasmKeeper wasmkeeper.Keeper
+
+	OracleKeeper         oraclemodulekeeper.Keeper
+	PricefeedKeeper      pricefeedmodulekeeper.Keeper
+	// TreasuryKeeper       treasurymodulekeeper.Keeper // Temporarily commented for testing
+	// ConversionpoolKeeper conversionpoolmodulekeeper.Keeper // Temporarily commented for testing
+	RegistryKeeper       registrymodulekeeper.Keeper
 	OracleKeeper   oraclemodulekeeper.Keeper
 	FeeGrantKeeper feegrantkeeper.Keeper
 
@@ -193,6 +208,11 @@ func New(
 		&app.BitoraKeeper,
 		&app.OracleKeeper,
 		&app.TokenKeeper, &app.FeeGrantKeeper,
+		&app.TokenKeeper,
+		&app.PricefeedKeeper,
+		// &app.TreasuryKeeper, // Temporarily commented for testing
+		// &app.ConversionpoolKeeper, // Temporarily commented for testing
+		&app.RegistryKeeper,
 	); err != nil {
 		panic(err)
 	}
@@ -208,6 +228,21 @@ func New(
 	if err := app.registerIBCModules(appOpts); err != nil {
 		panic(err)
 	}
+
+	// Setup Zero Gas Fee Ante Handler
+	anteHandlerOptions := AnteHandlerOptions{
+		AccountKeeper:  app.AuthKeeper,
+		BankKeeper:     app.BankKeeper,
+		TokenKeeper:    app.TokenKeeper,
+		IBCKeeper:      app.IBCKeeper,
+		SigGasConsumer: ante.DefaultSigVerificationGasConsumer,
+	}
+
+	anteHandler, err := NewAnteHandler(anteHandlerOptions)
+	if err != nil {
+		panic(err)
+	}
+	app.SetAnteHandler(anteHandler)
 
 	/****  Module Options ****/
 

@@ -12,7 +12,7 @@ import (
 	"bitora/x/token/types"
 )
 
-func SimulateMsgFinalizeToken(
+func SimulateMsgCreateToken(
 	ak types.AuthKeeper,
 	bk types.BankKeeper,
 	k keeper.Keeper,
@@ -21,12 +21,12 @@ func SimulateMsgFinalizeToken(
 	return func(r *rand.Rand, app *baseapp.BaseApp, ctx sdk.Context, accs []simtypes.Account, chainID string,
 	) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
 		simAccount, _ := simtypes.RandomAcc(r, accs)
-		msg := &types.MsgFinalizeToken{
+		msg := &types.MsgCreateToken{
 			Creator: simAccount.Address.String(),
 		}
 
-		// TODO: Handle the FinalizeToken simulation
+		// TODO: Handle the CreateToken simulation
 
-		return simtypes.NoOpMsg(types.ModuleName, sdk.MsgTypeURL(msg), "FinalizeToken simulation not implemented"), nil, nil
+		return simtypes.NoOpMsg(types.ModuleName, sdk.MsgTypeURL(msg), "CreateToken simulation not implemented"), nil, nil
 	}
 }

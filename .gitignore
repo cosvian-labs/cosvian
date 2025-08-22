@@ -7,4 +7,11 @@ release/
 *.dot
 *.log
 *.ign
+bitorad
+build/
+bin/
+*.exe
+*.out
+*.so
+*.a
 *.wasm

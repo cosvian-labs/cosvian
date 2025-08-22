@@ -60,19 +60,19 @@ func (am AppModule) WeightedOperations(simState module.SimulationState) []simtyp
 		tokensimulation.SimulateMsgBurn(am.authKeeper, am.bankKeeper, am.keeper, simState.TxConfig),
 	))
 	const (
-		opWeightMsgFinalizeToken          = "op_weight_msg_token"
-		defaultWeightMsgFinalizeToken int = 100
+		opWeightMsgCreateToken          = "op_weight_msg_token"
+		defaultWeightMsgCreateToken int = 100
 	)
 
-	var weightMsgFinalizeToken int
-	simState.AppParams.GetOrGenerate(opWeightMsgFinalizeToken, &weightMsgFinalizeToken, nil,
+	var weightMsgCreateToken int
+	simState.AppParams.GetOrGenerate(opWeightMsgCreateToken, &weightMsgCreateToken, nil,
 		func(_ *rand.Rand) {
-			weightMsgFinalizeToken = defaultWeightMsgFinalizeToken
+			weightMsgCreateToken = defaultWeightMsgCreateToken
 		},
 	)
 	operations = append(operations, simulation.NewWeightedOperation(
-		weightMsgFinalizeToken,
-		tokensimulation.SimulateMsgFinalizeToken(am.authKeeper, am.bankKeeper, am.keeper, simState.TxConfig),
+		weightMsgCreateToken,
+		tokensimulation.SimulateMsgCreateToken(am.authKeeper, am.bankKeeper, am.keeper, simState.TxConfig),
 	))
 
 	return operations
