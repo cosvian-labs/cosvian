@@ -21,6 +21,16 @@ import (
 // MockBankKeeper untuk testing
 type mockBankKeeper struct{}
 
+// GetBalance implements types.BankKeeper.
+func (m mockBankKeeper) GetBalance(ctx context.Context, addr sdk.AccAddress, denom string) sdk.Coin {
+	panic("unimplemented")
+}
+
+// GetSupply implements types.BankKeeper.
+func (m mockBankKeeper) GetSupply(ctx context.Context, denom string) sdk.Coin {
+	panic("unimplemented")
+}
+
 func (m mockBankKeeper) SpendableCoins(ctx context.Context, addr sdk.AccAddress) sdk.Coins {
 	return sdk.NewCoins()
 }

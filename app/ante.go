@@ -23,6 +23,8 @@ import (
 
 // AnteHandlerOptions holds the options for creating the ante handler
 type AnteHandlerOptions struct {
+	ante.HandlerOptions
+	
 	AccountKeeper         authkeeper.AccountKeeper
 	BankKeeper            types.BankKeeper
 	TokenKeeper           tokenkeeper.Keeper

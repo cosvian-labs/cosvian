@@ -120,7 +120,7 @@ func (app *App) setPostHandler() error {
 
 func (app *App) setAnteHandler(txConfig client.TxConfig, wasmConfig wasmtypes.NodeConfig, txCounterStoreKey *storetypes.KVStoreKey) error {
 	anteHandler, err := NewAnteHandler(
-		HandlerOptions{
+		AnteHandlerOptions{
 			HandlerOptions: ante.HandlerOptions{
 				AccountKeeper:   app.AuthKeeper,
 				BankKeeper:      app.BankKeeper,
