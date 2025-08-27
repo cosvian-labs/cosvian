@@ -11,6 +11,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 
 	"bitora/x/token/types"
+
+	feesTypes "bitora/x/fees/types"
 )
 
 type Keeper struct {
@@ -22,6 +24,7 @@ type Keeper struct {
 	authority []byte
 
 	bankKeeper types.BankKeeper
+	feesKeeper feesTypes.FeesKeeper
 
 	Schema collections.Schema
 	Params collections.Item[types.Params]
@@ -33,6 +36,7 @@ func NewKeeper(
 	addressCodec address.Codec,
 	authority []byte,
 	bankKeeper types.BankKeeper,
+	feesKeeper feesTypes.FeesKeeper,
 
 ) Keeper {
 	if _, err := addressCodec.BytesToString(authority); err != nil {
@@ -47,6 +51,7 @@ func NewKeeper(
 		addressCodec: addressCodec,
 		authority:    authority,
 		bankKeeper:   bankKeeper,
+		feesKeeper:   feesKeeper,
 
 		Params: collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
 	}

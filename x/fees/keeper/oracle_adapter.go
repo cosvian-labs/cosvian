@@ -6,7 +6,7 @@ import (
 
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	
+
 	"bitora/x/fees/types"
 )
 
@@ -36,18 +36,18 @@ func (oa *OracleAdapter) GetBTOUSDPrice(ctx sdk.Context) (*types.PriceData, erro
 	freshPrice, err := oa.getBandPrice(ctx, oracleParams.BandRequestId)
 	if err == nil && oa.isPriceValid(freshPrice, oracleParams) {
 		priceData := &types.PriceData{
-			Price:     freshPrice.Price,
-			TwapPrice: freshPrice.Price, // Use spot price as TWAP for now
-			Timestamp: freshPrice.Timestamp,
-			Window:    oracleParams.TwapWindow,
-			Freshness: ctx.BlockTime().Sub(freshPrice.Timestamp),
-			IsStale:   false,
+			Price:      freshPrice.Price,
+			TwapPrice:  freshPrice.Price, // Use spot price as TWAP for now
+			Timestamp:  freshPrice.Timestamp,
+			Window:     oracleParams.TwapWindow,
+			Freshness:  ctx.BlockTime().Sub(freshPrice.Timestamp),
+			IsStale:    false,
 			IsFallback: false,
 		}
 
 		// Emit oracle usage event
 		oa.emitOracleEvent(ctx, priceData)
-		
+
 		return priceData, nil
 	}
 
@@ -103,14 +103,14 @@ func (oa *OracleAdapter) isPriceValid(price *OraclePrice, params types.OraclePar
 func (oa *OracleAdapter) getFallbackPrice(ctx sdk.Context, params types.OracleParams) (*types.PriceData, error) {
 	// Use a hardcoded fallback price for now (e.g., $1.00 for BTO)
 	fallbackPrice := math.LegacyOneDec()
-	
+
 	priceData := &types.PriceData{
-		Price:     fallbackPrice,
-		TwapPrice: fallbackPrice,
-		Timestamp: ctx.BlockTime(),
-		Window:    0,
-		Freshness: 0,
-		IsStale:   true,
+		Price:      fallbackPrice,
+		TwapPrice:  fallbackPrice,
+		Timestamp:  ctx.BlockTime(),
+		Window:     0,
+		Freshness:  0,
+		IsStale:    true,
 		IsFallback: true,
 	}
 
@@ -145,7 +145,7 @@ func (oa *OracleAdapter) ConvertUSDToBTO(ctx sdk.Context, usdAmount math.LegacyD
 
 	// Use TWAP price for conversion
 	btoAmount := usdAmount.Quo(priceData.TwapPrice)
-	
+
 	// Apply conservative rounding (ceil) to ensure we don't under-collect fees
 	btoAmount = btoAmount.Ceil()
 

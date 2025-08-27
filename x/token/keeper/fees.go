@@ -31,18 +31,11 @@ const (
 
 // ChargeAndSplitFee memotong fee dari sender dan membagi 50:50 ke treasury dan infrastructure
 func (k Keeper) ChargeAndSplitFee(ctx sdk.Context, sender sdk.AccAddress, usdAmount math.LegacyDec) error {
-	// 1. Ambil harga BTO/USD dari oracle keeper
-	// Menggunakan oracle module yang sudah ada di aplikasi
-	oracleKeeper := k.getOracleKeeper(ctx)
-	btoPrice := oracleKeeper.GetBTOPerUSD(ctx)
-
-	if btoPrice.IsZero() {
-		return errors.Wrapf(ErrOraclePriceUnavailable, "BTO price is zero or unavailable")
+	// Use the central fees keeper to convert USD to BTO/ubto
+	feeBTO, pd, err := k.feesKeeper.ConvertUSDToBTO(ctx, usdAmount)
+	if err != nil {
+		return errors.Wrapf(err, "failed to convert USD to BTO")
 	}
-
-	// 2. Hitung fee dalam ubto (BTO tokens dengan 6 decimal places)
-	// Formula: usdAmount / btoPrice * 1e6 = ubto amount
-	feeBTO := usdAmount.Quo(btoPrice).Mul(math.LegacyNewDec(1_000_000))
 	feeCoin := sdk.NewCoin("ubto", feeBTO.TruncateInt())
 
 	// 3. Cek apakah sender memiliki saldo yang cukup
@@ -59,14 +52,12 @@ func (k Keeper) ChargeAndSplitFee(ctx sdk.Context, sender sdk.AccAddress, usdAmo
 	toInfra := sdk.NewCoin("ubto", feeCoin.Amount.Sub(split)) // Sisa untuk infra (menghindari rounding error)
 
 	// 5. Potong fee dari sender ke treasury module account
-	err := k.bankKeeper.SendCoinsFromAccountToModule(ctx, sender, TreasuryModuleAccount, sdk.NewCoins(toTreasury))
-	if err != nil {
+	if err = k.bankKeeper.SendCoinsFromAccountToModule(ctx, sender, TreasuryModuleAccount, sdk.NewCoins(toTreasury)); err != nil {
 		return errors.Wrapf(err, "failed to send fee to treasury")
 	}
 
 	// 6. Potong fee dari sender ke infrastructure module
-	err = k.bankKeeper.SendCoinsFromAccountToModule(ctx, sender, InfrastructureModuleAccount, sdk.NewCoins(toInfra))
-	if err != nil {
+	if err = k.bankKeeper.SendCoinsFromAccountToModule(ctx, sender, InfrastructureModuleAccount, sdk.NewCoins(toInfra)); err != nil {
 		return errors.Wrapf(err, "failed to send fee to infrastructure")
 	}
 
@@ -75,7 +66,7 @@ func (k Keeper) ChargeAndSplitFee(ctx sdk.Context, sender sdk.AccAddress, usdAmo
 		sdk.NewEvent("FeeCharged",
 			sdk.NewAttribute("sender", sender.String()),
 			sdk.NewAttribute("fee_usd", usdAmount.String()),
-			sdk.NewAttribute("bto_price", btoPrice.String()),
+			sdk.NewAttribute("bto_price", pd.String()),
 			sdk.NewAttribute("total_fee_ubto", feeCoin.String()),
 			sdk.NewAttribute("treasury_fee", toTreasury.String()),
 			sdk.NewAttribute("infrastructure_fee", toInfra.String()),
@@ -109,37 +100,17 @@ func (m *mockOracleKeeper) GetBTOPerUSD(ctx sdk.Context) math.LegacyDec {
 
 // GetFeeInUBTO menghitung berapa ubto yang dibutuhkan untuk fee USD tertentu
 func (k Keeper) GetFeeInUBTO(ctx sdk.Context, usdAmount math.LegacyDec) (sdk.Coin, error) {
-	// Ambil harga BTO/USD dari oracle
-	oracleKeeper := k.getOracleKeeper(ctx)
-	btoPrice := oracleKeeper.GetBTOPerUSD(ctx)
-
-	if btoPrice.IsZero() {
-		return sdk.Coin{}, errors.Wrapf(ErrOraclePriceUnavailable, "BTO price unavailable")
+	feeBTO, _, err := k.feesKeeper.ConvertUSDToBTO(ctx, usdAmount)
+	if err != nil {
+		return sdk.Coin{}, errors.Wrapf(err, "failed to convert USD to BTO")
 	}
-
-	// Hitung fee dalam ubto
-	feeBTO := usdAmount.Quo(btoPrice).Mul(math.LegacyNewDec(1_000_000))
 	return sdk.NewCoin("ubto", feeBTO.TruncateInt()), nil
 }
 
 // GetFeeByType returns the USD fee amount for a given fee type
-func (k Keeper) GetFeeByType(feeType string) math.LegacyDec {
-	switch feeType {
-	case FeeTypePOSPayment:
-		return math.LegacyNewDecWithPrec(15, 2) // $0.15
-	case FeeTypeTokenInteraction:
-		return math.LegacyNewDec(3) // $3.00
-	case FeeTypeNativeTransfer:
-		return math.LegacyNewDec(1) // $1.00
-	case FeeTypeDEXSwapNative:
-		return math.LegacyNewDec(1) // $1.00
-	case FeeTypeDEXSwapUser:
-		return math.LegacyNewDec(3) // $3.00
-	case FeeTypeTokenCreation, FeeTypeContractDeploy:
-		return math.LegacyNewDec(0) // Free
-	default:
-		return math.LegacyNewDec(0) // Default to free for unknown types
-	}
+func (k Keeper) GetFeeByType(ctx sdk.Context, feeType string) math.LegacyDec {
+	// Delegate to the fees module for configured fee amounts
+	return k.feesKeeper.GetFeeByType(ctx, feeType)
 }
 
 // ChargeAndDistributeFeeByType charges and distributes fee based on transaction type
@@ -150,7 +121,7 @@ func (k Keeper) ChargeAndDistributeFeeByType(
 	metadata map[string]interface{},
 ) error {
 	// Get fee amount for this type
-	feeUSD := k.GetFeeByType(feeType)
+	feeUSD := k.GetFeeByType(ctx, feeType)
 
 	// If fee is zero (free transactions), skip charging
 	if feeUSD.IsZero() {
@@ -238,7 +209,7 @@ func (k Keeper) distributePOSPaymentFee(
 		sdk.NewEvent("FeeCharged",
 			sdk.NewAttribute("sender", sender.String()),
 			sdk.NewAttribute("fee_type", FeeTypePOSPayment),
-			sdk.NewAttribute("fee_usd", k.GetFeeByType(FeeTypePOSPayment).String()),
+			sdk.NewAttribute("fee_usd", k.GetFeeByType(ctx, FeeTypePOSPayment).String()),
 			sdk.NewAttribute("total_fee_ubto", feeCoin.String()),
 			sdk.NewAttribute("treasury_fee", toTreasury.String()),
 			sdk.NewAttribute("retail_fee", toRetail.String()),
@@ -277,7 +248,7 @@ func (k Keeper) distributeTokenInteractionFee(
 		sdk.NewEvent("FeeCharged",
 			sdk.NewAttribute("sender", sender.String()),
 			sdk.NewAttribute("fee_type", FeeTypeTokenInteraction),
-			sdk.NewAttribute("fee_usd", k.GetFeeByType(FeeTypeTokenInteraction).String()),
+			sdk.NewAttribute("fee_usd", k.GetFeeByType(ctx, FeeTypeTokenInteraction).String()),
 			sdk.NewAttribute("total_fee_ubto", feeCoin.String()),
 			sdk.NewAttribute("treasury_fee", toTreasury.String()),
 			sdk.NewAttribute("developer_fee", toDeveloper.String()),
@@ -303,7 +274,7 @@ func (k Keeper) distributeNativeTransferFee(
 		sdk.NewEvent("FeeCharged",
 			sdk.NewAttribute("sender", sender.String()),
 			sdk.NewAttribute("fee_type", FeeTypeNativeTransfer),
-			sdk.NewAttribute("fee_usd", k.GetFeeByType(FeeTypeNativeTransfer).String()),
+			sdk.NewAttribute("fee_usd", k.GetFeeByType(ctx, FeeTypeNativeTransfer).String()),
 			sdk.NewAttribute("total_fee_ubto", feeCoin.String()),
 			sdk.NewAttribute("treasury_fee", feeCoin.String()),
 		),

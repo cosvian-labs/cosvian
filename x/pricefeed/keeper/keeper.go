@@ -9,6 +9,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	ibckeeper "github.com/cosmos/ibc-go/v10/modules/core/keeper"
 
+	feesTypes "bitora/x/fees/types"
 	"bitora/x/pricefeed/types"
 )
 
@@ -25,6 +26,8 @@ type Keeper struct {
 
 	Port collections.Item[string]
 
+	feesKeeper feesTypes.FeesKeeper
+
 	ibcKeeperFn func() *ibckeeper.Keeper
 }
 
@@ -34,6 +37,7 @@ func NewKeeper(
 	addressCodec address.Codec,
 	authority []byte,
 	ibcKeeperFn func() *ibckeeper.Keeper,
+	feesKeeper feesTypes.FeesKeeper,
 
 ) Keeper {
 	if _, err := addressCodec.BytesToString(authority); err != nil {
@@ -47,10 +51,10 @@ func NewKeeper(
 		cdc:          cdc,
 		addressCodec: addressCodec,
 		authority:    authority,
-
-		ibcKeeperFn: ibcKeeperFn,
-		Port:        collections.NewItem(sb, types.PortKey, "port", collections.StringValue),
-		Params:      collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
+		feesKeeper:   feesKeeper,
+		ibcKeeperFn:  ibcKeeperFn,
+		Port:         collections.NewItem(sb, types.PortKey, "port", collections.StringValue),
+		Params:       collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
 	}
 
 	schema, err := sb.Build()

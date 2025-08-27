@@ -19,6 +19,7 @@ import (
 	ibckeeper "github.com/cosmos/ibc-go/v10/modules/core/keeper"
 	ibctypes "github.com/cosmos/ibc-go/v10/modules/core/types"
 
+	feesTypes "bitora/x/fees/types"
 	"bitora/x/pricefeed/keeper"
 	module "bitora/x/pricefeed/module"
 	"bitora/x/pricefeed/types"
@@ -51,6 +52,7 @@ func initFixture(t *testing.T) *fixture {
 		func() *ibckeeper.Keeper {
 			return ibckeeper.NewKeeper(encCfg.Codec, storeService, newMockParams(), mockUpgradeKeeper, authority.String())
 		},
+		(feesTypes.FeesKeeper)(nil),
 	)
 
 	// Initialize params

@@ -13,6 +13,7 @@ import (
 	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
+	feesTypes "bitora/x/fees/types"
 	"bitora/x/token/keeper"
 	module "bitora/x/token/module"
 	"bitora/x/token/types"
@@ -76,6 +77,7 @@ func initFixture(t *testing.T) *fixture {
 		addressCodec,
 		authority.Bytes(),
 		bankKeeper,
+		(feesTypes.FeesKeeper)(nil),
 	)
 
 	// Initialize params

@@ -5,23 +5,23 @@ import (
 	"strings"
 
 	"cosmossdk.io/math"
+	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
-	
+
 	"bitora/x/fees/types"
 )
 
 // FeeCalculator handles fee calculation for SDK/Wallet middleware
 type FeeCalculator struct {
-	keeper       Keeper
+	keeper        Keeper
 	oracleAdapter *OracleAdapter
 }
 
 // NewFeeCalculator creates a new fee calculator
 func NewFeeCalculator(keeper Keeper, oracleAdapter *OracleAdapter) *FeeCalculator {
 	return &FeeCalculator{
-		keeper:       keeper,
+		keeper:        keeper,
 		oracleAdapter: oracleAdapter,
 	}
 }
@@ -30,32 +30,32 @@ func NewFeeCalculator(keeper Keeper, oracleAdapter *OracleAdapter) *FeeCalculato
 type TransactionCategory string
 
 const (
-	CategoryPOS            TransactionCategory = "pos"
+	CategoryPOS              TransactionCategory = "pos"
 	CategoryTokenInteraction TransactionCategory = "token_interaction"
-	CategoryNativeTransfer TransactionCategory = "native_transfer"
-	CategoryDEXNative      TransactionCategory = "dex_native"
-	CategoryDEXUser        TransactionCategory = "dex_user"
-	CategoryDeploy         TransactionCategory = "deploy"
-	CategoryWizard         TransactionCategory = "wizard"
-	CategoryDefault        TransactionCategory = "default"
+	CategoryNativeTransfer   TransactionCategory = "native_transfer"
+	CategoryDEXNative        TransactionCategory = "dex_native"
+	CategoryDEXUser          TransactionCategory = "dex_user"
+	CategoryDeploy           TransactionCategory = "deploy"
+	CategoryWizard           TransactionCategory = "wizard"
+	CategoryDefault          TransactionCategory = "default"
 )
 
 // FeeEstimate contains the calculated fee information
 type FeeEstimate struct {
-	Category     TransactionCategory `json:"category"`
-	USDAmount    math.LegacyDec      `json:"usd_amount"`
-	BTOAmount    math.LegacyDec      `json:"bto_amount"`
-	GasWanted    uint64              `json:"gas_wanted"`
-	GasPrice     math.LegacyDec      `json:"gas_price"`
-	IsFree       bool                `json:"is_free"`
-	PriceData    *types.PriceData    `json:"price_data,omitempty"`
+	Category  TransactionCategory `json:"category"`
+	USDAmount math.LegacyDec      `json:"usd_amount"`
+	BTOAmount math.LegacyDec      `json:"bto_amount"`
+	GasWanted uint64              `json:"gas_wanted"`
+	GasPrice  math.LegacyDec      `json:"gas_price"`
+	IsFree    bool                `json:"is_free"`
+	PriceData *types.PriceData    `json:"price_data,omitempty"`
 }
 
 // EstimateFee calculates the fee for a transaction based on its messages and memo
 func (fc *FeeCalculator) EstimateFee(ctx sdk.Context, msgs []sdk.Msg, memo string, gasWanted uint64) (*FeeEstimate, error) {
 	// Classify the transaction category
 	category := fc.classifyTransaction(msgs, memo)
-	
+
 	// Get fee configuration for this category
 	params, err := fc.keeper.Params.Get(ctx)
 	if err != nil {
@@ -192,13 +192,13 @@ func (fc *FeeCalculator) isTokenInteraction(msg *wasmtypes.MsgExecuteContract) b
 	// This is a simplified check - in practice, you'd parse the JSON message
 	msgStr := string(msg.Msg)
 	tokenKeywords := []string{"transfer", "mint", "burn", "approve", "allowance", "balance"}
-	
+
 	for _, keyword := range tokenKeywords {
 		if strings.Contains(strings.ToLower(msgStr), keyword) {
 			return true
 		}
 	}
-	
+
 	return false
 }
 
@@ -207,13 +207,13 @@ func (fc *FeeCalculator) isDEXInteraction(msg *wasmtypes.MsgExecuteContract) boo
 	// Parse the execute message to determine if it's DEX-related
 	msgStr := string(msg.Msg)
 	dexKeywords := []string{"swap", "provide_liquidity", "withdraw_liquidity", "create_pair"}
-	
+
 	for _, keyword := range dexKeywords {
 		if strings.Contains(strings.ToLower(msgStr), keyword) {
 			return true
 		}
 	}
-	
+
 	return false
 }
 
@@ -272,7 +272,7 @@ func (fc *FeeCalculator) BuildFeeFromEstimate(estimate *FeeEstimate, denom strin
 // ValidateFeeAgainstEstimate checks if the provided fee matches the estimated fee
 func (fc *FeeCalculator) ValidateFeeAgainstEstimate(providedFee sdk.Coins, estimate *FeeEstimate, denom string, tolerance math.LegacyDec) error {
 	expectedFee := fc.BuildFeeFromEstimate(estimate, denom)
-	
+
 	if estimate.IsFree {
 		if !providedFee.IsZero() {
 			return fmt.Errorf("expected zero fee for free tier, got: %s", providedFee)

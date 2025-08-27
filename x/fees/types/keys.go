@@ -28,7 +28,7 @@ const (
 const (
 	EventTypeOracleUsed = "oracle_used"
 	EventTypeFeeCharged = "fee_charged"
-	
+
 	AttributeKeyPrice      = "price"
 	AttributeKeyTwapPrice  = "twap_price"
 	AttributeKeyTimestamp  = "timestamp"

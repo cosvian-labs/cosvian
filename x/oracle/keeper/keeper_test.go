@@ -13,6 +13,7 @@ import (
 	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
+	feesTypes "bitora/x/fees/types"
 	"bitora/x/oracle/keeper"
 	module "bitora/x/oracle/module"
 	"bitora/x/oracle/types"
@@ -41,6 +42,7 @@ func initFixture(t *testing.T) *fixture {
 		encCfg.Codec,
 		addressCodec,
 		authority,
+		(feesTypes.FeesKeeper)(nil),
 	)
 
 	// Initialize params

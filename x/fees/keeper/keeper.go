@@ -8,6 +8,9 @@ import (
 	corestore "cosmossdk.io/core/store"
 	"github.com/cosmos/cosmos-sdk/codec"
 
+	math "cosmossdk.io/math"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"bitora/x/fees/types"
 )
 
@@ -61,4 +64,35 @@ func NewKeeper(
 // GetAuthority returns the module's authority.
 func (k Keeper) GetAuthority() []byte {
 	return k.authority
+}
+
+// ConvertUSDToBTO converts a USD amount to BTO using the module's oracle adapter
+func (k Keeper) ConvertUSDToBTO(ctx sdk.Context, usd math.LegacyDec) (math.LegacyDec, *types.PriceData, error) {
+	oa := NewOracleAdapter(k, k.oracleKeeper)
+	bto, pd, err := oa.ConvertUSDToBTO(ctx, usd)
+	return bto, pd, err
+}
+
+// GetFeeByType returns the USD fee amount for a given fee type by reading module params
+func (k Keeper) GetFeeByType(ctx sdk.Context, feeType string) math.LegacyDec {
+	params, err := k.Params.Get(ctx)
+	if err != nil {
+		return math.LegacyZeroDec()
+	}
+	switch feeType {
+	case "pos_payment":
+		return params.FeeTableUsd.PosPayment.UsdAmount
+	case "token_interaction":
+		return params.FeeTableUsd.TokenInteraction.UsdAmount
+	case "native_transfer":
+		return params.FeeTableUsd.NativeTransfer.UsdAmount
+	case "dex_swap_native":
+		return params.FeeTableUsd.DexNative.UsdAmount
+	case "dex_swap_user":
+		return params.FeeTableUsd.DexUser.UsdAmount
+	case "token_creation", "contract_deploy":
+		return params.FeeTableUsd.Deploy.UsdAmount
+	default:
+		return params.FeeTableUsd.NativeTransfer.UsdAmount
+	}
 }

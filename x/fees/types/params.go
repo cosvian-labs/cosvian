@@ -2,6 +2,7 @@ package types
 
 import (
 	"fmt"
+	"reflect"
 	"time"
 
 	"cosmossdk.io/math"
@@ -90,8 +91,8 @@ func DefaultParams() Params {
 		GuardRails: GuardRails{
 			MinGasPriceBto: math.LegacyMustNewDecFromStr("0.000001"), // 1 micro BTO
 			MaxGasPriceBto: math.LegacyMustNewDecFromStr("1.0"),      // 1 BTO
-			MaxGasWizard:   100000,                            // 100k gas for wizard
-			MaxGasDeploy:   500000,                            // 500k gas for deploy
+			MaxGasWizard:   100000,                                   // 100k gas for wizard
+			MaxGasDeploy:   500000,                                   // 500k gas for deploy
 		},
 		MinGasPolicy: MinGasPolicy{
 			Enabled:            true,
@@ -130,13 +131,36 @@ func (p Params) validateFeeTableUSD() error {
 	}
 
 	for _, config := range configs {
-		if config.UsdAmount.IsNegative() {
-			return fmt.Errorf("fee amount cannot be negative: %s", config.UsdAmount)
+		// Normalize potential zero-value LegacyDecs to safe zero decs before calling methods
+		safeUsd := config.UsdAmount
+		if reflect.DeepEqual(safeUsd, math.LegacyDec{}) {
+			safeUsd = math.LegacyZeroDec()
+		}
+		if safeUsd.IsNegative() {
+			return fmt.Errorf("fee amount cannot be negative: %s", safeUsd)
+		}
+
+		// Normalize splits similarly
+		t := config.Split.Treasury
+		r := config.Split.RetailWallet
+		d := config.Split.TokenDev
+		c := config.Split.TokenCreator
+		if reflect.DeepEqual(t, math.LegacyDec{}) {
+			t = math.LegacyZeroDec()
+		}
+		if reflect.DeepEqual(r, math.LegacyDec{}) {
+			r = math.LegacyZeroDec()
+		}
+		if reflect.DeepEqual(d, math.LegacyDec{}) {
+			d = math.LegacyZeroDec()
+		}
+		if reflect.DeepEqual(c, math.LegacyDec{}) {
+			c = math.LegacyZeroDec()
 		}
 
 		// Validate split percentages sum to 1.0 (or 0.0 for free)
-		total := config.Split.Treasury.Add(config.Split.RetailWallet).Add(config.Split.TokenDev).Add(config.Split.TokenCreator)
-		if !config.UsdAmount.IsZero() && !total.Equal(math.LegacyOneDec()) {
+		total := t.Add(r).Add(d).Add(c)
+		if !safeUsd.IsZero() && !total.Equal(math.LegacyOneDec()) {
 			return fmt.Errorf("fee split percentages must sum to 1.0, got: %s", total)
 		}
 	}
