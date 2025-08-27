@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+package bitora.fees.v1;
+
+import "amino/amino.proto";
+import "bitora/fees/v1/params.proto";
+import "bitora/fees/v1/price_data.proto";
+import "cosmos/base/query/v1beta1/pagination.proto";
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+
+option go_package = "bitora/x/fees/types";
+
+// Query defines the gRPC querier service.
+service Query {
+  // Parameters queries the parameters of the module.
+  rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
+    option (google.api.http).get = "/bitora/fees/v1/params";
+  }
+
+  // OraclePrice Queries a list of OraclePrice items.
+  rpc OraclePrice(QueryOraclePriceRequest) returns (QueryOraclePriceResponse) {
+    option (google.api.http).get = "/bitora/fees/v1/oracle_price";
+  }
+}
+
+// QueryParamsRequest is request type for the Query/Params RPC method.
+message QueryParamsRequest {}
+
+// QueryParamsResponse is response type for the Query/Params RPC method.
+message QueryParamsResponse {
+  // params holds all the parameters of this module.
+  Params params = 1 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
+// QueryOraclePriceRequest defines the QueryOraclePriceRequest message.
+message QueryOraclePriceRequest {}
+
+// QueryOraclePriceResponse defines the QueryOraclePriceResponse message.
+message QueryOraclePriceResponse {
+  PriceData price_data = 1 [(gogoproto.nullable) = false];
+}

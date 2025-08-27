@@ -1,0 +1,28 @@
+syntax = "proto3";
+package bitora.fees.v1;
+
+import "gogoproto/gogo.proto";
+import "google/protobuf/duration.proto";
+
+option go_package = "bitora/x/fees/types";
+
+// OracleParams defines Band Protocol oracle configuration
+message OracleParams {
+  uint64 band_request_id = 1;
+  google.protobuf.Duration twap_window = 2 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdduration) = true
+  ];
+  string deviation_limit = 3 [
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+  google.protobuf.Duration fallback_ttl = 4 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdduration) = true
+  ];
+  google.protobuf.Duration max_price_age = 5 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdduration) = true
+  ];
+}

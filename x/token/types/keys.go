@@ -20,9 +20,9 @@ var ParamsKey = collections.NewPrefix("p_token")
 
 // Store key prefixes for token wizard
 var (
-	TokenMetadataPrefix    = collections.NewPrefix("tm_")      // TokenMetadataPrefix + tokenID -> TokenMetadata
-	TokenSequenceKey       = collections.NewPrefix("ts")       // TokenSequenceKey -> uint64 (next sequence)
-	SymbolIndexPrefix      = collections.NewPrefix("si_")      // SymbolIndexPrefix + symbol -> tokenID
-	CreatorIndexPrefix     = collections.NewPrefix("ci_")      // CreatorIndexPrefix + creator + sequence -> tokenID
-	CreatorCountPrefix     = collections.NewPrefix("cc_")      // CreatorCountPrefix + creator -> uint64 (token count)
+	TokenMetadataPrefix = collections.NewPrefix("tm_") // TokenMetadataPrefix + tokenID -> TokenMetadata
+	TokenSequenceKey    = collections.NewPrefix("ts")  // TokenSequenceKey -> uint64 (next sequence)
+	SymbolIndexPrefix   = collections.NewPrefix("si_") // SymbolIndexPrefix + symbol -> tokenID
+	CreatorIndexPrefix  = collections.NewPrefix("ci_") // CreatorIndexPrefix + creator + sequence -> tokenID
+	CreatorCountPrefix  = collections.NewPrefix("cc_") // CreatorCountPrefix + creator -> uint64 (token count)
 )

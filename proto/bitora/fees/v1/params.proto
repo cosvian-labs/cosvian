@@ -1,0 +1,42 @@
+syntax = "proto3";
+package bitora.fees.v1;
+
+import "amino/amino.proto";
+import "gogoproto/gogo.proto";
+import "bitora/fees/v1/fee_config.proto";
+import "bitora/fees/v1/oracle_params.proto";
+import "bitora/fees/v1/guard_rails.proto";
+
+option go_package = "bitora/x/fees/types";
+
+// Params defines the parameters for the module.
+message Params {
+  option (amino.name) = "bitora/x/fees/Params";
+  option (gogoproto.equal) = true;
+  
+  FeeTableUSD fee_table_usd = 1 [(gogoproto.nullable) = false];
+  OracleParams oracle_params = 2 [(gogoproto.nullable) = false];
+  GuardRails guard_rails = 3 [(gogoproto.nullable) = false];
+  MinGasPolicy min_gas_policy = 4 [(gogoproto.nullable) = false];
+}
+
+// FeeTableUSD defines USD fee amounts and distribution splits for each category
+message FeeTableUSD {
+  FeeConfig pos_payment = 1 [(gogoproto.nullable) = false];
+  FeeConfig token_interaction = 2 [(gogoproto.nullable) = false];
+  FeeConfig native_transfer = 3 [(gogoproto.nullable) = false];
+  FeeConfig dex_native = 4 [(gogoproto.nullable) = false];
+  FeeConfig dex_user = 5 [(gogoproto.nullable) = false];
+  FeeConfig deploy = 6 [(gogoproto.nullable) = false];
+  FeeConfig wizard = 7 [(gogoproto.nullable) = false];
+}
+
+// MinGasPolicy defines minimum gas price policy
+message MinGasPolicy {
+  bool enabled = 1;
+  string global_min_gas_price = 2 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  bool allow_per_tx_override = 3;
+}

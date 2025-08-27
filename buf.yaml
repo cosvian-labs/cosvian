@@ -12,6 +12,7 @@ deps:
     - buf.build/googleapis/googleapis
     - buf.build/protocolbuffers/wellknowntypes
     - buf.build/cosmos/ibc
+    - buf.build/cosmwasm/wasmd
 lint:
     disallow_comment_ignores: true
     except:
@@ -26,6 +27,6 @@ lint:
         - STANDARD
         - FILE_LOWER_SNAKE_CASE
 modules:
-    - path: proto
-      name: buf.build/bitora/bitora-blockchain
+    - name: buf.build/bitora/bitora-blockchain
+      path: proto
 version: v2

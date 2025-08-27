@@ -11,18 +11,18 @@ import (
 
 // LockedReward represents a time-locked reward for retail wallet POS payments
 type LockedReward struct {
-	Recipient  string     `json:"recipient"`
-	Amount     sdk.Coin   `json:"amount"`
-	LockTime   time.Time  `json:"lock_time"`
-	UnlockTime time.Time  `json:"unlock_time"`
-	FeeType    string     `json:"fee_type"`
-	IsUnlocked bool       `json:"is_unlocked"`
+	Recipient  string    `json:"recipient"`
+	Amount     sdk.Coin  `json:"amount"`
+	LockTime   time.Time `json:"lock_time"`
+	UnlockTime time.Time `json:"unlock_time"`
+	FeeType    string    `json:"fee_type"`
+	IsUnlocked bool      `json:"is_unlocked"`
 }
 
 // LockRetailWalletReward locks 50% of POS payment fee for retail wallet (6 month lock)
 func (k Keeper) LockRetailWalletReward(ctx sdk.Context, recipient sdk.AccAddress, amount sdk.Coin) error {
 	unlockTime := ctx.BlockTime().Add(time.Hour * 24 * 30 * 6) // 6 months
-	
+
 	reward := LockedReward{
 		Recipient:  recipient.String(),
 		Amount:     amount,

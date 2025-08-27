@@ -77,6 +77,6 @@ func (tm TokenMetadata) Validate() error {
 	if tm.Creator.Empty() {
 		return ErrInvalidCreator
 	}
-	
+
 	return nil
 }

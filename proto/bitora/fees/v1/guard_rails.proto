@@ -1,0 +1,20 @@
+syntax = "proto3";
+package bitora.fees.v1;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "bitora/x/fees/types";
+
+// GuardRails defines min/max limits for gas prices and gas caps
+message GuardRails {
+  string min_gas_price_bto = 1 [
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+  string max_gas_price_bto = 2 [
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+  uint64 max_gas_wizard = 3;
+  uint64 max_gas_deploy = 4;
+}

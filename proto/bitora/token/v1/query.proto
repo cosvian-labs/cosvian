@@ -16,23 +16,23 @@ service Query {
     option (google.api.http).get = "/bitora/token/v1/params";
   }
   // Token metadata queries
-  rpc TokenById (QueryTokenByIdRequest) returns (QueryTokenByIdResponse) {
+  rpc TokenById(QueryTokenByIdRequest) returns (QueryTokenByIdResponse) {
     option (google.api.http).get = "/bitora/token/v1/token/{token_id}";
   }
-  rpc TokenBySymbol (QueryTokenBySymbolRequest) returns (QueryTokenBySymbolResponse) {
+  rpc TokenBySymbol(QueryTokenBySymbolRequest) returns (QueryTokenBySymbolResponse) {
     option (google.api.http).get = "/bitora/token/v1/symbol/{symbol}";
   }
-  rpc TokensByCreator (QueryTokensByCreatorRequest) returns (QueryTokensByCreatorResponse) {
+  rpc TokensByCreator(QueryTokensByCreatorRequest) returns (QueryTokensByCreatorResponse) {
     option (google.api.http).get = "/bitora/token/v1/creator/{creator}";
   }
-  rpc AllTokens (QueryAllTokensRequest) returns (QueryAllTokensResponse) {
+  rpc AllTokens(QueryAllTokensRequest) returns (QueryAllTokensResponse) {
     option (google.api.http).get = "/bitora/token/v1/tokens";
   }
   // Supply & balance queries
-  rpc TokenSupply (QueryTokenSupplyRequest) returns (QueryTokenSupplyResponse) {
+  rpc TokenSupply(QueryTokenSupplyRequest) returns (QueryTokenSupplyResponse) {
     option (google.api.http).get = "/bitora/token/v1/supply/{denom}";
   }
-  rpc TokenBalance (QueryTokenBalanceRequest) returns (QueryTokenBalanceResponse) {
+  rpc TokenBalance(QueryTokenBalanceRequest) returns (QueryTokenBalanceResponse) {
     option (google.api.http).get = "/bitora/token/v1/balance/{address}/{denom}";
   }
 }
@@ -50,7 +50,9 @@ message QueryParamsResponse {
 }
 
 // Token metadata single lookup
-message QueryTokenByIdRequest { string token_id = 1; }
+message QueryTokenByIdRequest {
+  string token_id = 1;
+}
 message QueryTokenByIdResponse {
   string token_id = 1;
   string name = 2;
@@ -67,7 +69,9 @@ message QueryTokenByIdResponse {
   string created_at = 13; // RFC3339
 }
 
-message QueryTokenBySymbolRequest { string symbol = 1; }
+message QueryTokenBySymbolRequest {
+  string symbol = 1;
+}
 message QueryTokenBySymbolResponse {
   string token_id = 1;
   string name = 2;
@@ -95,16 +99,30 @@ message QueryTokensByCreatorResponse {
 }
 
 // All tokens
-message QueryAllTokensRequest { cosmos.base.query.v1beta1.PageRequest pagination = 1; }
+message QueryAllTokensRequest {
+  cosmos.base.query.v1beta1.PageRequest pagination = 1;
+}
 message QueryAllTokensResponse {
   repeated QueryTokenByIdResponse tokens = 1;
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
 
 // Supply query
-message QueryTokenSupplyRequest { string denom = 1; }
-message QueryTokenSupplyResponse { string denom = 1; string amount = 2; }
+message QueryTokenSupplyRequest {
+  string denom = 1;
+}
+message QueryTokenSupplyResponse {
+  string denom = 1;
+  string amount = 2;
+}
 
 // Balance query
-message QueryTokenBalanceRequest { string address = 1; string denom = 2; }
-message QueryTokenBalanceResponse { string address = 1; string denom = 2; string balance = 3; }
+message QueryTokenBalanceRequest {
+  string address = 1;
+  string denom = 2;
+}
+message QueryTokenBalanceResponse {
+  string address = 1;
+  string denom = 2;
+  string balance = 3;
+}

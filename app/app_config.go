@@ -3,6 +3,8 @@ package app
 import (
 	_ "bitora/x/bitora/module"
 	bitoramoduletypes "bitora/x/bitora/types"
+	_ "bitora/x/fees/module"
+	feesmoduletypes "bitora/x/fees/types"
 
 	// _ "bitora/x/conversionpool/module" // Temporarily commented for testing
 	// conversionpoolmoduletypes "bitora/x/conversionpool/types" // Temporarily commented for testing
@@ -163,6 +165,7 @@ var (
 						// treasurymoduletypes.ModuleName, // Temporarily commented for testing
 						// conversionpoolmoduletypes.ModuleName, // Temporarily commented for testing
 						registrymoduletypes.ModuleName,
+						feesmoduletypes.ModuleName,
 						// this line is used by starport scaffolding # stargate/app/beginBlockers
 					},
 					EndBlockers: []string{
@@ -180,6 +183,7 @@ var (
 						// treasurymoduletypes.ModuleName,
 						// conversionpoolmoduletypes.ModuleName, // Temporarily commented for testing
 						registrymoduletypes.ModuleName,
+						feesmoduletypes.ModuleName,
 						// this line is used by starport scaffolding # stargate/app/endBlockers
 					},
 					// The following is mostly only needed when ModuleName != StoreKey name.
@@ -225,6 +229,7 @@ var (
 						// treasurymoduletypes.ModuleName,
 						// conversionpoolmoduletypes.ModuleName, // Temporarily commented for testing
 						registrymoduletypes.ModuleName,
+						feesmoduletypes.ModuleName,
 						// this line is used by starport scaffolding # stargate/app/initGenesis
 					},
 				}),
@@ -349,6 +354,10 @@ var (
 			{
 				Name:   registrymoduletypes.ModuleName,
 				Config: appconfig.WrapAny(&registrymoduletypes.Module{}),
+			},
+			{
+				Name:   feesmoduletypes.ModuleName,
+				Config: appconfig.WrapAny(&feesmoduletypes.Module{}),
 			},
 			// this line is used by starport scaffolding # stargate/app/moduleConfig
 		},

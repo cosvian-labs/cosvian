@@ -9,7 +9,7 @@ func NewParams() Params {
 	return Params{
 		MaxTokensPerCreator: 10,
 		ReservedSymbols:     []string{"bto"}, // Only reserve native token
-		CreationFeeAmount:   math.NewInt(0), // 3 BTO (with 6 decimals)
+		CreationFeeAmount:   math.NewInt(0),  // 3 BTO (with 6 decimals)
 	}
 }
 
@@ -26,6 +26,6 @@ func (p Params) Validate() error {
 	if p.CreationFeeAmount.IsNegative() {
 		return ErrInvalidInitialSupply
 	}
-	
+
 	return nil
 }
