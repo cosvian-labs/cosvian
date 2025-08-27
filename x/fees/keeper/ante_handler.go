@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -8,7 +9,7 @@ import (
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	
+
 	"bitora/x/fees/types"
 )
 
@@ -38,7 +39,7 @@ func (fah *FeeAnteHandler) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool,
 	// Get transaction details
 	feeTx, ok := tx.(sdk.FeeTx)
 	if !ok {
-		return ctx, sdkerrors.Wrap(sdkerrors.ErrTxDecode, "Tx must be a FeeTx")
+		return ctx, sdkerrors.ErrTxDecode.Wrap("Tx must be a FeeTx")
 	}
 
 	msgs := tx.GetMsgs()
@@ -81,29 +82,29 @@ func (fah *FeeAnteHandler) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool,
 	if estimate.IsFree {
 		maxGas := fah.feeCalculator.getMaxGasForFreeCategory(estimate.Category, params.GuardRails)
 		if gasWanted > maxGas {
-			return ctx, sdkerrors.ErrOutOfGas.Wrapf( 
-			"gas wanted (%d) exceeds free tier limit (%d) for category %s", 
-			gasWanted, maxGas, estimate.Category)
+			return ctx, sdkerrors.ErrOutOfGas.Wrapf(
+				"gas wanted (%d) exceeds free tier limit (%d) for category %s",
+				gasWanted, maxGas, estimate.Category)
 		}
 	}
 
 	// Emit fee charged event
 	fah.emitFeeChargedEvent(ctx, estimate, providedFee, feeMetadata)
 
-	// Store fee metadata in context for later use
-	ctx = ctx.WithValue(types.FeeEstimateContextKey, estimate)
-	ctx = ctx.WithValue(types.FeeMetadataContextKey, feeMetadata)
+	// Store fee metadata in the underlying stdlib context for later use
+	ctx = ctx.WithContext(context.WithValue(ctx.Context(), types.FeeEstimateContextKey, estimate))
+	ctx = ctx.WithContext(context.WithValue(ctx.Context(), types.FeeMetadataContextKey, feeMetadata))
 
 	return next(ctx, tx, simulate)
 }
 
 // FeeMetadata contains additional fee information from transaction memo
 type FeeMetadata struct {
-	Category    string `json:"category,omitempty"`
-	UserAgent   string `json:"user_agent,omitempty"`
-	AppVersion  string `json:"app_version,omitempty"`
-	TxHash      string `json:"tx_hash,omitempty"`
-	Timestamp   int64  `json:"timestamp,omitempty"`
+	Category   string `json:"category,omitempty"`
+	UserAgent  string `json:"user_agent,omitempty"`
+	AppVersion string `json:"app_version,omitempty"`
+	TxHash     string `json:"tx_hash,omitempty"`
+	Timestamp  int64  `json:"timestamp,omitempty"`
 }
 
 // parseFeeMetadata extracts fee metadata from transaction memo
@@ -210,7 +211,7 @@ func NewDeductFeeDecorator(ak types.AuthKeeper, bk types.BankKeeper, fk Keeper) 
 func (dfd DeductFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (sdk.Context, error) {
 	feeTx, ok := tx.(sdk.FeeTx)
 	if !ok {
-		return ctx, sdkerrors.Wrap(sdkerrors.ErrTxDecode, "Tx must be a FeeTx")
+		return ctx, sdkerrors.ErrTxDecode.Wrap("Tx must be a FeeTx")
 	}
 
 	if !simulate {
@@ -218,13 +219,13 @@ func (dfd DeductFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bo
 		if !fee.IsZero() {
 			err := dfd.deductFees(ctx, feeTx, fee)
 			if err != nil {
-				return nil, err
+				return ctx, err
 			}
 
 			// Distribute fees according to the fee table splits
 			err = dfd.distributeFees(ctx, fee)
 			if err != nil {
-				return nil, err
+				return ctx, err
 			}
 		}
 	}
@@ -260,8 +261,8 @@ func (dfd DeductFeeDecorator) deductFees(ctx sdk.Context, feeTx sdk.FeeTx, fee s
 
 // distributeFees distributes collected fees according to the fee table splits
 func (dfd DeductFeeDecorator) distributeFees(ctx sdk.Context, fee sdk.Coins) error {
-	// Get fee estimate from context to determine the split
-	estimate, ok := ctx.Value(types.FeeEstimateContextKey).(*FeeEstimate)
+	// Get fee estimate from the underlying stdlib context to determine the split
+	estimate, ok := ctx.Context().Value(types.FeeEstimateContextKey).(*FeeEstimate)
 	if !ok {
 		// If no estimate available, send all fees to treasury (default behavior)
 		return dfd.bankKeeper.SendCoinsFromModuleToModule(ctx, types.ModuleName, "treasury", fee)
@@ -276,7 +277,7 @@ func (dfd DeductFeeDecorator) distributeFees(ctx sdk.Context, fee sdk.Coins) err
 	var feeConfig types.FeeConfig
 	switch estimate.Category {
 	case CategoryPOS:
-		feeConfig = params.FeeTableUsd.Pos
+		feeConfig = params.FeeTableUsd.PosPayment
 	case CategoryTokenInteraction:
 		feeConfig = params.FeeTableUsd.TokenInteraction
 	case CategoryNativeTransfer:

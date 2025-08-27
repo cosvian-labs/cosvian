@@ -5,13 +5,14 @@ package types
 
 import (
 	fmt "fmt"
-	github_com_cosmos_cosmos_sdk_types "github.com/cosmos/cosmos-sdk/types"
-	_ "github.com/cosmos/cosmos-sdk/types/tx/amino"
-	_ "github.com/cosmos/gogoproto/gogoproto"
-	proto "github.com/cosmos/gogoproto/proto"
 	io "io"
 	math "math"
 	math_bits "math/bits"
+
+	cosmossdk_io_math "cosmossdk.io/math"
+	_ "github.com/cosmos/cosmos-sdk/types/tx/amino"
+	_ "github.com/cosmos/gogoproto/gogoproto"
+	proto "github.com/cosmos/gogoproto/proto"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -189,9 +190,9 @@ func (m *FeeTableUSD) GetWizard() FeeConfig {
 
 // MinGasPolicy defines minimum gas price policy
 type MinGasPolicy struct {
-	Enabled            bool                                   `protobuf:"varint,1,opt,name=enabled,proto3" json:"enabled,omitempty"`
-	GlobalMinGasPrice  github_com_cosmos_cosmos_sdk_types.Dec `protobuf:"bytes,2,opt,name=global_min_gas_price,json=globalMinGasPrice,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"global_min_gas_price"`
-	AllowPerTxOverride bool                                   `protobuf:"varint,3,opt,name=allow_per_tx_override,json=allowPerTxOverride,proto3" json:"allow_per_tx_override,omitempty"`
+	Enabled            bool                        `protobuf:"varint,1,opt,name=enabled,proto3" json:"enabled,omitempty"`
+	GlobalMinGasPrice  cosmossdk_io_math.LegacyDec `protobuf:"bytes,2,opt,name=global_min_gas_price,json=globalMinGasPrice,proto3,customtype=cosmossdk.io/math.LegacyDec" json:"global_min_gas_price"`
+	AllowPerTxOverride bool                        `protobuf:"varint,3,opt,name=allow_per_tx_override,json=allowPerTxOverride,proto3" json:"allow_per_tx_override,omitempty"`
 }
 
 func (m *MinGasPolicy) Reset()         { *m = MinGasPolicy{} }
@@ -310,19 +311,8 @@ func (this *Params) Equal(that interface{}) bool {
 	} else if this == nil {
 		return false
 	}
-	if !this.FeeTableUsd.Equal(&that1.FeeTableUsd) {
-		return false
-	}
-	if !this.OracleParams.Equal(&that1.OracleParams) {
-		return false
-	}
-	if !this.GuardRails.Equal(&that1.GuardRails) {
-		return false
-	}
-	if !this.MinGasPolicy.Equal(&that1.MinGasPolicy) {
-		return false
-	}
-	return true
+	// fall back to proto.Equal for deep equality
+	return proto.Equal(this, that1)
 }
 func (m *Params) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
