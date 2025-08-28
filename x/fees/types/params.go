@@ -99,6 +99,11 @@ func DefaultParams() Params {
 			GlobalMinGasPrice:  math.LegacyMustNewDecFromStr("0.000001"),
 			AllowPerTxOverride: true,
 		},
+		// Default wallet addresses (to be configured in production)
+		TreasuryWallet:     "bto1team00000000000000000000000000000000000", // Placeholder
+		RetailWallet:       "bto1retail000000000000000000000000000000000", // Placeholder
+		TokenDevWallet:     "bto1dev000000000000000000000000000000000000", // Placeholder
+		TokenCreatorWallet: "bto1creator00000000000000000000000000000000", // Placeholder
 	}
 }
 

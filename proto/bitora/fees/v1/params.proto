@@ -18,6 +18,12 @@ message Params {
   OracleParams oracle_params = 2 [(gogoproto.nullable) = false];
   GuardRails guard_rails = 3 [(gogoproto.nullable) = false];
   MinGasPolicy min_gas_policy = 4 [(gogoproto.nullable) = false];
+  
+  // Wallet addresses for fee distribution
+  string treasury_wallet = 5;
+  string retail_wallet = 6;
+  string token_dev_wallet = 7;
+  string token_creator_wallet = 8;
 }
 
 // FeeTableUSD defines USD fee amounts and distribution splits for each category

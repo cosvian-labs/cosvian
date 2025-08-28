@@ -1,17 +1,18 @@
 package keeper
 
 import (
+	"context"
+
 	"bitora/x/fees/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // InitGenesis initializes the module's state from a provided genesis state.
-func (k Keeper) InitGenesis(ctx sdk.Context, genState types.GenesisState) error {
+func (k Keeper) InitGenesis(ctx context.Context, genState types.GenesisState) error {
 	return k.Params.Set(ctx, genState.Params)
 }
 
 // ExportGenesis returns the module's exported genesis.
-func (k Keeper) ExportGenesis(ctx sdk.Context) (*types.GenesisState, error) {
+func (k Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error) {
 	var err error
 
 	genesis := types.DefaultGenesis()

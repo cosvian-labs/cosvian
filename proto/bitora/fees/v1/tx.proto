@@ -53,4 +53,7 @@ message MsgChargeFee {
 }
 
 // MsgChargeFeeResponse defines the MsgChargeFeeResponse message.
-message MsgChargeFeeResponse {}
+message MsgChargeFeeResponse {
+  string gas_used = 1;
+  string fee_charged = 2;
+}

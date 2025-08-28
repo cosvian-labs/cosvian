@@ -13,12 +13,12 @@ import (
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	authsigning "github.com/cosmos/cosmos-sdk/x/auth/signing"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
-	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	ibcante "github.com/cosmos/ibc-go/v10/modules/core/ante"
 	ibckeeper "github.com/cosmos/ibc-go/v10/modules/core/keeper"
 
+	feeskeeper "bitora/x/fees/keeper"
+	feestypes "bitora/x/fees/types"
 	tokenkeeper "bitora/x/token/keeper"
-	tokentypes "bitora/x/token/types"
 )
 
 // AnteHandlerOptions holds the options for creating the ante handler
@@ -28,6 +28,7 @@ type AnteHandlerOptions struct {
 	AccountKeeper         authkeeper.AccountKeeper
 	BankKeeper            types.BankKeeper
 	TokenKeeper           tokenkeeper.Keeper
+	FeesKeeper            feeskeeper.Keeper
 	IBCKeeper             *ibckeeper.Keeper
 	SigGasConsumer        ante.SignatureVerificationGasConsumer
 	NodeConfig            *wasmTypes.NodeConfig
@@ -70,12 +71,10 @@ func NewAnteHandler(options AnteHandlerOptions) (sdk.AnteHandler, error) {
 		ante.NewValidateMemoDecorator(options.AccountKeeper),
 
 		// 5. Custom transaction type fee detection and charging
-		NewTransactionTypeFeeDecorator(options.TokenKeeper),
+		NewBitoraFeeDecorator(options.TokenKeeper, options.FeesKeeper),
 
-		// 6. Skip fee deduction entirely - this is key for zero gas fee
-		NewZeroGasFeeDecorator(),
-
-		// 7. Public key and signature handling (no gas consumption)
+	// 6. Skip fee deduction entirely - this is key for zero gas fee
+	NewZeroGasFeeDecorator(),		// 7. Public key and signature handling (no gas consumption)
 		ante.NewSetPubKeyDecorator(options.AccountKeeper),
 		ante.NewValidateSigCountDecorator(options.AccountKeeper),
 		NewZeroGasSigVerificationDecorator(options.AccountKeeper),
@@ -180,18 +179,20 @@ func (zgsv ZeroGasSigVerificationDecorator) AnteHandle(ctx sdk.Context, tx sdk.T
 	return next(ctx, tx, simulate)
 }
 
-// TransactionTypeFeeDecorator detects transaction type and charges appropriate fixed USD fees
-type TransactionTypeFeeDecorator struct {
+// BitoraFeeDecorator implements the new fee system where Gas Used = Fee Amount
+type BitoraFeeDecorator struct {
 	tokenKeeper tokenkeeper.Keeper
+	feesKeeper  feeskeeper.Keeper
 }
 
-func NewTransactionTypeFeeDecorator(tokenKeeper tokenkeeper.Keeper) TransactionTypeFeeDecorator {
-	return TransactionTypeFeeDecorator{
+func NewBitoraFeeDecorator(tokenKeeper tokenkeeper.Keeper, feesKeeper feeskeeper.Keeper) BitoraFeeDecorator {
+	return BitoraFeeDecorator{
 		tokenKeeper: tokenKeeper,
+		feesKeeper:  feesKeeper,
 	}
 }
 
-func (tfd TransactionTypeFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (newCtx sdk.Context, err error) {
+func (bfd BitoraFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (newCtx sdk.Context, err error) {
 	// Skip fee charging in simulation mode
 	if simulate {
 		return next(ctx, tx, simulate)
@@ -209,137 +210,44 @@ func (tfd TransactionTypeFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, si
 
 	sender := signers[0] // First signer pays the fee
 
-	// Check transaction memo for mock fee testing
+	// Check transaction memo for fee category
 	var txMemo string
 	if authTx, ok := tx.(interface{ GetMemo() string }); ok {
 		txMemo = authTx.GetMemo()
 	}
 
+	// Map memo to fee type
+	var feeType string
 	switch txMemo {
-	case "MOCK_DEX_SWAP_NATIVE":
-		// Mock DEX Swap (native): $1.00 → 100% Treasury
-		metadata := map[string]interface{}{}
-		err = tfd.tokenKeeper.ChargeAndDistributeFeeByType(ctx, sender, tokenkeeper.FeeTypeDEXSwapNative, metadata)
-		if err != nil {
-			return ctx, sdkerrors.ErrInsufficientFunds.Wrapf("failed to charge mock DEX swap native fee: %v", err)
-		}
-		return next(ctx, tx, simulate) // Skip normal message processing
-
-	case "MOCK_DEX_SWAP_USER":
-		// Mock DEX Swap (user tokens): $3.00 → 50% Treasury, 50% Token Developer
-		metadata := map[string]interface{}{
-			"token_creator": sdk.AccAddress(sender).String(), // Mock: use sender as token creator
-		}
-		err = tfd.tokenKeeper.ChargeAndDistributeFeeByType(ctx, sender, tokenkeeper.FeeTypeDEXSwapUser, metadata)
-		if err != nil {
-			return ctx, sdkerrors.ErrInsufficientFunds.Wrapf("failed to charge mock DEX swap user fee: %v", err)
-		}
-		return next(ctx, tx, simulate) // Skip normal message processing
-
-	case "MOCK_POS_PAYMENT":
-		// Mock POS Payment: $0.15 → 50% Treasury, 50% Retail Wallet (locked 6mo)
-		metadata := map[string]interface{}{
-			"retail_wallet": sdk.AccAddress(sender).String(), // Mock: use sender as retail wallet
-		}
-		err = tfd.tokenKeeper.ChargeAndDistributeFeeByType(ctx, sender, tokenkeeper.FeeTypePOSPayment, metadata)
-		if err != nil {
-			return ctx, sdkerrors.ErrInsufficientFunds.Wrapf("failed to charge mock POS payment fee: %v", err)
-		}
-		return next(ctx, tx, simulate) // Skip normal message processing
+	case "POS_PAYMENT":
+		feeType = "pos_payment"
+	case "TOKEN_INTERACTION":
+		feeType = "token_interaction"
+	case "NATIVE_TRANSFER":
+		feeType = "native_transfer"
+	case "DEX_NATIVE":
+		feeType = "dex_native"
+	case "DEX_USER":
+		feeType = "dex_user"
+	case "DEPLOY":
+		feeType = "deploy"
+	case "WIZARD":
+		feeType = "wizard"
+	default:
+		// Default to token interaction for unknown memos
+		feeType = "token_interaction"
 	}
 
-	// Analyze each message in the transaction and charge appropriate fees
-	for _, message := range tx.GetMsgs() {
-		switch message.(type) {
-		case *banktypes.MsgSend:
-			// Native Token Transfer: $1.00 → 100% Treasury
-			metadata := map[string]interface{}{}
-			err = tfd.tokenKeeper.ChargeAndDistributeFeeByType(ctx, sender, tokenkeeper.FeeTypeNativeTransfer, metadata)
-			if err != nil {
-				return ctx, sdkerrors.ErrInsufficientFunds.Wrapf("failed to charge native transfer fee: %v", err)
-			}
-
-		case *tokentypes.MsgMint:
-			// Token Minting: Free (part of Token Creation Wizard)
-			// Skip fee charging for token minting as it's part of token creation process
-			continue
-
-		case *tokentypes.MsgBurn:
-			// Token Burning: Free (internal token operation, not interaction)
-			// Skip fee charging for token burning
-			continue
-
-		case *wasmTypes.MsgStoreCode:
-			// Smart Contract Deployment: Free
-			// Skip fee charging for smart contract deployment
-			continue
-
-		case *wasmTypes.MsgInstantiateContract:
-			// Smart Contract Instantiation: Free
-			// Skip fee charging for smart contract instantiation
-			continue
-
-		case *wasmTypes.MsgExecuteContract:
-			// Smart Contract Execution: Free
-			// Skip fee charging for smart contract execution
-			continue
-
-		case *wasmTypes.MsgMigrateContract:
-			// Smart Contract Migration: Free
-			// Skip fee charging for smart contract migration
-			continue
-
-		case *wasmTypes.MsgUpdateAdmin:
-			// Smart Contract Admin Update: Free
-			// Skip fee charging for smart contract admin updates
-			continue
-
-		case *wasmTypes.MsgClearAdmin:
-			// Smart Contract Clear Admin: Free
-			// Skip fee charging for smart contract admin clearing
-			continue
-
-		// Future: Add proper token interaction cases (transfer/swap/call)
-		// case *tokentypes.MsgTransfer:
-		//     // Token Interaction (transfer): $3.00 → 50% Treasury, 50% Token Developer
-		//     metadata := map[string]interface{}{
-		//         "token_creator": "creator_address", // Get from token metadata
-		//     }
-		//     err = tfd.tokenKeeper.ChargeAndDistributeFeeByType(ctx, sender, tokenkeeper.FeeTypeTokenInteraction, metadata)
-
-		// Future: Add POS payment case when POS module is implemented
-		// case *postypes.MsgPayment:
-		//     // POS Payment: $0.15 → 50% Treasury, 50% Retail Wallet (locked 6mo)
-		//     metadata := map[string]interface{}{
-		//         "retail_wallet": "retail_wallet_address",
-		//     }
-		//     err = tfd.tokenKeeper.ChargeAndDistributeFeeByType(ctx, sender, tokenkeeper.FeeTypePOSPayment, metadata)
-
-		// Future: Add DEX swap cases when DEX module is implemented
-		// case *dextypes.MsgSwapNative:
-		//     // DEX Swap (native): $1.00 → 100% Treasury
-		//     metadata := map[string]interface{}{}
-		//     err = tfd.tokenKeeper.ChargeAndDistributeFeeByType(ctx, sender, tokenkeeper.FeeTypeDEXSwapNative, metadata)
-
-		// case *dextypes.MsgSwapUserToken:
-		//     // DEX Swap (user tokens): $3.00 → 50% Treasury, 50% Token Creator
-		//     metadata := map[string]interface{}{
-		//         "token_creator": "creator_address", // Get from token metadata
-		//     }
-		//     err = tfd.tokenKeeper.ChargeAndDistributeFeeByType(ctx, sender, tokenkeeper.FeeTypeDEXSwapUser, metadata)
-
-		default:
-			// For unknown message types, no fee is charged
-			// This includes:
-			// - Smart Contract Deployment (EVM/CW): Free
-			// - Token Creation operations: Free
-			// - Other system operations: Free
-			continue
-		}
-
-		if err != nil {
-			return ctx, err
-		}
+	// Charge fee using feesKeeper
+	msgServer := feeskeeper.NewMsgServerImpl(bfd.feesKeeper)
+	_, err = msgServer.ChargeFee(sdk.WrapSDKContext(ctx), &feestypes.MsgChargeFee{
+		Creator:  sdk.AccAddress(sender).String(),
+		Category: feeType,
+		Amount:   "0", // Amount will be determined by category
+		Metadata: "{}",
+	})
+	if err != nil {
+		return ctx, sdkerrors.ErrInsufficientFunds.Wrapf("failed to charge fee: %v", err)
 	}
 
 	return next(ctx, tx, simulate)
