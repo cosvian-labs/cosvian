@@ -9,6 +9,7 @@ option go_package = "bitora/x/fees/types";
 
 // PriceData represents TWAP price data with metadata
 message PriceData {
+  option (gogoproto.equal) = true;
   string price = 1 [
     (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
     (gogoproto.nullable) = false

@@ -7,6 +7,7 @@ option go_package = "bitora/x/fees/types";
 
 // FeeConfig defines fee amount and distribution split
 message FeeConfig {
+  option (gogoproto.equal) = true;
   string usd_amount = 1 [
     (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
     (gogoproto.nullable) = false
@@ -16,6 +17,7 @@ message FeeConfig {
 
 // FeeSplit defines how fees are distributed (percentages must sum to 100)
 message FeeSplit {
+  option (gogoproto.equal) = true;
   string treasury = 1 [
     (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
     (gogoproto.nullable) = false

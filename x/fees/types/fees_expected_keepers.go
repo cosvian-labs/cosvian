@@ -14,4 +14,7 @@ type FeesKeeper interface {
 
 	// GetFeeByType returns the configured USD fee amount for a fee category.
 	GetFeeByType(ctx sdk.Context, feeType string) math.LegacyDec
+	// DistributeFee handles distribution of a already-collected fee coin according
+	// to the configured FeeTableUSD splits for the given feeType.
+	DistributeFee(ctx sdk.Context, sender sdk.AccAddress, feeType string, feeCoin sdk.Coin, metadata map[string]interface{}) error
 }

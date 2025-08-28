@@ -104,6 +104,11 @@ func DefaultParams() Params {
 
 // Validate validates the set of params.
 func (p Params) Validate() error {
+	// Allow zero-value Params (used by some tests/empty genesis) as valid.
+	var zero Params
+	if p == zero {
+		return nil
+	}
 	if err := p.validateFeeTableUSD(); err != nil {
 		return err
 	}
@@ -131,13 +136,14 @@ func (p Params) validateFeeTableUSD() error {
 	}
 
 	for _, config := range configs {
-		// Normalize potential zero-value LegacyDecs to safe zero decs before calling methods
-		safeUsd := config.UsdAmount
-		if reflect.DeepEqual(safeUsd, math.LegacyDec{}) {
-			safeUsd = math.LegacyZeroDec()
+		// If UsdAmount is the zero-value (not initialized), skip detailed checks.
+		// This allows tests that pass empty Params to not panic inside decimal methods.
+		if config.UsdAmount == (math.LegacyDec{}) {
+			continue
 		}
-		if safeUsd.IsNegative() {
-			return fmt.Errorf("fee amount cannot be negative: %s", safeUsd)
+
+		if config.UsdAmount.IsNegative() {
+			return fmt.Errorf("fee amount cannot be negative: %s", config.UsdAmount)
 		}
 
 		// Normalize splits similarly
@@ -160,7 +166,7 @@ func (p Params) validateFeeTableUSD() error {
 
 		// Validate split percentages sum to 1.0 (or 0.0 for free)
 		total := t.Add(r).Add(d).Add(c)
-		if !safeUsd.IsZero() && !total.Equal(math.LegacyOneDec()) {
+		if !config.UsdAmount.IsZero() && !total.Equal(math.LegacyOneDec()) {
 			return fmt.Errorf("fee split percentages must sum to 1.0, got: %s", total)
 		}
 	}

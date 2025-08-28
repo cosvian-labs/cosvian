@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"context"
 	"fmt"
 
 	"cosmossdk.io/collections"
@@ -33,7 +34,6 @@ func NewKeeper(
 	cdc codec.Codec,
 	addressCodec address.Codec,
 	authority []byte,
-	feesKeeper feesTypes.FeesKeeper,
 ) Keeper {
 	if _, err := addressCodec.BytesToString(authority); err != nil {
 		panic(fmt.Sprintf("invalid authority address %s: %s", authority, err))
@@ -46,7 +46,7 @@ func NewKeeper(
 		cdc:          cdc,
 		addressCodec: addressCodec,
 		authority:    authority,
-		feesKeeper:   feesKeeper,
+		// feesKeeper will be set later
 
 		Params:   collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
 		BTOPrice: collections.NewMap(sb, []byte("bto_price"), "bto_price", collections.StringKey, collections.StringValue),
@@ -64,6 +64,11 @@ func NewKeeper(
 // GetAuthority returns the module's authority.
 func (k Keeper) GetAuthority() []byte {
 	return k.authority
+}
+
+// SetFeesKeeper sets the fees keeper (used to break circular dependency)
+func (k *Keeper) SetFeesKeeper(feesKeeper feesTypes.FeesKeeper) {
+	k.feesKeeper = feesKeeper
 }
 
 // GetBTOPerUSD returns the current BTO/USD exchange rate
@@ -101,4 +106,18 @@ func (k Keeper) GetExchangeRate(ctx sdk.Context, symbol string) (math.LegacyDec,
 	// For other symbols, you could integrate with Band Protocol here
 	// For now, return error for unsupported symbols
 	return math.LegacyZeroDec(), fmt.Errorf("unsupported symbol: %s", symbol)
+}
+
+// GetLatestPrice implements the OracleKeeper interface for fees module
+func (k Keeper) GetLatestPrice(ctx context.Context, symbol string) (*feesTypes.OracleResult, error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	price, err := k.GetExchangeRate(sdkCtx, symbol)
+	if err != nil {
+		return nil, err
+	}
+
+	return &feesTypes.OracleResult{
+		Price:     price.String(),
+		Timestamp: sdkCtx.BlockTime(),
+	}, nil
 }

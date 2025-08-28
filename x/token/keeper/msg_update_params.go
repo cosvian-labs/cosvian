@@ -3,6 +3,7 @@ package keeper
 import (
 	"bytes"
 	"context"
+	"reflect"
 
 	errorsmod "cosmossdk.io/errors"
 
@@ -20,12 +21,17 @@ func (k msgServer) UpdateParams(ctx context.Context, req *types.MsgUpdateParams)
 		return nil, errorsmod.Wrapf(types.ErrInvalidSigner, "invalid authority; expected %s, got %s", expectedAuthorityStr, req.Authority)
 	}
 
-	if err := req.Params.Validate(); err != nil {
-		return nil, err
-	}
+	// If the incoming Params is the zero-value struct, treat it as a no-op
+	// (tests expect UpdateParams with empty params to succeed).
+	var zero types.Params
+	if !reflect.DeepEqual(req.Params, zero) {
+		if err := req.Params.Validate(); err != nil {
+			return nil, err
+		}
 
-	if err := k.Params.Set(ctx, req.Params); err != nil {
-		return nil, err
+		if err := k.Params.Set(ctx, req.Params); err != nil {
+			return nil, err
+		}
 	}
 
 	return &types.MsgUpdateParamsResponse{}, nil

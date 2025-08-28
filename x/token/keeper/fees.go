@@ -6,9 +6,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// ErrOraclePriceUnavailable oracle price unavailable error
-var ErrOraclePriceUnavailable = errors.Register("token", 2001, "oracle price unavailable")
-
 // ErrInsufficientFunds insufficient funds error
 var ErrInsufficientFunds = errors.Register("token", 2002, "insufficient funds")
 
@@ -76,27 +73,6 @@ func (k Keeper) ChargeAndSplitFee(ctx sdk.Context, sender sdk.AccAddress, usdAmo
 	return nil
 }
 
-// getOracleKeeper helper function untuk mendapatkan oracle keeper
-// Implementasi sementara - nanti bisa diganti dengan dependency injection yang proper
-func (k Keeper) getOracleKeeper(ctx sdk.Context) oracleKeeperInterface {
-	// Untuk sekarang kita return mock interface
-	// Dalam implementasi sesungguhnya, oracle keeper akan diinjek via constructor
-	return &mockOracleKeeper{}
-}
-
-// oracleKeeperInterface interface untuk oracle keeper
-type oracleKeeperInterface interface {
-	GetBTOPerUSD(ctx sdk.Context) math.LegacyDec
-}
-
-// mockOracleKeeper implementasi sementara untuk testing
-type mockOracleKeeper struct{}
-
-func (m *mockOracleKeeper) GetBTOPerUSD(ctx sdk.Context) math.LegacyDec {
-	// Return default price 1 BTO = 0.5 USD (untuk testing)
-	// Dalam implementasi sesungguhnya, ini akan mengambil dari Band Protocol
-	return math.LegacyNewDecWithPrec(5, 1) // 0.5
-}
 
 // GetFeeInUBTO menghitung berapa ubto yang dibutuhkan untuk fee USD tertentu
 func (k Keeper) GetFeeInUBTO(ctx sdk.Context, usdAmount math.LegacyDec) (sdk.Coin, error) {
@@ -136,15 +112,12 @@ func (k Keeper) ChargeAndDistributeFeeByType(
 		return nil
 	}
 
-	// Calculate BTO amount using existing oracle logic
-	oracleKeeper := k.getOracleKeeper(ctx)
-	btoPrice := oracleKeeper.GetBTOPerUSD(ctx)
 
-	if btoPrice.IsZero() {
-		return errors.Wrapf(ErrOraclePriceUnavailable, "BTO price is zero or unavailable")
+	// Calculate BTO amount using central fees keeper
+	feeBTO, _, err := k.feesKeeper.ConvertUSDToBTO(ctx, feeUSD)
+	if err != nil {
+		return errors.Wrapf(err, "failed to convert USD to BTO")
 	}
-
-	feeBTO := feeUSD.Quo(btoPrice).Mul(math.LegacyNewDec(1_000_000))
 	feeCoin := sdk.NewCoin("ubto", feeBTO.TruncateInt())
 
 	// Check if sender has enough balance
@@ -155,130 +128,6 @@ func (k Keeper) ChargeAndDistributeFeeByType(
 			feeCoin.Amount.String(), balance.AmountOf("ubto").String())
 	}
 
-	// Distribute based on fee type
-	return k.distributeFeeByType(ctx, sender, feeType, feeCoin, metadata)
-}
-
-// distributeFeeByType handles different distribution logic based on fee type
-func (k Keeper) distributeFeeByType(
-	ctx sdk.Context,
-	sender sdk.AccAddress,
-	feeType string,
-	feeCoin sdk.Coin,
-	metadata map[string]interface{},
-) error {
-	switch feeType {
-	case FeeTypePOSPayment:
-		return k.distributePOSPaymentFee(ctx, sender, feeCoin, metadata)
-	case FeeTypeTokenInteraction, FeeTypeDEXSwapUser:
-		return k.distributeTokenInteractionFee(ctx, sender, feeCoin, metadata)
-	case FeeTypeNativeTransfer, FeeTypeDEXSwapNative:
-		return k.distributeNativeTransferFee(ctx, sender, feeCoin)
-	default:
-		// Default to treasury distribution
-		return k.distributeNativeTransferFee(ctx, sender, feeCoin)
-	}
-}
-
-// distributePOSPaymentFee handles 50% treasury, 50% retail wallet (locked 6mo)
-func (k Keeper) distributePOSPaymentFee(
-	ctx sdk.Context,
-	sender sdk.AccAddress,
-	feeCoin sdk.Coin,
-	metadata map[string]interface{},
-) error {
-	// Split 50:50
-	split := feeCoin.Amount.Quo(math.NewInt(2))
-	toTreasury := sdk.NewCoin("ubto", split)
-	toRetail := sdk.NewCoin("ubto", feeCoin.Amount.Sub(split))
-
-	// Send to treasury
-	err := k.bankKeeper.SendCoinsFromAccountToModule(ctx, sender, TreasuryModuleAccount, sdk.NewCoins(toTreasury))
-	if err != nil {
-		return errors.Wrapf(err, "failed to send fee to treasury")
-	}
-
-	// TODO: Implement retail wallet locking mechanism
-	// For now, send to infrastructure as placeholder
-	err = k.bankKeeper.SendCoinsFromAccountToModule(ctx, sender, InfrastructureModuleAccount, sdk.NewCoins(toRetail))
-	if err != nil {
-		return errors.Wrapf(err, "failed to send fee to retail rewards")
-	}
-
-	ctx.EventManager().EmitEvent(
-		sdk.NewEvent("FeeCharged",
-			sdk.NewAttribute("sender", sender.String()),
-			sdk.NewAttribute("fee_type", FeeTypePOSPayment),
-			sdk.NewAttribute("fee_usd", k.GetFeeByType(ctx, FeeTypePOSPayment).String()),
-			sdk.NewAttribute("total_fee_ubto", feeCoin.String()),
-			sdk.NewAttribute("treasury_fee", toTreasury.String()),
-			sdk.NewAttribute("retail_fee", toRetail.String()),
-		),
-	)
-
-	return nil
-}
-
-// distributeTokenInteractionFee handles 50% treasury, 50% token developer
-func (k Keeper) distributeTokenInteractionFee(
-	ctx sdk.Context,
-	sender sdk.AccAddress,
-	feeCoin sdk.Coin,
-	metadata map[string]interface{},
-) error {
-	// Split 50:50
-	split := feeCoin.Amount.Quo(math.NewInt(2))
-	toTreasury := sdk.NewCoin("ubto", split)
-	toDeveloper := sdk.NewCoin("ubto", feeCoin.Amount.Sub(split))
-
-	// Send to treasury
-	err := k.bankKeeper.SendCoinsFromAccountToModule(ctx, sender, TreasuryModuleAccount, sdk.NewCoins(toTreasury))
-	if err != nil {
-		return errors.Wrapf(err, "failed to send fee to treasury")
-	}
-
-	// TODO: Send to actual token developer wallet from metadata
-	// For now, send to infrastructure as placeholder
-	err = k.bankKeeper.SendCoinsFromAccountToModule(ctx, sender, InfrastructureModuleAccount, sdk.NewCoins(toDeveloper))
-	if err != nil {
-		return errors.Wrapf(err, "failed to send fee to developer")
-	}
-
-	ctx.EventManager().EmitEvent(
-		sdk.NewEvent("FeeCharged",
-			sdk.NewAttribute("sender", sender.String()),
-			sdk.NewAttribute("fee_type", FeeTypeTokenInteraction),
-			sdk.NewAttribute("fee_usd", k.GetFeeByType(ctx, FeeTypeTokenInteraction).String()),
-			sdk.NewAttribute("total_fee_ubto", feeCoin.String()),
-			sdk.NewAttribute("treasury_fee", toTreasury.String()),
-			sdk.NewAttribute("developer_fee", toDeveloper.String()),
-		),
-	)
-
-	return nil
-}
-
-// distributeNativeTransferFee handles 100% treasury
-func (k Keeper) distributeNativeTransferFee(
-	ctx sdk.Context,
-	sender sdk.AccAddress,
-	feeCoin sdk.Coin,
-) error {
-	// Send 100% to treasury
-	err := k.bankKeeper.SendCoinsFromAccountToModule(ctx, sender, TreasuryModuleAccount, sdk.NewCoins(feeCoin))
-	if err != nil {
-		return errors.Wrapf(err, "failed to send fee to treasury")
-	}
-
-	ctx.EventManager().EmitEvent(
-		sdk.NewEvent("FeeCharged",
-			sdk.NewAttribute("sender", sender.String()),
-			sdk.NewAttribute("fee_type", FeeTypeNativeTransfer),
-			sdk.NewAttribute("fee_usd", k.GetFeeByType(ctx, FeeTypeNativeTransfer).String()),
-			sdk.NewAttribute("total_fee_ubto", feeCoin.String()),
-			sdk.NewAttribute("treasury_fee", feeCoin.String()),
-		),
-	)
-
-	return nil
+	// Delegate distribution to fees module
+	return k.feesKeeper.DistributeFee(ctx, sender, feeType, feeCoin, metadata)
 }

@@ -37,7 +37,7 @@ type ModuleInputs struct {
 
 	AuthKeeper types.AuthKeeper
 	BankKeeper types.BankKeeper
-	FeesKeeper feesTypes.FeesKeeper
+	FeesKeeper *feesTypes.FeesKeeper `optional:"true"`
 }
 
 type ModuleOutputs struct {
@@ -58,8 +58,10 @@ func ProvideModule(in ModuleInputs) ModuleOutputs {
 		in.Cdc,
 		in.AddressCodec,
 		authority,
-		in.FeesKeeper,
 	)
+	if in.FeesKeeper != nil {
+		k.SetFeesKeeper(*in.FeesKeeper)
+	}
 	m := NewAppModule(in.Cdc, k, in.AuthKeeper, in.BankKeeper)
 
 	return ModuleOutputs{OracleKeeper: k, Module: m}
