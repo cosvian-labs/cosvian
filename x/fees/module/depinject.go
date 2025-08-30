@@ -11,6 +11,8 @@ import (
 
 	"bitora/x/fees/keeper"
 	"bitora/x/fees/types"
+
+	oraclekeeper "bitora/x/oracle/keeper"
 )
 
 var _ depinject.OnePerModuleType = AppModule{}
@@ -35,7 +37,7 @@ type ModuleInputs struct {
 
 	AuthKeeper   types.AuthKeeper
 	BankKeeper   types.BankKeeper
-	OracleKeeper types.OracleKeeper
+	OracleKeeper oraclekeeper.Keeper
 }
 
 type ModuleOutputs struct {

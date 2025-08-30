@@ -11,8 +11,6 @@ import (
 
 	"bitora/x/oracle/keeper"
 	"bitora/x/oracle/types"
-
-	feesTypes "bitora/x/fees/types"
 )
 
 var _ depinject.OnePerModuleType = AppModule{}
@@ -37,7 +35,6 @@ type ModuleInputs struct {
 
 	AuthKeeper types.AuthKeeper
 	BankKeeper types.BankKeeper
-	FeesKeeper feesTypes.FeesKeeper
 }
 
 type ModuleOutputs struct {
@@ -58,7 +55,6 @@ func ProvideModule(in ModuleInputs) ModuleOutputs {
 		in.Cdc,
 		in.AddressCodec,
 		authority,
-		in.FeesKeeper,
 	)
 	m := NewAppModule(in.Cdc, k, in.AuthKeeper, in.BankKeeper)
 

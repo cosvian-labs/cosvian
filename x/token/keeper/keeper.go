@@ -1,18 +1,20 @@
 package keeper
 
 import (
-	"context"
-	"encoding/json"
-	"fmt"
+    "context"
+    "encoding/json"
+    "fmt"
+    "strings"
 
 	"cosmossdk.io/collections"
 	"cosmossdk.io/core/address"
 	corestore "cosmossdk.io/core/store"
 	"github.com/cosmos/cosmos-sdk/codec"
 
-	"bitora/x/token/types"
+    "bitora/x/token/types"
 
-	feesTypes "bitora/x/fees/types"
+    feesTypes "bitora/x/fees/types"
+    sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 type Keeper struct {
@@ -86,4 +88,32 @@ func (k Keeper) GetTokenMetadata(ctx context.Context, tokenID string) (*types.To
 		return nil, err
 	}
 	return &meta, nil
+}
+
+// GetTokenCreator returns the creator address for a given tokenID
+func (k Keeper) GetTokenCreator(ctx context.Context, tokenID string) (sdk.AccAddress, error) {
+    meta, err := k.GetTokenMetadata(ctx, tokenID)
+    if err != nil {
+        return nil, err
+    }
+    return meta.Creator, nil
+}
+
+// GetTokenCreatorBySymbol returns the creator address for a given token symbol (case-insensitive)
+func (k Keeper) GetTokenCreatorBySymbol(ctx context.Context, symbol string) (sdk.AccAddress, error) {
+    store := k.storeService.OpenKVStore(ctx)
+    sym := strings.ToLower(symbol)
+    key := append([]byte("si_"), []byte(sym)...)
+    tokenID, err := store.Get(key)
+    if err != nil {
+        return nil, err
+    }
+    if tokenID == nil {
+        return nil, types.ErrTokenNotFound
+    }
+    meta, err := k.GetTokenMetadata(ctx, string(tokenID))
+    if err != nil {
+        return nil, err
+    }
+    return meta.Creator, nil
 }

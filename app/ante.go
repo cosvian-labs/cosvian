@@ -193,10 +193,22 @@ func NewBitoraFeeDecorator(tokenKeeper tokenkeeper.Keeper, feesKeeper feeskeeper
 }
 
 func (bfd BitoraFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (newCtx sdk.Context, err error) {
-	// Skip fee charging in simulation mode
-	if simulate {
-		return next(ctx, tx, simulate)
-	}
+    // Skip fee charging in simulation mode
+    if simulate {
+        return next(ctx, tx, simulate)
+    }
+
+    // Skip fee charging during genesis (DeliverGenTx in InitChain)
+    if ctx.BlockHeight() == 0 {
+        return next(ctx, tx, simulate)
+    }
+
+    // Skip if this tx is already a fees module MsgChargeFee to avoid double-charging
+    for _, m := range tx.GetMsgs() {
+        if _, ok := m.(*feestypes.MsgChargeFee); ok {
+            return next(ctx, tx, simulate)
+        }
+    }
 
 	// Get transaction signer (fee payer)
 	signers, err := tx.(authsigning.SigVerifiableTx).GetSigners()
@@ -239,7 +251,7 @@ func (bfd BitoraFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bo
 	}
 
 	// Charge fee using feesKeeper
-	msgServer := feeskeeper.NewMsgServerImpl(bfd.feesKeeper)
+    msgServer := feeskeeper.NewMsgServerImpl(bfd.feesKeeper)
 	_, err = msgServer.ChargeFee(sdk.WrapSDKContext(ctx), &feestypes.MsgChargeFee{
 		Creator:  sdk.AccAddress(sender).String(),
 		Category: feeType,

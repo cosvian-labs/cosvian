@@ -255,12 +255,16 @@ func (fc *FeeCalculator) applyGuardRails(btoAmount math.LegacyDec, gasWanted uin
 
 // BuildFeeFromEstimate creates a fee object from the estimate for transaction building
 func (fc *FeeCalculator) BuildFeeFromEstimate(estimate *FeeEstimate, denom string) sdk.Coins {
-	if estimate.IsFree || estimate.BTOAmount.IsZero() {
-		return sdk.NewCoins()
-	}
+    if estimate.IsFree || estimate.BTOAmount.IsZero() {
+        return sdk.NewCoins()
+    }
 
-	// Convert decimal to integer amount
-	amount := estimate.BTOAmount.TruncateInt()
+    // Convert decimal to integer amount
+    amount := estimate.BTOAmount.TruncateInt()
+    // If building a fee in micro-denom (e.g., "ubto"), scale by 1e6
+    if strings.HasPrefix(denom, "u") {
+        amount = estimate.BTOAmount.MulInt64(1_000_000).TruncateInt()
+    }
 	if amount.IsZero() {
 		// Ensure minimum fee of 1 unit if not free
 		amount = math.OneInt()
@@ -271,7 +275,7 @@ func (fc *FeeCalculator) BuildFeeFromEstimate(estimate *FeeEstimate, denom strin
 
 // ValidateFeeAgainstEstimate checks if the provided fee matches the estimated fee
 func (fc *FeeCalculator) ValidateFeeAgainstEstimate(providedFee sdk.Coins, estimate *FeeEstimate, denom string, tolerance math.LegacyDec) error {
-	expectedFee := fc.BuildFeeFromEstimate(estimate, denom)
+    expectedFee := fc.BuildFeeFromEstimate(estimate, denom)
 
 	if estimate.IsFree {
 		if !providedFee.IsZero() {
@@ -285,8 +289,8 @@ func (fc *FeeCalculator) ValidateFeeAgainstEstimate(providedFee sdk.Coins, estim
 	}
 
 	// Check if provided fee is within tolerance of expected fee
-	expectedAmount := expectedFee.AmountOf(denom)
-	providedAmount := providedFee.AmountOf(denom)
+    expectedAmount := expectedFee.AmountOf(denom)
+    providedAmount := providedFee.AmountOf(denom)
 
 	if expectedAmount.IsZero() {
 		return nil

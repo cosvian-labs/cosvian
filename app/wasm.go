@@ -119,25 +119,26 @@ func (app *App) setPostHandler() error {
 }
 
 func (app *App) setAnteHandler(txConfig client.TxConfig, wasmConfig wasmtypes.NodeConfig, txCounterStoreKey *storetypes.KVStoreKey) error {
-	anteHandler, err := NewAnteHandler(
-		AnteHandlerOptions{
-			HandlerOptions: ante.HandlerOptions{
-				AccountKeeper:   app.AuthKeeper,
-				BankKeeper:      app.BankKeeper,
-				SignModeHandler: txConfig.SignModeHandler(),
-				FeegrantKeeper:  app.FeeGrantKeeper,
-				SigGasConsumer:  ante.DefaultSigVerificationGasConsumer,
-			},
-			AccountKeeper:         app.AuthKeeper,
-			BankKeeper:            app.BankKeeper,
-			TokenKeeper:           app.TokenKeeper,
-			IBCKeeper:             app.IBCKeeper,
-			NodeConfig:            &wasmConfig,
-			WasmKeeper:            &app.WasmKeeper,
-			TXCounterStoreService: runtime.NewKVStoreService(txCounterStoreKey),
-			CircuitKeeper:         &app.CircuitBreakerKeeper,
-		},
-	)
+    anteHandler, err := NewAnteHandler(
+        AnteHandlerOptions{
+            HandlerOptions: ante.HandlerOptions{
+                AccountKeeper:   app.AuthKeeper,
+                BankKeeper:      app.BankKeeper,
+                SignModeHandler: txConfig.SignModeHandler(),
+                FeegrantKeeper:  app.FeeGrantKeeper,
+                SigGasConsumer:  ante.DefaultSigVerificationGasConsumer,
+            },
+            AccountKeeper:         app.AuthKeeper,
+            BankKeeper:            app.BankKeeper,
+            TokenKeeper:           app.TokenKeeper,
+            FeesKeeper:            app.FeesKeeper,
+            IBCKeeper:             app.IBCKeeper,
+            NodeConfig:            &wasmConfig,
+            WasmKeeper:            &app.WasmKeeper,
+            TXCounterStoreService: runtime.NewKVStoreService(txCounterStoreKey),
+            CircuitKeeper:         &app.CircuitBreakerKeeper,
+        },
+    )
 	if err != nil {
 		return fmt.Errorf("failed to create AnteHandler: %s", err)
 	}

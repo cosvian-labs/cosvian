@@ -294,9 +294,9 @@ func (dfd DeductFeeDecorator) distributeFees(ctx sdk.Context, fee sdk.Coins) err
 		feeConfig = params.FeeTableUsd.NativeTransfer
 	}
 
-	// Distribute fees according to the split configuration
-	for _, coin := range fee {
-		amount := coin.Amount
+    // Distribute fees according to the split configuration
+    for _, coin := range fee {
+        amount := coin.Amount
 
 		// Calculate split amounts
 		treasuryAmount := feeConfig.Split.Treasury.MulInt(amount).TruncateInt()
@@ -311,48 +311,66 @@ func (dfd DeductFeeDecorator) distributeFees(ctx sdk.Context, fee sdk.Coins) err
 			treasuryAmount = amount.Sub(retailWalletAmount).Sub(tokenDevAmount).Sub(tokenCreatorAmount)
 		}
 
-		// Send to treasury
-		if !treasuryAmount.IsZero() {
-			treasuryCoins := sdk.NewCoins(sdk.NewCoin(coin.Denom, treasuryAmount))
-			err := dfd.bankKeeper.SendCoinsFromModuleToModule(ctx, types.ModuleName, "treasury", treasuryCoins)
-			if err != nil {
-				return fmt.Errorf("failed to send fees to treasury: %w", err)
-			}
-		}
+        // Resolve recipient addresses from params; fallback invalid/empty to treasury
+        retailAddrStr := params.RetailWallet
+        devAddrStr := params.TokenDevWallet
+        creatorAddrStr := params.TokenCreatorWallet
 
-		// Send to retail wallet (if configured)
-		if !retailWalletAmount.IsZero() {
-			// TODO: Implement retail wallet distribution
-			// For now, send to treasury
-			retailCoins := sdk.NewCoins(sdk.NewCoin(coin.Denom, retailWalletAmount))
-			err := dfd.bankKeeper.SendCoinsFromModuleToModule(ctx, types.ModuleName, "treasury", retailCoins)
-			if err != nil {
-				return fmt.Errorf("failed to send fees to retail wallet: %w", err)
-			}
-		}
+        // treasuryAddr is not needed here since we send to module for treasury
+        retailAddr, _ := dfd.feeKeeper.addressCodec.StringToBytes(retailAddrStr)
+        devAddr, _ := dfd.feeKeeper.addressCodec.StringToBytes(devAddrStr)
+        creatorAddr, _ := dfd.feeKeeper.addressCodec.StringToBytes(creatorAddrStr)
 
-		// Send to token developer (if configured)
-		if !tokenDevAmount.IsZero() {
-			// TODO: Implement token developer distribution
-			// For now, send to treasury
-			devCoins := sdk.NewCoins(sdk.NewCoin(coin.Denom, tokenDevAmount))
-			err := dfd.bankKeeper.SendCoinsFromModuleToModule(ctx, types.ModuleName, "treasury", devCoins)
-			if err != nil {
-				return fmt.Errorf("failed to send fees to token developer: %w", err)
-			}
-		}
+        // Any invalid recipient shares are re-routed to treasury
+        remap := math.ZeroInt()
+        if len(retailAddr) == 0 {
+            remap = remap.Add(retailWalletAmount)
+            retailWalletAmount = math.ZeroInt()
+        }
+        if len(devAddr) == 0 {
+            remap = remap.Add(tokenDevAmount)
+            tokenDevAmount = math.ZeroInt()
+        }
+        if len(creatorAddr) == 0 {
+            remap = remap.Add(tokenCreatorAmount)
+            tokenCreatorAmount = math.ZeroInt()
+        }
+        if !remap.IsZero() {
+            treasuryAmount = treasuryAmount.Add(remap)
+        }
 
-		// Send to token creator (if configured)
-		if !tokenCreatorAmount.IsZero() {
-			// TODO: Implement token creator distribution
-			// For now, send to treasury
-			creatorCoins := sdk.NewCoins(sdk.NewCoin(coin.Denom, tokenCreatorAmount))
-			err := dfd.bankKeeper.SendCoinsFromModuleToModule(ctx, types.ModuleName, "treasury", creatorCoins)
-			if err != nil {
-				return fmt.Errorf("failed to send fees to token creator: %w", err)
-			}
-		}
-	}
+        // Send to treasury module account
+        if !treasuryAmount.IsZero() {
+            treasuryCoins := sdk.NewCoins(sdk.NewCoin(coin.Denom, treasuryAmount))
+            if err := dfd.bankKeeper.SendCoinsFromModuleToModule(ctx, types.ModuleName, "treasury", treasuryCoins); err != nil {
+                return fmt.Errorf("failed to send fees to treasury: %w", err)
+            }
+        }
+
+        // Send to retail wallet account (if configured)
+        if !retailWalletAmount.IsZero() && len(retailAddr) > 0 {
+            retailCoins := sdk.NewCoins(sdk.NewCoin(coin.Denom, retailWalletAmount))
+            if err := dfd.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, retailAddr, retailCoins); err != nil {
+                return fmt.Errorf("failed to send fees to retail wallet: %w", err)
+            }
+        }
+
+        // Send to token developer account (if configured)
+        if !tokenDevAmount.IsZero() && len(devAddr) > 0 {
+            devCoins := sdk.NewCoins(sdk.NewCoin(coin.Denom, tokenDevAmount))
+            if err := dfd.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, devAddr, devCoins); err != nil {
+                return fmt.Errorf("failed to send fees to token developer: %w", err)
+            }
+        }
+
+        // Send to token creator account (if configured)
+        if !tokenCreatorAmount.IsZero() && len(creatorAddr) > 0 {
+            creatorCoins := sdk.NewCoins(sdk.NewCoin(coin.Denom, tokenCreatorAmount))
+            if err := dfd.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, creatorAddr, creatorCoins); err != nil {
+                return fmt.Errorf("failed to send fees to token creator: %w", err)
+            }
+        }
+    }
 
 	return nil
 }
