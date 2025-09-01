@@ -41,9 +41,8 @@ func initFixture(t *testing.T) *fixture {
         encCfg.Codec,
         addressCodec,
         authority,
-        nil,
-        nil,
-        nil,
+        (types.OracleKeeper)(nil),
+        (types.BankKeeper)(nil),
     )
 
 	// Initialize params

@@ -261,116 +261,16 @@ func (dfd DeductFeeDecorator) deductFees(ctx sdk.Context, feeTx sdk.FeeTx, fee s
 
 // distributeFees distributes collected fees according to the fee table splits
 func (dfd DeductFeeDecorator) distributeFees(ctx sdk.Context, fee sdk.Coins) error {
-	// Get fee estimate from the underlying stdlib context to determine the split
-	estimate, ok := ctx.Context().Value(types.FeeEstimateContextKey).(*FeeEstimate)
-	if !ok {
-		// If no estimate available, send all fees to treasury (default behavior)
-		return dfd.bankKeeper.SendCoinsFromModuleToModule(ctx, types.ModuleName, "treasury", fee)
-	}
-
-	// Get the fee configuration for this category
-	params, err := dfd.feeKeeper.Params.Get(ctx)
-	if err != nil {
-		return fmt.Errorf("failed to get params: %w", err)
-	}
-
-	var feeConfig types.FeeConfig
-	switch estimate.Category {
-	case CategoryPOS:
-		feeConfig = params.FeeTableUsd.PosPayment
-	case CategoryTokenInteraction:
-		feeConfig = params.FeeTableUsd.TokenInteraction
-	case CategoryNativeTransfer:
-		feeConfig = params.FeeTableUsd.NativeTransfer
-	case CategoryDEXNative:
-		feeConfig = params.FeeTableUsd.DexNative
-	case CategoryDEXUser:
-		feeConfig = params.FeeTableUsd.DexUser
-	case CategoryDeploy:
-		feeConfig = params.FeeTableUsd.Deploy
-	case CategoryWizard:
-		feeConfig = params.FeeTableUsd.Wizard
-	default:
-		feeConfig = params.FeeTableUsd.NativeTransfer
-	}
-
-    // Distribute fees according to the split configuration
-    for _, coin := range fee {
-        amount := coin.Amount
-
-		// Calculate split amounts
-		treasuryAmount := feeConfig.Split.Treasury.MulInt(amount).TruncateInt()
-		retailWalletAmount := feeConfig.Split.RetailWallet.MulInt(amount).TruncateInt()
-		tokenDevAmount := feeConfig.Split.TokenDev.MulInt(amount).TruncateInt()
-		tokenCreatorAmount := feeConfig.Split.TokenCreator.MulInt(amount).TruncateInt()
-
-		// Ensure total doesn't exceed original amount due to rounding
-		total := treasuryAmount.Add(retailWalletAmount).Add(tokenDevAmount).Add(tokenCreatorAmount)
-		if total.GT(amount) {
-			// Adjust treasury amount to account for rounding
-			treasuryAmount = amount.Sub(retailWalletAmount).Sub(tokenDevAmount).Sub(tokenCreatorAmount)
-		}
-
-        // Resolve recipient addresses from params; fallback invalid/empty to treasury
-        retailAddrStr := params.RetailWallet
-        devAddrStr := params.TokenDevWallet
-        creatorAddrStr := params.TokenCreatorWallet
-
-        // treasuryAddr is not needed here since we send to module for treasury
-        retailAddr, _ := dfd.feeKeeper.addressCodec.StringToBytes(retailAddrStr)
-        devAddr, _ := dfd.feeKeeper.addressCodec.StringToBytes(devAddrStr)
-        creatorAddr, _ := dfd.feeKeeper.addressCodec.StringToBytes(creatorAddrStr)
-
-        // Any invalid recipient shares are re-routed to treasury
-        remap := math.ZeroInt()
-        if len(retailAddr) == 0 {
-            remap = remap.Add(retailWalletAmount)
-            retailWalletAmount = math.ZeroInt()
-        }
-        if len(devAddr) == 0 {
-            remap = remap.Add(tokenDevAmount)
-            tokenDevAmount = math.ZeroInt()
-        }
-        if len(creatorAddr) == 0 {
-            remap = remap.Add(tokenCreatorAmount)
-            tokenCreatorAmount = math.ZeroInt()
-        }
-        if !remap.IsZero() {
-            treasuryAmount = treasuryAmount.Add(remap)
-        }
-
-        // Send to treasury module account
-        if !treasuryAmount.IsZero() {
-            treasuryCoins := sdk.NewCoins(sdk.NewCoin(coin.Denom, treasuryAmount))
-            if err := dfd.bankKeeper.SendCoinsFromModuleToModule(ctx, types.ModuleName, "treasury", treasuryCoins); err != nil {
-                return fmt.Errorf("failed to send fees to treasury: %w", err)
-            }
-        }
-
-        // Send to retail wallet account (if configured)
-        if !retailWalletAmount.IsZero() && len(retailAddr) > 0 {
-            retailCoins := sdk.NewCoins(sdk.NewCoin(coin.Denom, retailWalletAmount))
-            if err := dfd.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, retailAddr, retailCoins); err != nil {
-                return fmt.Errorf("failed to send fees to retail wallet: %w", err)
-            }
-        }
-
-        // Send to token developer account (if configured)
-        if !tokenDevAmount.IsZero() && len(devAddr) > 0 {
-            devCoins := sdk.NewCoins(sdk.NewCoin(coin.Denom, tokenDevAmount))
-            if err := dfd.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, devAddr, devCoins); err != nil {
-                return fmt.Errorf("failed to send fees to token developer: %w", err)
-            }
-        }
-
-        // Send to token creator account (if configured)
-        if !tokenCreatorAmount.IsZero() && len(creatorAddr) > 0 {
-            creatorCoins := sdk.NewCoins(sdk.NewCoin(coin.Denom, tokenCreatorAmount))
-            if err := dfd.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, creatorAddr, creatorCoins); err != nil {
-                return fmt.Errorf("failed to send fees to token creator: %w", err)
-            }
-        }
+    md := map[string]interface{}{}
+    if v := ctx.Context().Value(types.FeeMetadataContextKey); v != nil {
+        if m, ok := v.(*FeeMetadata); ok { _ = m }
     }
-
-	return nil
+    feeType := "native_transfer"
+    if v := ctx.Context().Value(types.FeeEstimateContextKey); v != nil {
+        if est, ok := v.(*FeeEstimate); ok { feeType = string(est.Category) }
+    }
+    for _, coin := range fee {
+        if err := dfd.feeKeeper.DistributeFeeFromModule(ctx, types.ModuleName, feeType, coin, md); err != nil { return err }
+    }
+    return nil
 }

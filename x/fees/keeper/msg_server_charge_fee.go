@@ -8,6 +8,7 @@ import (
 
     errorsmod "cosmossdk.io/errors"
     sdk "github.com/cosmos/cosmos-sdk/types"
+    sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 func (k msgServer) ChargeFee(ctx context.Context, msg *types.MsgChargeFee) (*types.MsgChargeFeeResponse, error) {
@@ -27,11 +28,11 @@ func (k msgServer) ChargeFee(ctx context.Context, msg *types.MsgChargeFee) (*typ
 
 	// Get fee table entry for the category
 	var feeEntry types.FeeConfig
-	switch msg.Category {
-	case "pos_payment":
-		feeEntry = params.FeeTableUsd.PosPayment
-	case "token_interaction":
-		feeEntry = params.FeeTableUsd.TokenInteraction
+    switch msg.Category {
+    case "pos_payment":
+        feeEntry = params.FeeTableUsd.PosPayment
+    case "token_interaction":
+        feeEntry = params.FeeTableUsd.TokenInteraction
 	case "native_transfer":
 		feeEntry = params.FeeTableUsd.NativeTransfer
 	case "dex_native":
@@ -42,9 +43,9 @@ func (k msgServer) ChargeFee(ctx context.Context, msg *types.MsgChargeFee) (*typ
 		feeEntry = params.FeeTableUsd.Deploy
 	case "wizard":
 		feeEntry = params.FeeTableUsd.Wizard
-	default:
-		return nil, errorsmod.Wrapf(err, "fee category '%s' not found", msg.Category)
-	}
+    default:
+        return nil, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "fee category '%s' not found", msg.Category)
+    }
 
 	// Check if transaction is free (deploy or wizard)
 	if msg.Category == "deploy" || msg.Category == "wizard" {
@@ -70,10 +71,10 @@ func (k msgServer) ChargeFee(ctx context.Context, msg *types.MsgChargeFee) (*typ
 	// Check if user has sufficient balance
 	userBalance := k.bankKeeper.SpendableCoins(sdkCtx, creatorAddr)
 	ubtoBalance := userBalance.AmountOf("ubto")
-	if ubtoBalance.LT(feeUbto) {
-		return nil, errorsmod.Wrapf(err, "insufficient balance: required %s ubto, available %s ubto",
-			feeUbto.String(), ubtoBalance.String())
-	}
+    if ubtoBalance.LT(feeUbto) {
+        return nil, errorsmod.Wrapf(sdkerrors.ErrInsufficientFunds, "insufficient balance: required %s ubto, available %s ubto",
+            feeUbto.String(), ubtoBalance.String())
+    }
 
     // Build metadata map from msg.Metadata for dynamic recipients
     md := make(map[string]interface{})
@@ -91,8 +92,8 @@ func (k msgServer) ChargeFee(ctx context.Context, msg *types.MsgChargeFee) (*typ
     sdkCtx.GasMeter().ConsumeGas(feeUbto.Uint64(), "fee charge")
 
 	// Emit event
-	sdkCtx.EventManager().EmitEvent(
-        sdk.NewEvent("FeeCharged",
+    sdkCtx.EventManager().EmitEvent(
+        sdk.NewEvent(types.EventTypeFeeCharged,
             sdk.NewAttribute("category", msg.Category),
             sdk.NewAttribute("creator", msg.Creator),
             sdk.NewAttribute("fee_usd", feeUSD.String()),
@@ -100,7 +101,7 @@ func (k msgServer) ChargeFee(ctx context.Context, msg *types.MsgChargeFee) (*typ
             sdk.NewAttribute("fee_ubto", feeUbto.String()),
             sdk.NewAttribute("gas_used", feeUbto.String()),
         ),
-	)
+    )
 
 	return &types.MsgChargeFeeResponse{
 		GasUsed:    feeUbto.String(),
