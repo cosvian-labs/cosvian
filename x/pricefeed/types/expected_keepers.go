@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"cosmossdk.io/core/address"
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -24,4 +25,10 @@ type BankKeeper interface {
 type ParamSubspace interface {
 	Get(context.Context, []byte, interface{})
 	Set(context.Context, []byte, interface{})
+}
+
+// OracleKeeper defines the minimal interface from x/oracle used by pricefeed.
+// This lets pricefeed persist Band-derived prices into the canonical oracle store.
+type OracleKeeper interface {
+	SetBTOPerUSD(ctx sdk.Context, price math.LegacyDec) error
 }

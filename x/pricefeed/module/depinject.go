@@ -40,6 +40,9 @@ type ModuleInputs struct {
 	BankKeeper types.BankKeeper
 	FeesKeeper feesTypes.FeesKeeper
 
+	// Inject canonical Oracle keeper to persist aggregated prices
+	OracleKeeper types.OracleKeeper
+
 	IBCKeeperFn func() *ibckeeper.Keeper `optional:"true"`
 }
 
@@ -63,6 +66,7 @@ func ProvideModule(in ModuleInputs) ModuleOutputs {
 		authority,
 		in.IBCKeeperFn,
 		in.FeesKeeper,
+	in.OracleKeeper,
 	)
 	m := NewAppModule(in.Cdc, k, in.AuthKeeper, in.BankKeeper)
 

@@ -8,6 +8,7 @@ import (
 
 	"bitora/x/pricefeed/types"
 
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -78,25 +79,65 @@ func (k Keeper) ProcessPriceResponse(ctx context.Context, response types.OracleR
 		return fmt.Errorf("oracle response error: %s", response.Error)
 	}
 
-	// Parse price data
-	var priceData map[string]interface{}
-	if err := json.Unmarshal([]byte(response.Prices), &priceData); err != nil {
-		return fmt.Errorf("failed to parse price data: %w", err)
-	}
-
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
-	// Store price data and emit events
-	for symbol, price := range priceData {
-		sdkCtx.EventManager().EmitEvent(
-			sdk.NewEvent(
-				"price_updated",
-				sdk.NewAttribute("symbol", symbol),
-				sdk.NewAttribute("price", fmt.Sprintf("%v", price)),
-				sdk.NewAttribute("source", "band_protocol"),
-				sdk.NewAttribute("request_id", fmt.Sprintf("%d", response.RequestId)),
-			),
-		)
+	// 1) Prefer response.Rates as direct BTO per USD if provided
+	if response.Rates != "" {
+		var rateData map[string]interface{}
+		if err := json.Unmarshal([]byte(response.Rates), &rateData); err == nil {
+			if v, ok := rateData["BTO"]; ok {
+				var rateStr string
+				switch vv := v.(type) {
+				case string:
+					rateStr = vv
+				default:
+					rateStr = fmt.Sprintf("%v", vv)
+				}
+				if dec, err := math.LegacyNewDecFromStr(rateStr); err == nil && dec.IsPositive() {
+					_ = k.oracleKeeper.SetBTOPerUSD(sdkCtx, dec)
+					sdkCtx.EventManager().EmitEvent(
+						sdk.NewEvent(
+							"price_updated",
+							sdk.NewAttribute("symbol", "BTO/USD"),
+							sdk.NewAttribute("price", dec.String()),
+							sdk.NewAttribute("source", "band_protocol_rates"),
+							sdk.NewAttribute("request_id", fmt.Sprintf("%d", response.RequestId)),
+						),
+					)
+					return nil
+				}
+			}
+		}
+	}
+
+	// 2) Fallback to response.Prices assumed as USD per BTO; invert to get BTO per USD
+	if response.Prices != "" {
+		var priceData map[string]interface{}
+		if err := json.Unmarshal([]byte(response.Prices), &priceData); err == nil {
+			if v, ok := priceData["BTO"]; ok {
+				var usdPerBTOStr string
+				switch vv := v.(type) {
+				case string:
+					usdPerBTOStr = vv
+				default:
+					usdPerBTOStr = fmt.Sprintf("%v", vv)
+				}
+				if usdPerBTO, err := math.LegacyNewDecFromStr(usdPerBTOStr); err == nil && usdPerBTO.IsPositive() {
+					btoPerUSD := math.LegacyOneDec().Quo(usdPerBTO)
+					_ = k.oracleKeeper.SetBTOPerUSD(sdkCtx, btoPerUSD)
+					sdkCtx.EventManager().EmitEvent(
+						sdk.NewEvent(
+							"price_updated",
+							sdk.NewAttribute("symbol", "BTO/USD"),
+							sdk.NewAttribute("price", btoPerUSD.String()),
+							sdk.NewAttribute("source", "band_protocol_prices_inverted"),
+							sdk.NewAttribute("request_id", fmt.Sprintf("%d", response.RequestId)),
+						),
+					)
+					return nil
+				}
+			}
+		}
 	}
 
 	return nil

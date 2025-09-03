@@ -11,6 +11,7 @@ import (
 
 // InitGenesis initializes the module's state from a provided genesis state.
 func (k Keeper) InitGenesis(ctx context.Context, genState types.GenesisState) error {
+	// Store the configured port ID
 	if err := k.Port.Set(ctx, genState.PortId); err != nil {
 		return err
 	}

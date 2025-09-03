@@ -29,6 +29,9 @@ type Keeper struct {
 	feesKeeper feesTypes.FeesKeeper
 
 	ibcKeeperFn func() *ibckeeper.Keeper
+
+	// oracleKeeper is the canonical store for BTO/USD, used to expose to fees
+	oracleKeeper types.OracleKeeper
 }
 
 func NewKeeper(
@@ -38,6 +41,7 @@ func NewKeeper(
 	authority []byte,
 	ibcKeeperFn func() *ibckeeper.Keeper,
 	feesKeeper feesTypes.FeesKeeper,
+	oracleKeeper types.OracleKeeper,
 
 ) Keeper {
 	if _, err := addressCodec.BytesToString(authority); err != nil {
@@ -53,6 +57,7 @@ func NewKeeper(
 		authority:    authority,
 		feesKeeper:   feesKeeper,
 		ibcKeeperFn:  ibcKeeperFn,
+	oracleKeeper: oracleKeeper,
 		Port:         collections.NewItem(sb, types.PortKey, "port", collections.StringValue),
 		Params:       collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
 	}
