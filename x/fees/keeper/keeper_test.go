@@ -36,14 +36,14 @@ func initFixture(t *testing.T) *fixture {
 
 	authority := authtypes.NewModuleAddress(types.GovModuleName)
 
-    k := keeper.NewKeeper(
-        storeService,
-        encCfg.Codec,
-        addressCodec,
-        authority,
-        (types.OracleKeeper)(nil),
-        (types.BankKeeper)(nil),
-    )
+	k := keeper.NewKeeper(
+		storeService,
+		encCfg.Codec,
+		addressCodec,
+		authority,
+		(types.OracleKeeper)(nil),
+		(types.BankKeeper)(nil),
+	)
 
 	// Initialize params
 	if err := k.Params.Set(ctx, types.DefaultParams()); err != nil {

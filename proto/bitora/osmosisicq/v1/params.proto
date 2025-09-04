@@ -1,0 +1,38 @@
+syntax = "proto3";
+package bitora.osmosisicq.v1;
+
+import "amino/amino.proto";
+import "gogoproto/gogo.proto";
+
+option go_package = "bitora/x/osmosisicq/types";
+
+// Params defines the parameters for the module.
+message Params {
+  option (amino.name) = "bitora/x/osmosisicq/Params";
+  option (gogoproto.equal) = true;
+
+  // connection_id is the IBC connection to Osmosis used for ICQ controller.
+  string connection_id = 1 [(gogoproto.moretags) = "yaml:\"connection_id\""];
+
+  // update_interval_seconds is how often (in seconds) to refresh the query.
+  uint64 update_interval_seconds = 2 [(gogoproto.moretags) = "yaml:\"update_interval_seconds\""];
+
+  // pool_id is the Osmosis pool ID to read price from (single-leg path).
+  uint64 pool_id = 3 [(gogoproto.moretags) = "yaml:\"pool_id\""];
+
+  // base_denom and quote_denom describe the price pair in the pool (base/quote).
+  string base_denom = 4 [(gogoproto.moretags) = "yaml:\"base_denom\""];
+  string quote_denom = 5 [(gogoproto.moretags) = "yaml:\"quote_denom\""];
+
+  // use_twap indicates whether to prefer TWAP over spot price.
+  bool use_twap = 6 [(gogoproto.moretags) = "yaml:\"use_twap\""];
+
+  // twap_window_seconds is the TWAP window size when use_twap is true.
+  uint64 twap_window_seconds = 7 [(gogoproto.moretags) = "yaml:\"twap_window_seconds\""];
+
+  // min_liquidity is a string-encoded decimal threshold; price updates require liquidity >= this.
+  string min_liquidity = 8 [(gogoproto.moretags) = "yaml:\"min_liquidity\""];
+
+  // max_deviation is a string-encoded decimal; discard prices deviating more than this from LGP.
+  string max_deviation = 9 [(gogoproto.moretags) = "yaml:\"max_deviation\""];
+}

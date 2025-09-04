@@ -57,7 +57,7 @@ func NewKeeper(
 		authority:    authority,
 		feesKeeper:   feesKeeper,
 		ibcKeeperFn:  ibcKeeperFn,
-	oracleKeeper: oracleKeeper,
+		oracleKeeper: oracleKeeper,
 		Port:         collections.NewItem(sb, types.PortKey, "port", collections.StringValue),
 		Params:       collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
 	}

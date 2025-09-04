@@ -1,9 +1,10 @@
 package types
 
 import (
-	"cosmossdk.io/collections"
 	"encoding/binary"
 	"time"
+
+	"cosmossdk.io/collections"
 )
 
 const (

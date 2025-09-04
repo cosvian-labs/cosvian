@@ -100,9 +100,17 @@ func (mockParams) GetParamSet(ctx sdk.Context, ps paramtypes.ParamSet) {
 
 // mockOracleKeeper implements types.OracleKeeper for tests
 type mockOracleKeeper struct{}
-type spyOracleKeeper struct{ called bool; val math.LegacyDec }
+type spyOracleKeeper struct {
+	called bool
+	val    math.LegacyDec
+}
+
 func (mockOracleKeeper) SetBTOPerUSD(ctx sdk.Context, price math.LegacyDec) error { return nil }
-func (s *spyOracleKeeper) SetBTOPerUSD(ctx sdk.Context, price math.LegacyDec) error { s.called = true; s.val = price; return nil }
+func (s *spyOracleKeeper) SetBTOPerUSD(ctx sdk.Context, price math.LegacyDec) error {
+	s.called = true
+	s.val = price
+	return nil
+}
 
 func TestProcessPriceResponse_Rates(t *testing.T) {
 	fx := initFixture(t)
@@ -146,16 +154,24 @@ func TestOnRecvOracleResponse_StoresPrice(t *testing.T) {
 		encCfg.Codec,
 		addressCodec,
 		authority,
-		func() *ibckeeper.Keeper { return ibckeeper.NewKeeper(encCfg.Codec, storeService, newMockParams(), mockUpgradeKeeper, authority.String()) },
+		func() *ibckeeper.Keeper {
+			return ibckeeper.NewKeeper(encCfg.Codec, storeService, newMockParams(), mockUpgradeKeeper, authority.String())
+		},
 		(feesTypes.FeesKeeper)(nil),
 		spy,
 	)
-	if err := k.Params.Set(ctx, types.DefaultParams()); err != nil { t.Fatal(err) }
+	if err := k.Params.Set(ctx, types.DefaultParams()); err != nil {
+		t.Fatal(err)
+	}
 
 	// Build a fake packet and data
 	pkt := channeltypes.Packet{}
 	data := types.OracleResponsePacketData{RequestId: 10, Rates: `{"BTO":"0.5"}`}
 	_, err := k.OnRecvOracleResponsePacket(ctx, pkt, data)
-	if err != nil { t.Fatalf("unexpected: %v", err) }
-	if !spy.called { t.Fatalf("expected oracle keeper to be called") }
+	if err != nil {
+		t.Fatalf("unexpected: %v", err)
+	}
+	if !spy.called {
+		t.Fatalf("expected oracle keeper to be called")
+	}
 }

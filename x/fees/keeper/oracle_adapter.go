@@ -1,13 +1,13 @@
 package keeper
 
 import (
-    "fmt"
-    "time"
+	"fmt"
+	"time"
 
-    "cosmossdk.io/math"
-    sdk "github.com/cosmos/cosmos-sdk/types"
+	"cosmossdk.io/math"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 
-    "bitora/x/fees/types"
+	"bitora/x/fees/types"
 )
 
 // OracleAdapter handles Band Protocol integration for BTO/USD price feeds
@@ -26,30 +26,30 @@ func NewOracleAdapter(keeper Keeper, oracleKeeper types.OracleKeeper) *OracleAda
 
 // GetBTOUSDPrice retrieves BTO/USD price with fallback logic
 func (oa *OracleAdapter) GetBTOUSDPrice(ctx sdk.Context) (*types.PriceData, error) {
-    params, err := oa.keeper.Params.Get(ctx)
-    if err != nil {
-        return nil, fmt.Errorf("failed to get params: %w", err)
-    }
-    oracleParams := params.OracleParams
+	params, err := oa.keeper.Params.Get(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get params: %w", err)
+	}
+	oracleParams := params.OracleParams
 
-    // Query oracle module for BTO exchange rate (BTO per USD)
-    price, err := oa.oracleKeeper.GetExchangeRate(ctx, "BTO")
-    if err == nil && !price.IsZero() {
-        priceData := &types.PriceData{
-            Price:      price,
-            TwapPrice:  price,
-            Timestamp:  ctx.BlockTime(),
-            Window:     oracleParams.TwapWindow,
-            Freshness:  0,
-            IsStale:    false,
-            IsFallback: false,
-        }
-        oa.emitOracleEvent(ctx, priceData)
-        return priceData, nil
-    }
+	// Query oracle module for BTO exchange rate (BTO per USD)
+	price, err := oa.oracleKeeper.GetExchangeRate(ctx, "BTO")
+	if err == nil && !price.IsZero() {
+		priceData := &types.PriceData{
+			Price:      price,
+			TwapPrice:  price,
+			Timestamp:  ctx.BlockTime(),
+			Window:     oracleParams.TwapWindow,
+			Freshness:  0,
+			IsStale:    false,
+			IsFallback: false,
+		}
+		oa.emitOracleEvent(ctx, priceData)
+		return priceData, nil
+	}
 
-    // Fallback
-    return oa.getFallbackPrice(ctx, oracleParams)
+	// Fallback
+	return oa.getFallbackPrice(ctx, oracleParams)
 }
 
 // getBandPrice retrieves price from Band Protocol oracle
@@ -122,8 +122,8 @@ func (oa *OracleAdapter) ConvertUSDToBTO(ctx sdk.Context, usdAmount math.LegacyD
 		return math.LegacyZeroDec(), nil, err
 	}
 
-    // priceData.TwapPrice represents BTO per USD. For a USD amount, multiply to get BTO.
-    btoAmount := usdAmount.Mul(priceData.TwapPrice)
+	// priceData.TwapPrice represents BTO per USD. For a USD amount, multiply to get BTO.
+	btoAmount := usdAmount.Mul(priceData.TwapPrice)
 
-    return btoAmount, priceData, nil
+	return btoAmount, priceData, nil
 }

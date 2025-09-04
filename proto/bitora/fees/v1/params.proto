@@ -2,10 +2,10 @@ syntax = "proto3";
 package bitora.fees.v1;
 
 import "amino/amino.proto";
-import "gogoproto/gogo.proto";
 import "bitora/fees/v1/fee_config.proto";
-import "bitora/fees/v1/oracle_params.proto";
 import "bitora/fees/v1/guard_rails.proto";
+import "bitora/fees/v1/oracle_params.proto";
+import "gogoproto/gogo.proto";
 
 option go_package = "bitora/x/fees/types";
 
@@ -13,12 +13,12 @@ option go_package = "bitora/x/fees/types";
 message Params {
   option (amino.name) = "bitora/x/fees/Params";
   option (gogoproto.equal) = true;
-  
+
   FeeTableUSD fee_table_usd = 1 [(gogoproto.nullable) = false];
   OracleParams oracle_params = 2 [(gogoproto.nullable) = false];
   GuardRails guard_rails = 3 [(gogoproto.nullable) = false];
   MinGasPolicy min_gas_policy = 4 [(gogoproto.nullable) = false];
-  
+
   // Wallet addresses for fee distribution
   string treasury_wallet = 5;
   string retail_wallet = 6;
@@ -43,7 +43,7 @@ message MinGasPolicy {
   option (gogoproto.equal) = true;
   bool enabled = 1;
   string global_min_gas_price = 2 [
-  (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
     (gogoproto.nullable) = false
   ];
   bool allow_per_tx_override = 3;

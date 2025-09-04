@@ -3,13 +3,14 @@ package keeper
 import (
 	"fmt"
 
+	"bitora/x/oracle/types"
+
 	"cosmossdk.io/collections"
 	"cosmossdk.io/core/address"
 	corestore "cosmossdk.io/core/store"
 	"cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"bitora/x/oracle/types"
 )
 
 type Keeper struct {
@@ -63,23 +64,19 @@ func (k Keeper) GetAuthority() []byte {
 
 // GetBTOPerUSD returns the current BTO/USD exchange rate
 func (k Keeper) GetBTOPerUSD(ctx sdk.Context) math.LegacyDec {
-	// MOCK: Return hardcoded price for testing
-	return math.LegacyMustNewDecFromStr("0.1")
+	priceStr, err := k.BTOPrice.Get(ctx, "BTO_USD")
+	if err != nil {
+		// Return zero decimal if price not found
+		return math.LegacyZeroDec()
+	}
 
-	// Original implementation:
-	// priceStr, err := k.BTOPrice.Get(ctx, "BTO_USD")
-	// if err != nil {
-	// 	// Return zero decimal if price not found
-	// 	return math.LegacyZeroDec()
-	// }
-	//
-	// price, err := math.LegacyNewDecFromStr(priceStr)
-	// if err != nil {
-	// 	// Return zero decimal if price is invalid
-	// 	return math.LegacyZeroDec()
-	// }
-	//
-	// return price
+	price, err := math.LegacyNewDecFromStr(priceStr)
+	if err != nil {
+		// Return zero decimal if price is invalid
+		return math.LegacyZeroDec()
+	}
+
+	return price
 }
 
 // SetBTOPerUSD sets the BTO/USD exchange rate

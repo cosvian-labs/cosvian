@@ -20,7 +20,12 @@ func (k msgServer) SetPrice(ctx context.Context, msg *types.MsgSetPrice) (*types
 		return nil, errorsmod.Wrap(err, "invalid creator address")
 	}
 
-	// Parse price
+	// Validate denom/symbol: currently only supports BTO priced in USD
+	if msg.Denom != "BTO" && msg.Denom != "ubto" {
+		return nil, errorsmod.Wrapf(types.ErrInvalidDenom, "unsupported denom: %s", msg.Denom)
+	}
+
+	// Parse price (BTO per 1 USD)
 	price, err := math.LegacyNewDecFromStr(msg.Price)
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "invalid price format")

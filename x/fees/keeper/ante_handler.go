@@ -261,16 +261,22 @@ func (dfd DeductFeeDecorator) deductFees(ctx sdk.Context, feeTx sdk.FeeTx, fee s
 
 // distributeFees distributes collected fees according to the fee table splits
 func (dfd DeductFeeDecorator) distributeFees(ctx sdk.Context, fee sdk.Coins) error {
-    md := map[string]interface{}{}
-    if v := ctx.Context().Value(types.FeeMetadataContextKey); v != nil {
-        if m, ok := v.(*FeeMetadata); ok { _ = m }
-    }
-    feeType := "native_transfer"
-    if v := ctx.Context().Value(types.FeeEstimateContextKey); v != nil {
-        if est, ok := v.(*FeeEstimate); ok { feeType = string(est.Category) }
-    }
-    for _, coin := range fee {
-        if err := dfd.feeKeeper.DistributeFeeFromModule(ctx, types.ModuleName, feeType, coin, md); err != nil { return err }
-    }
-    return nil
+	md := map[string]interface{}{}
+	if v := ctx.Context().Value(types.FeeMetadataContextKey); v != nil {
+		if m, ok := v.(*FeeMetadata); ok {
+			_ = m
+		}
+	}
+	feeType := "native_transfer"
+	if v := ctx.Context().Value(types.FeeEstimateContextKey); v != nil {
+		if est, ok := v.(*FeeEstimate); ok {
+			feeType = string(est.Category)
+		}
+	}
+	for _, coin := range fee {
+		if err := dfd.feeKeeper.DistributeFeeFromModule(ctx, types.ModuleName, feeType, coin, md); err != nil {
+			return err
+		}
+	}
+	return nil
 }

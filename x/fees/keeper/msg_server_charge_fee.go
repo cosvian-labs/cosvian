@@ -1,14 +1,14 @@
 package keeper
 
 import (
-    "context"
-    "encoding/json"
+	"context"
+	"encoding/json"
 
-    "bitora/x/fees/types"
+	"bitora/x/fees/types"
 
-    errorsmod "cosmossdk.io/errors"
-    sdk "github.com/cosmos/cosmos-sdk/types"
-    sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	errorsmod "cosmossdk.io/errors"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 func (k msgServer) ChargeFee(ctx context.Context, msg *types.MsgChargeFee) (*types.MsgChargeFeeResponse, error) {
@@ -28,11 +28,11 @@ func (k msgServer) ChargeFee(ctx context.Context, msg *types.MsgChargeFee) (*typ
 
 	// Get fee table entry for the category
 	var feeEntry types.FeeConfig
-    switch msg.Category {
-    case "pos_payment":
-        feeEntry = params.FeeTableUsd.PosPayment
-    case "token_interaction":
-        feeEntry = params.FeeTableUsd.TokenInteraction
+	switch msg.Category {
+	case "pos_payment":
+		feeEntry = params.FeeTableUsd.PosPayment
+	case "token_interaction":
+		feeEntry = params.FeeTableUsd.TokenInteraction
 	case "native_transfer":
 		feeEntry = params.FeeTableUsd.NativeTransfer
 	case "dex_native":
@@ -43,9 +43,9 @@ func (k msgServer) ChargeFee(ctx context.Context, msg *types.MsgChargeFee) (*typ
 		feeEntry = params.FeeTableUsd.Deploy
 	case "wizard":
 		feeEntry = params.FeeTableUsd.Wizard
-    default:
-        return nil, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "fee category '%s' not found", msg.Category)
-    }
+	default:
+		return nil, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "fee category '%s' not found", msg.Category)
+	}
 
 	// Check if transaction is free (deploy or wizard)
 	if msg.Category == "deploy" || msg.Category == "wizard" {
@@ -56,52 +56,52 @@ func (k msgServer) ChargeFee(ctx context.Context, msg *types.MsgChargeFee) (*typ
 		}, nil
 	}
 
-    // Calculate fee in USD (UsdAmount is already in LegacyDec format)
-    feeUSD := feeEntry.UsdAmount
+	// Calculate fee in USD (UsdAmount is already in LegacyDec format)
+	feeUSD := feeEntry.UsdAmount
 
-    // Convert USD to BTO using the module's oracle adapter (with fallback)
-    btoAmount, _, err := k.ConvertUSDToBTO(sdkCtx, feeUSD)
-    if err != nil {
-        return nil, errorsmod.Wrap(err, "failed to convert USD to BTO")
-    }
+	// Convert USD to BTO using the module's oracle adapter (with fallback)
+	btoAmount, _, err := k.ConvertUSDToBTO(sdkCtx, feeUSD)
+	if err != nil {
+		return nil, errorsmod.Wrap(err, "failed to convert USD to BTO")
+	}
 
-    // Scale BTO to ubto (assume 6 decimals)
-    feeUbto := btoAmount.MulInt64(1_000_000).TruncateInt()
+	// Scale BTO to ubto (assume 6 decimals)
+	feeUbto := btoAmount.MulInt64(1_000_000).TruncateInt()
 
 	// Check if user has sufficient balance
 	userBalance := k.bankKeeper.SpendableCoins(sdkCtx, creatorAddr)
 	ubtoBalance := userBalance.AmountOf("ubto")
-    if ubtoBalance.LT(feeUbto) {
-        return nil, errorsmod.Wrapf(sdkerrors.ErrInsufficientFunds, "insufficient balance: required %s ubto, available %s ubto",
-            feeUbto.String(), ubtoBalance.String())
-    }
+	if ubtoBalance.LT(feeUbto) {
+		return nil, errorsmod.Wrapf(sdkerrors.ErrInsufficientFunds, "insufficient balance: required %s ubto, available %s ubto",
+			feeUbto.String(), ubtoBalance.String())
+	}
 
-    // Build metadata map from msg.Metadata for dynamic recipients
-    md := make(map[string]interface{})
-    if msg.Metadata != "" {
-        _ = json.Unmarshal([]byte(msg.Metadata), &md)
-    }
+	// Build metadata map from msg.Metadata for dynamic recipients
+	md := make(map[string]interface{})
+	if msg.Metadata != "" {
+		_ = json.Unmarshal([]byte(msg.Metadata), &md)
+	}
 
-    // Delegate distribution to keeper with dynamic logic
-    feeCoin := sdk.NewCoin("ubto", feeUbto)
-    if err := k.DistributeFee(sdkCtx, creatorAddr, msg.Category, feeCoin, md); err != nil {
-        return nil, errorsmod.Wrap(err, "fee distribution failed")
-    }
+	// Delegate distribution to keeper with dynamic logic
+	feeCoin := sdk.NewCoin("ubto", feeUbto)
+	if err := k.DistributeFee(sdkCtx, creatorAddr, msg.Category, feeCoin, md); err != nil {
+		return nil, errorsmod.Wrap(err, "fee distribution failed")
+	}
 
-    // Set gas used to equal fee amount (BTO-equivalent shown via ubto)
-    sdkCtx.GasMeter().ConsumeGas(feeUbto.Uint64(), "fee charge")
+	// Set gas used to equal fee amount (BTO-equivalent shown via ubto)
+	sdkCtx.GasMeter().ConsumeGas(feeUbto.Uint64(), "fee charge")
 
 	// Emit event
-    sdkCtx.EventManager().EmitEvent(
-        sdk.NewEvent(types.EventTypeFeeCharged,
-            sdk.NewAttribute("category", msg.Category),
-            sdk.NewAttribute("creator", msg.Creator),
-            sdk.NewAttribute("fee_usd", feeUSD.String()),
-            sdk.NewAttribute("fee_bto", btoAmount.String()),
-            sdk.NewAttribute("fee_ubto", feeUbto.String()),
-            sdk.NewAttribute("gas_used", feeUbto.String()),
-        ),
-    )
+	sdkCtx.EventManager().EmitEvent(
+		sdk.NewEvent(types.EventTypeFeeCharged,
+			sdk.NewAttribute("category", msg.Category),
+			sdk.NewAttribute("creator", msg.Creator),
+			sdk.NewAttribute("fee_usd", feeUSD.String()),
+			sdk.NewAttribute("fee_bto", btoAmount.String()),
+			sdk.NewAttribute("fee_ubto", feeUbto.String()),
+			sdk.NewAttribute("gas_used", feeUbto.String()),
+		),
+	)
 
 	return &types.MsgChargeFeeResponse{
 		GasUsed:    feeUbto.String(),

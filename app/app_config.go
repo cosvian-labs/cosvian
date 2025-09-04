@@ -5,6 +5,8 @@ import (
 	bitoramoduletypes "bitora/x/bitora/types"
 	_ "bitora/x/fees/module"
 	feesmoduletypes "bitora/x/fees/types"
+	_ "bitora/x/osmosisicq/module"
+	osmosisicqmoduletypes "bitora/x/osmosisicq/types"
 
 	// _ "bitora/x/conversionpool/module" // Temporarily commented for testing
 	// conversionpoolmoduletypes "bitora/x/conversionpool/types" // Temporarily commented for testing
@@ -166,6 +168,7 @@ var (
 						// conversionpoolmoduletypes.ModuleName, // Temporarily commented for testing
 						registrymoduletypes.ModuleName,
 						feesmoduletypes.ModuleName,
+						osmosisicqmoduletypes.ModuleName,
 						// this line is used by starport scaffolding # stargate/app/beginBlockers
 					},
 					EndBlockers: []string{
@@ -184,6 +187,7 @@ var (
 						// conversionpoolmoduletypes.ModuleName, // Temporarily commented for testing
 						registrymoduletypes.ModuleName,
 						feesmoduletypes.ModuleName,
+						osmosisicqmoduletypes.ModuleName,
 						// this line is used by starport scaffolding # stargate/app/endBlockers
 					},
 					// The following is mostly only needed when ModuleName != StoreKey name.
@@ -230,6 +234,7 @@ var (
 						// conversionpoolmoduletypes.ModuleName, // Temporarily commented for testing
 						registrymoduletypes.ModuleName,
 						feesmoduletypes.ModuleName,
+						osmosisicqmoduletypes.ModuleName,
 						// this line is used by starport scaffolding # stargate/app/initGenesis
 					},
 				}),
@@ -358,6 +363,10 @@ var (
 			{
 				Name:   feesmoduletypes.ModuleName,
 				Config: appconfig.WrapAny(&feesmoduletypes.Module{}),
+			},
+			{
+				Name:   osmosisicqmoduletypes.ModuleName,
+				Config: appconfig.WrapAny(&osmosisicqmoduletypes.Module{}),
 			},
 			// this line is used by starport scaffolding # stargate/app/moduleConfig
 		},
