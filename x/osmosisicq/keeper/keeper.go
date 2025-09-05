@@ -107,18 +107,23 @@ func (k Keeper) ScheduleQueriesIfDue(ctx sdk.Context) error {
 	}
 	// If an ICQ client is available, register or refresh the queries and persist IDs
 	if k.icqClient != nil && params.ConnectionId != "" {
-		// Single-leg (spot) or twap query based on params
+		// Register TWAP (primary) and always register SPOT (GAMM) as fallback when UseTwap is true.
 		if params.UseTwap {
-			store, key := osmo.BuildTwapKey(params.BaseDenom, params.QuoteDenom, params.PoolId, params.TwapWindowSeconds)
-			qid, err := k.icqClient.RegisterKVQuery(ctx, params.ConnectionId, store, key)
-			if err == nil {
-				_ = k.QueryIDs.Set(ctx, "twap", qid)
+			if store, key := osmo.BuildTwapKey(params.BaseDenom, params.QuoteDenom, params.PoolId, params.TwapWindowSeconds); len(key) > 0 {
+				if qid, err := k.icqClient.RegisterKVQuery(ctx, params.ConnectionId, store, key); err == nil {
+					_ = k.QueryIDs.Set(ctx, "twap", qid)
+				}
+			}
+			if store, key := osmo.BuildGammPoolKey(params.PoolId); len(key) > 0 {
+				if qid, err := k.icqClient.RegisterKVQuery(ctx, params.ConnectionId, store, key); err == nil {
+					_ = k.QueryIDs.Set(ctx, "spot", qid)
+				}
 			}
 		} else {
-			store, key := osmo.BuildGammPoolKey(params.PoolId)
-			qid, err := k.icqClient.RegisterKVQuery(ctx, params.ConnectionId, store, key)
-			if err == nil {
-				_ = k.QueryIDs.Set(ctx, "spot", qid)
+			if store, key := osmo.BuildGammPoolKey(params.PoolId); len(key) > 0 {
+				if qid, err := k.icqClient.RegisterKVQuery(ctx, params.ConnectionId, store, key); err == nil {
+					_ = k.QueryIDs.Set(ctx, "spot", qid)
+				}
 			}
 		}
 	}
