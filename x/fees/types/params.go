@@ -104,14 +104,39 @@ func DefaultParams() Params {
 		RetailWallet:       "bto1retail000000000000000000000000000000000", // Placeholder
 		TokenDevWallet:     "bto1dev000000000000000000000000000000000000", // Placeholder
 		TokenCreatorWallet: "bto1creator00000000000000000000000000000000", // Placeholder
+		// Enable hybrid mode by default on this branch so IBC system txs are gas-only out of the box.
+		FeeMode:            FeeModeHybrid,
+		SystemMsgTypeUrls: []string{
+			"/ibc.core.client.v1.MsgCreateClient",
+			"/ibc.core.client.v1.MsgUpdateClient",
+			"/ibc.core.connection.v1.MsgConnectionOpenInit",
+			"/ibc.core.connection.v1.MsgConnectionOpenTry",
+			"/ibc.core.connection.v1.MsgConnectionOpenAck",
+			"/ibc.core.connection.v1.MsgConnectionOpenConfirm",
+			"/ibc.core.channel.v1.MsgChannelOpenInit",
+			"/ibc.core.channel.v1.MsgChannelOpenTry",
+			"/ibc.core.channel.v1.MsgChannelOpenAck",
+			"/ibc.core.channel.v1.MsgChannelOpenConfirm",
+			"/ibc.core.channel.v1.MsgRecvPacket",
+			"/ibc.core.channel.v1.MsgAcknowledgement",
+			"/ibc.core.channel.v1.MsgTimeout",
+			"/ibc.core.channel.v1.MsgTimeoutOnClose",
+			"/ibc.applications.fee.v1.MsgPayPacketFee",
+			"/ibc.applications.fee.v1.MsgPayPacketFeeAsync",
+			"/ibc.applications.fee.v1.MsgRegisterPayee",
+			"/ibc.applications.fee.v1.MsgRegisterCounterpartyPayee",
+			"/ibc.applications.interchain_accounts.controller.v1.MsgRegisterInterchainAccount",
+			"/ibc.applications.interchain_accounts.controller.v1.MsgSendTx",
+		},
+		ExemptMsgTypeUrls: []string{},
+		ExemptAddresses:  []string{},
 	}
 }
 
 // Validate validates the set of params.
 func (p Params) Validate() error {
-	// Allow zero-value Params (used by some tests/empty genesis) as valid.
-	var zero Params
-	if p == zero {
+	// Allow zero-value-like Params: detect by empty FeeMode & zero usd table amounts instead of struct compare (slices not comparable)
+	if p.FeeMode == "" && p.FeeTableUsd.PosPayment.UsdAmount.IsZero() && len(p.SystemMsgTypeUrls) == 0 && len(p.ExemptMsgTypeUrls) == 0 {
 		return nil
 	}
 	if err := p.validateFeeTableUSD(); err != nil {
@@ -125,6 +150,29 @@ func (p Params) Validate() error {
 	}
 	if err := p.validateMinGasPolicy(); err != nil {
 		return err
+	}
+	if err := p.validateHybridFields(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (p Params) validateHybridFields() error {
+	switch p.FeeMode {
+	case "", "table", "hybrid", "gas_only":
+	default:
+		return fmt.Errorf("invalid fee_mode: %s", p.FeeMode)
+	}
+	// Basic sanity: no duplicates in system or exempt lists
+	seen := map[string]struct{}{}
+	for _, s := range p.SystemMsgTypeUrls {
+		if s == "" { continue }
+		if _, ok := seen[s]; ok { return fmt.Errorf("duplicate system_msg_type_url: %s", s) }
+		seen[s] = struct{}{}
+	}
+	for _, s := range p.ExemptMsgTypeUrls {
+		if s == "" { continue }
+		if _, ok := seen[s]; ok { return fmt.Errorf("type url appears in both system and exempt lists: %s", s) }
 	}
 	return nil
 }

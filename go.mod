@@ -7,6 +7,8 @@ replace (
 	github.com/ethereum/go-ethereum => github.com/cosmos/go-ethereum v1.15.11-cosmos-0
 	// fix upstream GHSA-h395-qcrw-5vmq vulnerability.
 	github.com/gin-gonic/gin => github.com/gin-gonic/gin v1.9.1
+	// Osmosis fork of block-sdk: upstream skip-mev v2.1.6 tag missing; map to osmosis-labs fork tag used by osmosis v30
+	github.com/skip-mev/block-sdk/v2 => github.com/osmosis-labs/block-sdk/v2 v2.1.7-mempool
 	// replace broken goleveldb
 	github.com/syndtr/goleveldb => github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7
 	// replace broken vanity url

@@ -53,13 +53,18 @@ func ProvideModule(in ModuleInputs) ModuleOutputs {
 	if in.Config.Authority != "" {
 		authority = authtypes.NewModuleAddressOrBech32Address(in.Config.Authority)
 	}
+	// Instantiate a minimal registration-only ICQ client if none provided.
+	icqClient := in.ICQClient
+	if icqClient == nil {
+		icqClient = &regOnlyClient{}
+	}
 	k := keeper.NewKeeper(
 		in.StoreService,
 		in.Cdc,
 		in.AddressCodec,
 		authority,
 		in.OracleKeeper,
-	in.ICQClient,
+		icqClient,
 	)
 	m := NewAppModule(in.Cdc, k, in.AuthKeeper, in.BankKeeper)
 

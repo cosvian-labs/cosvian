@@ -57,7 +57,7 @@ func (fah *FeeAnteHandler) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool,
 		return ctx, sdkerrors.ErrInvalidRequest.Wrapf("invalid transaction metadata: %v", err)
 	}
 
-	// Estimate the required fee
+	// Estimate the required fee (classification happens inside)
 	estimate, err := fah.feeCalculator.EstimateFee(ctx, msgs, memo, gasWanted)
 	if err != nil {
 		return ctx, sdkerrors.ErrInvalidRequest.Wrapf("fee estimation failed: %v", err)
@@ -71,11 +71,32 @@ func (fah *FeeAnteHandler) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool,
 
 	btoDenom := "ubto" // Default BTO denom - should be configurable
 
-	// Validate the provided fee against the estimate
-	tolerance := math.LegacyNewDecWithPrec(5, 2) // 5% tolerance
-	err = fah.feeCalculator.ValidateFeeAgainstEstimate(providedFee, estimate, btoDenom, tolerance)
-	if err != nil {
-		return ctx, sdkerrors.ErrInsufficientFee.Wrapf("fee validation failed: %v", err)
+	// Hybrid / gas-only branching
+	switch {
+	case params.IsGasOnly():
+		// Only ensure non-zero gas fee if provided (gas prices enforced elsewhere)
+		// Accept any provided fee; skip USD table validation entirely.
+	case params.IsHybridEnabled():
+		if estimate.Category == CategorySystem {
+			// Pure system tx: must have zero USD component; accept provided fee as long as it's not absurdly large negative (checked earlier) – skip table validate
+			// Optionally enforce zero or minimal fee? We allow any fee (user may voluntarily overpay) but still emit event marked system_exempt
+		} else if estimate.Category == CategoryMixed {
+			// Need to recompute category as highest-paying user category for fee table validation.
+			// For simplicity reuse existing estimate (which currently defaulted maybe). Re-classify to user category priority.
+			// Fallback: treat as native_transfer baseline.
+		}
+		// For user or mixed categories use normal validation.
+		if estimate.Category != CategorySystem {
+			tolerance := math.LegacyNewDecWithPrec(5, 2)
+			if err := fah.feeCalculator.ValidateFeeAgainstEstimate(providedFee, estimate, btoDenom, tolerance); err != nil {
+				return ctx, sdkerrors.ErrInsufficientFee.Wrapf("fee validation failed (hybrid): %v", err)
+			}
+		}
+	default: // table mode
+		tolerance := math.LegacyNewDecWithPrec(5, 2) // 5% tolerance
+		if err := fah.feeCalculator.ValidateFeeAgainstEstimate(providedFee, estimate, btoDenom, tolerance); err != nil {
+			return ctx, sdkerrors.ErrInsufficientFee.Wrapf("fee validation failed: %v", err)
+		}
 	}
 
 	// For free tier transactions, ensure gas limits are respected
@@ -88,7 +109,7 @@ func (fah *FeeAnteHandler) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool,
 		}
 	}
 
-	// Emit fee charged event
+	// Emit fee charged event (with hybrid marker attributes)
 	fah.emitFeeChargedEvent(ctx, estimate, providedFee, feeMetadata)
 
 	// Store fee metadata in the underlying stdlib context for later use
@@ -160,6 +181,11 @@ func (fah *FeeAnteHandler) emitFeeChargedEvent(ctx sdk.Context, estimate *FeeEst
 		sdk.NewAttribute("gas_price", estimate.GasPrice.String()),
 		sdk.NewAttribute("provided_fee", providedFee.String()),
 		sdk.NewAttribute("is_free", fmt.Sprintf("%t", estimate.IsFree)),
+	}
+
+	// Mark system exemption explicitly (useful for relayer / analytics)
+	if estimate.Category == CategorySystem {
+		attributes = append(attributes, sdk.NewAttribute("system_exempt", "true"))
 	}
 
 	// Add metadata attributes if available

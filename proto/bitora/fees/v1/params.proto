@@ -24,6 +24,22 @@ message Params {
   string retail_wallet = 6;
   string token_dev_wallet = 7;
   string token_creator_wallet = 8;
+
+  // Fee mode controls how USD table is applied:
+  // "table" (default) = always charge according to USD table
+  // "hybrid" = charge USD table only if at least one user/economic msg present. Pure system IBC / governance maintenance txs pay gas only.
+  // "gas_only" = ignore USD table entirely (emergency fallback)
+  string fee_mode = 9;
+
+  // Explicit system message type URLs. If ALL msgs in a tx are within this set (after deep-unwrapping Authz / ICA),
+  // then in hybrid mode the tx is treated as system-only (USD component waived; gas still required).
+  repeated string system_msg_type_urls = 10;
+
+  // Additional exempt message type URLs (e.g., future maintenance ops) that should also be zero-USD in hybrid mode when tx is homogeneous.
+  repeated string exempt_msg_type_urls = 11;
+
+  // Addresses that are exempt (e.g., designated relayer module accounts) when submitting homogeneous system txs in hybrid mode.
+  repeated string exempt_addresses = 12;
 }
 
 // FeeTableUSD defines USD fee amounts and distribution splits for each category

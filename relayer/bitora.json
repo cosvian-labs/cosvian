@@ -1,0 +1,20 @@
+{
+  "type": "cosmos",
+  "value": {
+    "key-directory": "/home/munra/.relayer/keys/bitora",
+    "key": "default",
+    "chain-id": "bitora",
+    "rpc-addr": "http://127.0.0.1:26657",
+    "account-prefix": "bto",
+    "keyring-backend": "test",
+    "gas-adjustment": 1.2,
+    "gas-prices": "0.025ubto",
+    "min-gas-amount": 1,
+    "debug": true,
+    "timeout": "30s",
+    "output-format": "json",
+    "sign-mode": "direct",
+    "coin-type": 90,
+    "broadcast-mode": "batch"
+  }
+}

@@ -1,16 +1,12 @@
-//go:build icq_register
-
 package osmosisicq
 
 import (
-	"fmt"
-	"sync"
+    "fmt"
+    "sync"
 
-	"cosmossdk.io/depinject"
-	"cosmossdk.io/depinject/appconfig"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+    sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"bitora/x/osmosisicq/types"
+    "bitora/x/osmosisicq/types"
 )
 
 // regOnlyClient is a minimal ICQ client that only registers queries and returns synthetic IDs.
@@ -29,15 +25,7 @@ func (c *regOnlyClient) RegisterKVQuery(_ sdk.Context, _ string, _ string, _ []b
     return fmt.Sprintf("icq-%d", c.seq), nil
 }
 
-type ICQClientOut struct {
-    depinject.Out
-    ICQClient types.ICQClient
-}
-
-// ProvideICQRegisterClient exposes a minimal ICQ client via depinject when built with -tags icq_register.
-func ProvideICQRegisterClient() ICQClientOut { return ICQClientOut{ICQClient: &regOnlyClient{}} }
-
-func init() {
-    // Register the provider under this module's config when icq_register tag is enabled.
-    appconfig.Register(&types.Module{}, appconfig.Provide(ProvideICQRegisterClient))
-}
+// Note: We no longer self-register this provider via appconfig.Register to avoid
+// overriding the main module ProvideModule registration. Instead, the module's
+// ProvideModule will instantiate this minimal client when no external ICQ client
+// implementation is supplied (see depinject.go).

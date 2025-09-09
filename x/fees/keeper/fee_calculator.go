@@ -8,6 +8,8 @@ import (
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+	authztypes "github.com/cosmos/cosmos-sdk/x/authz"
+	// icatypes "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/types"
 
 	"bitora/x/fees/types"
 )
@@ -18,13 +20,8 @@ type FeeCalculator struct {
 	oracleAdapter *OracleAdapter
 }
 
-// NewFeeCalculator creates a new fee calculator
-func NewFeeCalculator(keeper Keeper, oracleAdapter *OracleAdapter) *FeeCalculator {
-	return &FeeCalculator{
-		keeper:        keeper,
-		oracleAdapter: oracleAdapter,
-	}
-}
+// NewFeeCalculator constructs a FeeCalculator
+func NewFeeCalculator(keeper Keeper, oracleAdapter *OracleAdapter) *FeeCalculator { return &FeeCalculator{keeper: keeper, oracleAdapter: oracleAdapter} }
 
 // TransactionCategory represents the fee category for a transaction
 type TransactionCategory string
@@ -38,6 +35,8 @@ const (
 	CategoryDeploy           TransactionCategory = "deploy"
 	CategoryWizard           TransactionCategory = "wizard"
 	CategoryDefault          TransactionCategory = "default"
+	CategorySystem           TransactionCategory = "system"
+	CategoryMixed            TransactionCategory = "mixed"
 )
 
 // FeeEstimate contains the calculated fee information
@@ -53,8 +52,9 @@ type FeeEstimate struct {
 
 // EstimateFee calculates the fee for a transaction based on its messages and memo
 func (fc *FeeCalculator) EstimateFee(ctx sdk.Context, msgs []sdk.Msg, memo string, gasWanted uint64) (*FeeEstimate, error) {
-	// Classify the transaction category
-	category := fc.classifyTransaction(msgs, memo)
+	// deep unwrap (authz / ica) for hybrid logic
+	expanded := fc.expandMessages(msgs, 4) // depth limit
+	category := fc.classifyTransaction(expanded, memo)
 
 	// Get fee configuration for this category
 	params, err := fc.keeper.Params.Get(ctx)
@@ -82,6 +82,17 @@ func (fc *FeeCalculator) EstimateFee(ctx sdk.Context, msgs []sdk.Msg, memo strin
 	case CategoryWizard:
 		feeConfig = params.FeeTableUsd.Wizard
 		isFree = feeConfig.UsdAmount.IsZero()
+	case CategorySystem:
+		// System txs (IBC handshake / packets / system-level) are gas-only in hybrid mode.
+		// Return an immediate zero-USD estimate so downstream event emission reflects no table fee.
+		return &FeeEstimate{
+			Category:  category,
+			USDAmount: math.LegacyZeroDec(),
+			BTOAmount: math.LegacyZeroDec(),
+			GasWanted: gasWanted,
+			GasPrice:  math.LegacyZeroDec(),
+			IsFree:    true,
+		}, nil
 	default:
 		// Use native transfer as default
 		feeConfig = params.FeeTableUsd.NativeTransfer
@@ -134,6 +145,23 @@ func (fc *FeeCalculator) EstimateFee(ctx sdk.Context, msgs []sdk.Msg, memo strin
 	}, nil
 }
 
+// isSystemMsg returns true for known IBC handshake / packet fee messages (temporary list until param-driven)
+func (fc *FeeCalculator) isSystemMsg(msg sdk.Msg) bool {
+	switch sdk.MsgTypeURL(msg) {
+	case "/ibc.core.client.v1.MsgCreateClient", "/ibc.core.client.v1.MsgUpdateClient",
+		"/ibc.core.connection.v1.MsgConnectionOpenInit", "/ibc.core.connection.v1.MsgConnectionOpenTry",
+		"/ibc.core.connection.v1.MsgConnectionOpenAck", "/ibc.core.connection.v1.MsgConnectionOpenConfirm",
+		"/ibc.core.channel.v1.MsgChannelOpenInit", "/ibc.core.channel.v1.MsgChannelOpenTry",
+		"/ibc.core.channel.v1.MsgChannelOpenAck", "/ibc.core.channel.v1.MsgChannelOpenConfirm",
+		"/ibc.core.channel.v1.MsgRecvPacket", "/ibc.core.channel.v1.MsgAcknowledgement",
+		"/ibc.core.channel.v1.MsgTimeout", "/ibc.core.channel.v1.MsgTimeoutOnClose",
+		"/ibc.applications.fee.v1.MsgPayPacketFee", "/ibc.applications.fee.v1.MsgPayPacketFeeAsync",
+		"/ibc.applications.fee.v1.MsgRegisterPayee", "/ibc.applications.fee.v1.MsgRegisterCounterpartyPayee":
+		return true
+	}
+	return false
+}
+
 // classifyTransaction determines the fee category based on transaction messages and memo
 func (fc *FeeCalculator) classifyTransaction(msgs []sdk.Msg, memo string) TransactionCategory {
 	// Check memo for explicit category hints
@@ -154,7 +182,28 @@ func (fc *FeeCalculator) classifyTransaction(msgs []sdk.Msg, memo string) Transa
 		return CategoryWizard
 	}
 
-	// Classify based on message types
+
+	// Hybrid system detection: if all msgs system, mark system; if mix system+user mark mixed
+	allSystem := true
+	anySystem := false
+	anyUser := false
+
+	for _, msg := range msgs {
+		if fc.isSystemMsg(msg) {
+			anySystem = true
+		} else {
+			allSystem = false
+			anyUser = true
+		}
+	}
+	if allSystem {
+		return CategorySystem
+	}
+	if anySystem && anyUser {
+		return CategoryMixed
+	}
+
+	// Classify based on message types (user/economic)
 	for _, msg := range msgs {
 		switch msg := msg.(type) {
 		case *banktypes.MsgSend:
@@ -184,6 +233,30 @@ func (fc *FeeCalculator) classifyTransaction(msgs []sdk.Msg, memo string) Transa
 
 	// Default to native transfer
 	return CategoryNativeTransfer
+}
+
+// isSystemMsg returns true if msg type URL is in system or exempt list (params) and considered non-economic.
+// isSystemMsg implemented near top
+
+// expandMessages unwraps authz MsgExec and ICA controller MsgSendTx recursively
+func (fc *FeeCalculator) expandMessages(msgs []sdk.Msg, depth int) []sdk.Msg {
+	if depth <= 0 { return msgs }
+	var out []sdk.Msg
+	for _, m := range msgs {
+		switch m := m.(type) {
+		case *authztypes.MsgExec:
+			// unwrap inner messages
+			for _, any := range m.Msgs {
+				if inner, ok := any.GetCachedValue().(sdk.Msg); ok {
+					out = append(out, fc.expandMessages([]sdk.Msg{inner}, depth-1)...)
+				}
+			}
+		// ICA controller MsgSendTx omitted for now (needs import); treat outer as system via hardcoded list when added
+		default:
+			out = append(out, m)
+		}
+	}
+	return out
 }
 
 // isTokenInteraction checks if a wasm execute message is a token interaction

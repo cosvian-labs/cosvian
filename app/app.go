@@ -52,6 +52,7 @@ import (
 	bitoramodulekeeper "bitora/x/bitora/keeper"
 	feesmodulekeeper "bitora/x/fees/keeper"
 	osmosisicqmodulekeeper "bitora/x/osmosisicq/keeper"
+	feesmoduletypes "bitora/x/fees/types"
 
 	// conversionpoolmodulekeeper "bitora/x/conversionpool/keeper" // Temporarily commented for testing
 	oraclemodulekeeper "bitora/x/oracle/keeper"
@@ -108,6 +109,7 @@ type App struct {
 	ICAControllerKeeper icacontrollerkeeper.Keeper
 	ICAHostKeeper       icahostkeeper.Keeper
 	TransferKeeper      ibctransferkeeper.Keeper
+	IBCFeeKeeper        interface{} // placeholder for ICS29 keeper (set in ibc.go)
 
 	BitoraKeeper bitoramodulekeeper.Keeper
 	TokenKeeper  tokenmodulekeeper.Keeper
@@ -228,6 +230,24 @@ func New(
 	if err := app.registerIBCModules(appOpts); err != nil {
 		panic(err)
 	}
+
+	// --- Hybrid Fee Ante & Deduct Decorators Wiring ---
+	// Build fee calculator & ante decorators if FeesKeeper available
+	oracleAdapter := feesmodulekeeper.NewOracleAdapter(app.FeesKeeper, app.OracleKeeper)
+	feeCalc := feesmodulekeeper.NewFeeCalculator(app.FeesKeeper, oracleAdapter)
+	feeAnte := feesmodulekeeper.NewFeeAnteHandler(app.FeesKeeper, feeCalc, app.BankKeeper)
+	deductDecorator := feesmodulekeeper.NewDeductFeeDecorator(app.AuthKeeper, app.BankKeeper, app.FeesKeeper)
+
+	// Compose ante chain: fee validation -> deduct -> existing base ante
+	baseAnte := app.App.AnteHandler()
+	customAnte := func(ctx sdk.Context, tx sdk.Tx, simulate bool) (sdk.Context, error) {
+		return feeAnte.AnteHandle(ctx, tx, simulate, func(c sdk.Context, t sdk.Tx, s bool) (sdk.Context, error) {
+			return deductDecorator.AnteHandle(c, t, s, baseAnte)
+		})
+	}
+	app.SetAnteHandler(customAnte)
+
+	_ = feesmoduletypes.ModuleName // avoid unused import if optimized
 
 	// // Setup Zero Gas Fee Ante Handler
 	// anteHandlerOptions := AnteHandlerOptions{
