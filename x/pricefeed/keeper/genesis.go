@@ -16,6 +16,10 @@ func (k Keeper) InitGenesis(ctx context.Context, genState types.GenesisState) er
 		return err
 	}
 
+	// TODO: Proper port binding requires a scoped capability keeper reference for the module.
+	// The current keeper does not hold ScopedKeeper; binding is deferred until wiring provides it.
+	// (No-op here to keep genesis progressing.)
+
 	return k.Params.Set(ctx, genState.Params)
 }
 

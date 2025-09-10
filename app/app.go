@@ -51,8 +51,8 @@ import (
 	"bitora/docs"
 	bitoramodulekeeper "bitora/x/bitora/keeper"
 	feesmodulekeeper "bitora/x/fees/keeper"
-	osmosisicqmodulekeeper "bitora/x/osmosisicq/keeper"
 	feesmoduletypes "bitora/x/fees/types"
+	osmosisicqmodulekeeper "bitora/x/osmosisicq/keeper"
 
 	// conversionpoolmodulekeeper "bitora/x/conversionpool/keeper" // Temporarily commented for testing
 	oraclemodulekeeper "bitora/x/oracle/keeper"
@@ -232,20 +232,20 @@ func New(
 	}
 
 	// --- Hybrid Fee Ante & Deduct Decorators Wiring ---
-	// Build fee calculator & ante decorators if FeesKeeper available
-	oracleAdapter := feesmodulekeeper.NewOracleAdapter(app.FeesKeeper, app.OracleKeeper)
-	feeCalc := feesmodulekeeper.NewFeeCalculator(app.FeesKeeper, oracleAdapter)
-	feeAnte := feesmodulekeeper.NewFeeAnteHandler(app.FeesKeeper, feeCalc, app.BankKeeper)
-	deductDecorator := feesmodulekeeper.NewDeductFeeDecorator(app.AuthKeeper, app.BankKeeper, app.FeesKeeper)
-
-	// Compose ante chain: fee validation -> deduct -> existing base ante
-	baseAnte := app.App.AnteHandler()
-	customAnte := func(ctx sdk.Context, tx sdk.Tx, simulate bool) (sdk.Context, error) {
-		return feeAnte.AnteHandle(ctx, tx, simulate, func(c sdk.Context, t sdk.Tx, s bool) (sdk.Context, error) {
-			return deductDecorator.AnteHandle(c, t, s, baseAnte)
-		})
+	// TODO(rizhan-temp): sementara dimatikan agar genesis bisa jalan tanpa panic (akan diaktifkan kembali setelah params init flow dibenahi)
+	if false { // ganti menjadi 'if true' untuk mengaktifkan lagi
+		oracleAdapter := feesmodulekeeper.NewOracleAdapter(app.FeesKeeper, app.OracleKeeper)
+		feeCalc := feesmodulekeeper.NewFeeCalculator(app.FeesKeeper, oracleAdapter)
+		feeAnte := feesmodulekeeper.NewFeeAnteHandler(app.FeesKeeper, feeCalc, app.BankKeeper)
+		deductDecorator := feesmodulekeeper.NewDeductFeeDecorator(app.AuthKeeper, app.BankKeeper, app.FeesKeeper)
+		baseAnte := app.App.AnteHandler()
+		customAnte := func(ctx sdk.Context, tx sdk.Tx, simulate bool) (sdk.Context, error) {
+			return feeAnte.AnteHandle(ctx, tx, simulate, func(c sdk.Context, t sdk.Tx, s bool) (sdk.Context, error) {
+				return deductDecorator.AnteHandle(c, t, s, baseAnte)
+			})
+		}
+		app.SetAnteHandler(customAnte)
 	}
-	app.SetAnteHandler(customAnte)
 
 	_ = feesmoduletypes.ModuleName // avoid unused import if optimized
 

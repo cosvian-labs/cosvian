@@ -7,9 +7,8 @@ import (
 	"cosmossdk.io/math"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	authztypes "github.com/cosmos/cosmos-sdk/x/authz"
-	// icatypes "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/types"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
 	"bitora/x/fees/types"
 )
@@ -54,12 +53,13 @@ type FeeEstimate struct {
 func (fc *FeeCalculator) EstimateFee(ctx sdk.Context, msgs []sdk.Msg, memo string, gasWanted uint64) (*FeeEstimate, error) {
 	// deep unwrap (authz / ica) for hybrid logic
 	expanded := fc.expandMessages(msgs, 4) // depth limit
-	category := fc.classifyTransaction(expanded, memo)
+	category := fc.classifyTransaction(ctx, expanded, memo)
 
 	// Get fee configuration for this category
 	params, err := fc.keeper.Params.Get(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get params: %w", err)
+		// Fallback: use default params (non-persisted) to avoid genesis panic / early boot issues.
+		params = types.DefaultParams()
 	}
 
 	var feeConfig types.FeeConfig
@@ -146,24 +146,38 @@ func (fc *FeeCalculator) EstimateFee(ctx sdk.Context, msgs []sdk.Msg, memo strin
 }
 
 // isSystemMsg returns true for known IBC handshake / packet fee messages (temporary list until param-driven)
-func (fc *FeeCalculator) isSystemMsg(msg sdk.Msg) bool {
-	switch sdk.MsgTypeURL(msg) {
-	case "/ibc.core.client.v1.MsgCreateClient", "/ibc.core.client.v1.MsgUpdateClient",
-		"/ibc.core.connection.v1.MsgConnectionOpenInit", "/ibc.core.connection.v1.MsgConnectionOpenTry",
-		"/ibc.core.connection.v1.MsgConnectionOpenAck", "/ibc.core.connection.v1.MsgConnectionOpenConfirm",
-		"/ibc.core.channel.v1.MsgChannelOpenInit", "/ibc.core.channel.v1.MsgChannelOpenTry",
-		"/ibc.core.channel.v1.MsgChannelOpenAck", "/ibc.core.channel.v1.MsgChannelOpenConfirm",
-		"/ibc.core.channel.v1.MsgRecvPacket", "/ibc.core.channel.v1.MsgAcknowledgement",
-		"/ibc.core.channel.v1.MsgTimeout", "/ibc.core.channel.v1.MsgTimeoutOnClose",
-		"/ibc.applications.fee.v1.MsgPayPacketFee", "/ibc.applications.fee.v1.MsgPayPacketFeeAsync",
-		"/ibc.applications.fee.v1.MsgRegisterPayee", "/ibc.applications.fee.v1.MsgRegisterCounterpartyPayee":
+func (fc *FeeCalculator) isSystemMsg(ctx sdk.Context, msg sdk.Msg) bool {
+	typeURL := sdk.MsgTypeURL(msg)
+
+	// ICS20 MsgTransfer must remain user-paid (explicitly exclude)
+	if typeURL == "/ibc.applications.transfer.v1.MsgTransfer" {
+		return false
+	}
+
+	params, err := fc.keeper.Params.Get(ctx)
+	if err == nil {
+		// direct list match
+		for _, s := range params.SystemMsgTypeUrls {
+			if s == typeURL {
+				return true
+			}
+		}
+		// exempt list overrides system (treat as user) if appears (rare case)
+		for _, s := range params.ExemptMsgTypeUrls {
+			if s == typeURL {
+				return false
+			}
+		}
+	}
+	// Fallback prefix heuristic for IBC core control plane (/ibc.core.) but not applications
+	if strings.HasPrefix(typeURL, "/ibc.core.") {
 		return true
 	}
 	return false
 }
 
 // classifyTransaction determines the fee category based on transaction messages and memo
-func (fc *FeeCalculator) classifyTransaction(msgs []sdk.Msg, memo string) TransactionCategory {
+func (fc *FeeCalculator) classifyTransaction(ctx sdk.Context, msgs []sdk.Msg, memo string) TransactionCategory {
 	// Check memo for explicit category hints
 	memoLower := strings.ToLower(memo)
 	if strings.Contains(memoLower, "pos") || strings.Contains(memoLower, "payment") {
@@ -184,24 +198,25 @@ func (fc *FeeCalculator) classifyTransaction(msgs []sdk.Msg, memo string) Transa
 
 
 	// Hybrid system detection: if all msgs system, mark system; if mix system+user mark mixed
+	// Context-aware system detection (needs params): evaluate here now that ctx is available.
 	allSystem := true
 	anySystem := false
 	anyUser := false
-
-	for _, msg := range msgs {
-		if fc.isSystemMsg(msg) {
+	for _, m := range msgs {
+		if fc.isSystemMsg(ctx, m) {
 			anySystem = true
 		} else {
 			allSystem = false
 			anyUser = true
 		}
 	}
-	if allSystem {
+	if allSystem && anySystem {
 		return CategorySystem
 	}
 	if anySystem && anyUser {
 		return CategoryMixed
 	}
+
 
 	// Classify based on message types (user/economic)
 	for _, msg := range msgs {

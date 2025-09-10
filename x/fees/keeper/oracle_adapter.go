@@ -28,7 +28,8 @@ func NewOracleAdapter(keeper Keeper, oracleKeeper types.OracleKeeper) *OracleAda
 func (oa *OracleAdapter) GetBTOUSDPrice(ctx sdk.Context) (*types.PriceData, error) {
 	params, err := oa.keeper.Params.Get(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get params: %w", err)
+		// During genesis or very early boot, params may be absent; fallback to DefaultParams silently.
+		params = types.DefaultParams()
 	}
 	oracleParams := params.OracleParams
 

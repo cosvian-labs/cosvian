@@ -36,6 +36,17 @@ func (fah *FeeAnteHandler) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool,
 		return next(ctx, tx, simulate)
 	}
 
+	// Genesis & early height safeguard: pada block 0 (InitGenesis) dan block 1 (gentx processing / first BeginBlock)
+	// params fees mungkin belum terset. Skip seluruh logic fee agar tidak panic.
+	if ctx.BlockHeight() <= 1 {
+		return next(ctx, tx, simulate)
+	}
+
+	// Pre-init guard: jika params belum ada (collections not found) kita skip fee logic sepenuhnya.
+	if _, err := fah.keeper.Params.Get(ctx); err != nil {
+		return next(ctx, tx, simulate)
+	}
+
 	// Get transaction details
 	feeTx, ok := tx.(sdk.FeeTx)
 	if !ok {
@@ -63,10 +74,11 @@ func (fah *FeeAnteHandler) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool,
 		return ctx, sdkerrors.ErrInvalidRequest.Wrapf("fee estimation failed: %v", err)
 	}
 
-	// Get BTO denom from params
+	// Ambil params untuk branching hybrid / table. Jika gagal (edge case race) gunakan default agar tidak gagal.
 	params, err := fah.keeper.Params.Get(ctx)
 	if err != nil {
-		return ctx, sdkerrors.ErrInvalidRequest.Wrapf("failed to get params: %v", err)
+		// fallback ke default params (tidak persist) supaya tx tetap jalan.
+		params = types.DefaultParams()
 	}
 
 	btoDenom := "ubto" // Default BTO denom - should be configurable
