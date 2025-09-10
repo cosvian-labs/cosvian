@@ -103,6 +103,8 @@ var (
 		{Account: ibctransfertypes.ModuleName, Permissions: []string{authtypes.Minter, authtypes.Burner}},
 		{Account: icatypes.ModuleName},
 		{Account: tokenmoduletypes.ModuleName, Permissions: []string{authtypes.Minter, authtypes.Burner}},
+		// fees module account (collects fees before distribution)
+		{Account: feesmoduletypes.ModuleName},
 		{Account: "treasury"},
 		{Account: "infrastructure"},
 		{Account: wasmtypes.ModuleName, Permissions: []string{authtypes.Burner}},
@@ -126,6 +128,7 @@ var (
 		stakingtypes.BondedPoolName,
 		stakingtypes.NotBondedPoolName,
 		nft.ModuleName,
+		feesmoduletypes.ModuleName,
 		// We allow the following module accounts to receive funds:
 		// govtypes.ModuleName
 	}

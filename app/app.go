@@ -233,7 +233,7 @@ func New(
 
 	// --- Hybrid Fee Ante & Deduct Decorators Wiring ---
 	// TODO(rizhan-temp): sementara dimatikan agar genesis bisa jalan tanpa panic (akan diaktifkan kembali setelah params init flow dibenahi)
-	if false { // ganti menjadi 'if true' untuk mengaktifkan lagi
+	if true { // aktifkan custom hybrid fee ante (fail-open genesis)
 		oracleAdapter := feesmodulekeeper.NewOracleAdapter(app.FeesKeeper, app.OracleKeeper)
 		feeCalc := feesmodulekeeper.NewFeeCalculator(app.FeesKeeper, oracleAdapter)
 		feeAnte := feesmodulekeeper.NewFeeAnteHandler(app.FeesKeeper, feeCalc, app.BankKeeper)
