@@ -17,7 +17,6 @@ import (
 	ibckeeper "github.com/cosmos/ibc-go/v10/modules/core/keeper"
 
 	feeskeeper "bitora/x/fees/keeper"
-	feestypes "bitora/x/fees/types"
 	tokenkeeper "bitora/x/token/keeper"
 )
 
@@ -70,10 +69,10 @@ func NewAnteHandler(options AnteHandlerOptions) (sdk.AnteHandler, error) {
 		ante.NewTxTimeoutHeightDecorator(),
 		ante.NewValidateMemoDecorator(options.AccountKeeper),
 
-		// 5. Custom transaction type fee detection and charging
-		NewBitoraFeeDecorator(options.TokenKeeper, options.FeesKeeper),
+		// 5. (Removed) BitoraFeeDecorator disabled in favor of centralized FeeAnteHandler wiring in app.go
+		// NewBitoraFeeDecorator(options.TokenKeeper, options.FeesKeeper),
 
-		// 6. Skip fee deduction entirely - this is key for zero gas fee
+		// 6. Skip gas fee deduction (protocol gas fees) - application fees handled elsewhere
 		NewZeroGasFeeDecorator(), // 7. Public key and signature handling (no gas consumption)
 		ante.NewSetPubKeyDecorator(options.AccountKeeper),
 		ante.NewValidateSigCountDecorator(options.AccountKeeper),
@@ -180,87 +179,3 @@ func (zgsv ZeroGasSigVerificationDecorator) AnteHandle(ctx sdk.Context, tx sdk.T
 }
 
 // BitoraFeeDecorator implements the new fee system where Gas Used = Fee Amount
-type BitoraFeeDecorator struct {
-	tokenKeeper tokenkeeper.Keeper
-	feesKeeper  feeskeeper.Keeper
-}
-
-func NewBitoraFeeDecorator(tokenKeeper tokenkeeper.Keeper, feesKeeper feeskeeper.Keeper) BitoraFeeDecorator {
-	return BitoraFeeDecorator{
-		tokenKeeper: tokenKeeper,
-		feesKeeper:  feesKeeper,
-	}
-}
-
-func (bfd BitoraFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (newCtx sdk.Context, err error) {
-	// Skip fee charging in simulation mode
-	if simulate {
-		return next(ctx, tx, simulate)
-	}
-
-	// Skip fee charging during genesis (DeliverGenTx in InitChain)
-	if ctx.BlockHeight() == 0 {
-		return next(ctx, tx, simulate)
-	}
-
-	// Skip if this tx is already a fees module MsgChargeFee to avoid double-charging
-	for _, m := range tx.GetMsgs() {
-		if _, ok := m.(*feestypes.MsgChargeFee); ok {
-			return next(ctx, tx, simulate)
-		}
-	}
-
-	// Get transaction signer (fee payer)
-	signers, err := tx.(authsigning.SigVerifiableTx).GetSigners()
-	if err != nil {
-		return ctx, sdkerrors.ErrInvalidAddress.Wrap("failed to get transaction signers")
-	}
-
-	if len(signers) == 0 {
-		return ctx, sdkerrors.ErrInvalidAddress.Wrap("no signers found in transaction")
-	}
-
-	sender := signers[0] // First signer pays the fee
-
-	// Check transaction memo for fee category
-	var txMemo string
-	if authTx, ok := tx.(interface{ GetMemo() string }); ok {
-		txMemo = authTx.GetMemo()
-	}
-
-	// Map memo to fee type
-	var feeType string
-	switch txMemo {
-	case "POS_PAYMENT":
-		feeType = "pos_payment"
-	case "TOKEN_INTERACTION":
-		feeType = "token_interaction"
-	case "NATIVE_TRANSFER":
-		feeType = "native_transfer"
-	case "DEX_NATIVE":
-		feeType = "dex_native"
-	case "DEX_USER":
-		feeType = "dex_user"
-	case "DEPLOY":
-		feeType = "deploy"
-	case "WIZARD":
-		feeType = "wizard"
-	default:
-		// Default to token interaction for unknown memos
-		feeType = "token_interaction"
-	}
-
-	// Charge fee using feesKeeper
-	msgServer := feeskeeper.NewMsgServerImpl(bfd.feesKeeper)
-	_, err = msgServer.ChargeFee(sdk.WrapSDKContext(ctx), &feestypes.MsgChargeFee{
-		Creator:  sdk.AccAddress(sender).String(),
-		Category: feeType,
-		Amount:   "0", // Amount will be determined by category
-		Metadata: "{}",
-	})
-	if err != nil {
-		return ctx, sdkerrors.ErrInsufficientFunds.Wrapf("failed to charge fee: %v", err)
-	}
-
-	return next(ctx, tx, simulate)
-}

@@ -104,6 +104,11 @@ func (fah *FeeAnteHandler) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool,
 	}
 
 	// For free tier transactions, ensure gas limits are respected
+	if estimate.Category == CategorySystem {
+		// System: skip event emission & fee expectations (optionally still emit marker event if needed). No deduction.
+		return next(ctx, tx, simulate)
+	}
+
 	if estimate.IsFree {
 		maxGas := fah.feeCalculator.getMaxGasForFreeCategory(estimate.Category, params.GuardRails)
 		if gasWanted > maxGas {
@@ -111,6 +116,7 @@ func (fah *FeeAnteHandler) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool,
 				"gas wanted (%d) exceeds free tier limit (%d) for category %s",
 				gasWanted, maxGas, estimate.Category)
 		}
+		// Free category: don't emit fee_charged to reduce noise OR emit with is_free=true. We choose to emit for analytics.
 	}
 
 	// Emit fee charged event (with hybrid marker attributes)

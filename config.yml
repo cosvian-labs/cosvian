@@ -5,45 +5,49 @@ default_denom: "ubto"
 
 accounts:
   - name: conversion_pool
-    coins: ["25000000000000ubto"]  # 25M BTO
+    coins: ["25000000000000ubto"] # 25M BTO
 
   - name: pos_infra
-    coins: ["10000000000000ubto"]  # 10M BTO
+    coins: ["10000000000000ubto"] # 10M BTO
 
   - name: exchange_fund
-    coins: ["5000000000000ubto"]   # 5M BTO
+    coins: ["5000000000000ubto"] # 5M BTO
 
   - name: norix_ecosystem
-    coins: ["5000000000000ubto"]   # 5M BTO
+    coins: ["5000000000000ubto"] # 5M BTO
 
   - name: infra_validators
-    coins: ["6000000000000ubto"]   # 6M BTO
+    coins: ["6000000000000ubto"] # 6M BTO
 
   - name: education_ops
-    coins: ["4000000000000ubto"]   # 4M BTO
+    coins: ["4000000000000ubto"] # 4M BTO
 
   - name: compliance_vault
-    coins: ["5000000000000ubto"]   # 5M BTO
+    coins: ["5000000000000ubto"] # 5M BTO
 
   - name: emergency_reserve
-    coins: ["5000000000000ubto"]   # 5M BTO
+    coins: ["5000000000000ubto"] # 5M BTO
 
   - name: strategic_growth
-    coins: ["5000000000000ubto"]   # 5M BTO
+    coins: ["5000000000000ubto"] # 5M BTO
 
   - name: team
-    coins: ["8000000000000ubto"]   # 8M BTO
+    coins: ["8000000000000ubto"] # 8M BTO
 
   - name: dao_reserve
-    coins: ["4000000000000ubto"]   # 4M BTO
+    coins: ["4000000000000ubto"] # 4M BTO
 
   - name: public_sale
-    coins: ["18000000000000ubto"]  # 18M BTO
+    coins: ["18000000000000ubto"] # 18M BTO
+
+  # Developer / testing account (added for permanent availability)
+  - name: tester
+    coins: ["100000000ubto"] # 100 BTO (adjust as needed)
 
 faucet:
   name: public_sale
-  coins: ["1000000000000ubto"]      # 1M BTO
-  coins_max: ["5000000000000ubto"]  # 5M BTO
+  coins: ["1000000000000ubto"] # 1M BTO
+  coins_max: ["5000000000000ubto"] # 5M BTO
   port: 4500
 
 validators:
