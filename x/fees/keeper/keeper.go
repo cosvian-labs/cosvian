@@ -185,15 +185,15 @@ func (k Keeper) DistributeFee(ctx sdk.Context, sender sdk.AccAddress, feeType st
 
 	// Fallback invalid recipient shares to treasury
 	remap := math.ZeroInt()
-	if retailAddr == nil || len(retailAddr) == 0 {
+	if len(retailAddr) == 0 {
 		remap = remap.Add(retailWalletAmount)
 		retailWalletAmount = math.ZeroInt()
 	}
-	if devAddr == nil || len(devAddr) == 0 {
+	if len(devAddr) == 0 {
 		remap = remap.Add(tokenDevAmount)
 		tokenDevAmount = math.ZeroInt()
 	}
-	if creatorAddr == nil || len(creatorAddr) == 0 {
+	if len(creatorAddr) == 0 {
 		remap = remap.Add(tokenCreatorAmount)
 		tokenCreatorAmount = math.ZeroInt()
 	}
@@ -233,15 +233,7 @@ func (k Keeper) DistributeFee(ctx sdk.Context, sender sdk.AccAddress, feeType st
 		}
 	}
 
-	// Emit event
-	ctx.EventManager().EmitEvent(
-		sdk.NewEvent("FeeCharged",
-			sdk.NewAttribute("sender", sender.String()),
-			sdk.NewAttribute("fee_type", feeType),
-			sdk.NewAttribute("total_fee", feeCoin.String()),
-			sdk.NewAttribute("treasury_fee", sdk.NewCoin(feeCoin.Denom, treasuryAmount).String()),
-		),
-	)
+	// Note: event emission is centralized in ante handler; avoid emitting here to prevent duplicates.
 
 	return nil
 }
@@ -325,15 +317,15 @@ func (k Keeper) DistributeFeeFromModule(ctx sdk.Context, moduleName, feeType str
 	}
 
 	remap := math.ZeroInt()
-	if retailAddr == nil || len(retailAddr) == 0 {
+	if len(retailAddr) == 0 {
 		remap = remap.Add(retailWalletAmount)
 		retailWalletAmount = math.ZeroInt()
 	}
-	if devAddr == nil || len(devAddr) == 0 {
+	if len(devAddr) == 0 {
 		remap = remap.Add(tokenDevAmount)
 		tokenDevAmount = math.ZeroInt()
 	}
-	if creatorAddr == nil || len(creatorAddr) == 0 {
+	if len(creatorAddr) == 0 {
 		remap = remap.Add(tokenCreatorAmount)
 		tokenCreatorAmount = math.ZeroInt()
 	}
@@ -366,13 +358,7 @@ func (k Keeper) DistributeFeeFromModule(ctx sdk.Context, moduleName, feeType str
 		}
 	}
 
-	ctx.EventManager().EmitEvent(
-		sdk.NewEvent("FeeCharged",
-			sdk.NewAttribute("module", moduleName),
-			sdk.NewAttribute("fee_type", feeType),
-			sdk.NewAttribute("total_fee", feeCoin.String()),
-		),
-	)
+	// Note: legacy FeeCharged event removed; ante handler emits unified fee_charged prior to deduction.
 
 	return nil
 }

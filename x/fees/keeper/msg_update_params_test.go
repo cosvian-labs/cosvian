@@ -20,38 +20,30 @@ func TestMsgUpdateParams(t *testing.T) {
 	require.NoError(t, err)
 
 	// default params
-	testCases := []struct {
-		name      string
-		input     *types.MsgUpdateParams
-		expErr    bool
-		expErrMsg string
-	}{
-		{
-			name: "invalid authority",
-			input: &types.MsgUpdateParams{
-				Authority: "invalid",
-				Params:    params,
+		testCases := []struct {
+			name      string
+			input     *types.MsgUpdateParams
+			expErr    bool
+			expErrMsg string
+		}{
+			{
+				name: "invalid authority",
+				input: &types.MsgUpdateParams{
+					Authority: "invalid",
+					Params:    params,
+				},
+				expErr:    true,
+				expErrMsg: "invalid authority",
 			},
-			expErr:    true,
-			expErrMsg: "invalid authority",
-		},
-		{
-			name: "send enabled param",
-			input: &types.MsgUpdateParams{
-				Authority: authorityStr,
-				Params:    types.Params{},
+			{
+				name: "all good",
+				input: &types.MsgUpdateParams{
+					Authority: authorityStr,
+					Params:    params,
+				},
+				expErr: false,
 			},
-			expErr: false,
-		},
-		{
-			name: "all good",
-			input: &types.MsgUpdateParams{
-				Authority: authorityStr,
-				Params:    params,
-			},
-			expErr: false,
-		},
-	}
+		}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {

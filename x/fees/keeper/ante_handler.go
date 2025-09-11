@@ -187,6 +187,8 @@ func (fah *FeeAnteHandler) emitFeeChargedEvent(ctx sdk.Context, estimate *FeeEst
 		sdk.NewAttribute(types.AttributeKeyCategory, string(estimate.Category)),
 		sdk.NewAttribute(types.AttributeKeyUsdAmount, estimate.USDAmount.String()),
 		sdk.NewAttribute(types.AttributeKeyBtoAmount, estimate.BTOAmount.String()),
+		// Backcompat alias (temporary): fee_type mirrors category
+		sdk.NewAttribute("fee_type", string(estimate.Category)),
 		sdk.NewAttribute("gas_wanted", fmt.Sprintf("%d", estimate.GasWanted)),
 		sdk.NewAttribute("gas_price", estimate.GasPrice.String()),
 		sdk.NewAttribute("provided_fee", providedFee.String()),
@@ -194,9 +196,8 @@ func (fah *FeeAnteHandler) emitFeeChargedEvent(ctx sdk.Context, estimate *FeeEst
 	}
 
 	// Mark system exemption explicitly (useful for relayer / analytics)
-	if estimate.Category == CategorySystem {
-		attributes = append(attributes, sdk.NewAttribute("system_exempt", "true"))
-	}
+	// Always include system_exempt for schema consistency
+	attributes = append(attributes, sdk.NewAttribute("system_exempt", fmt.Sprintf("%t", estimate.Category == CategorySystem)))
 
 	// Add metadata attributes if available
 	if metadata.UserAgent != "" {
@@ -275,16 +276,8 @@ func (dfd DeductFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bo
 
 // deductFees deducts fees from the fee payer account
 func (dfd DeductFeeDecorator) deductFees(ctx sdk.Context, feeTx sdk.FeeTx, fee sdk.Coins) error {
-	// Fail-open safety: if the fees module account does not exist yet, the SDK's
-	// bank SendCoinsFromAccountToModule will panic. We recover here so the tx
-	// still succeeds (coins won't actually move) allowing us to verify the
-	// fee_charged event pipeline while awaiting proper genesis module account.
-	defer func() {
-		if r := recover(); r != nil {
-			// TODO: replace with structured logging once a logger is available here.
-			// Silently swallow to avoid aborting tx execution.
-		}
-	}()
+	// Module account 'fees' now guaranteed in genesis (see app_config.go moduleAccPerms).
+	// Any panic here should surface so we can catch real misconfigurations early.
 	feePayer := feeTx.FeePayer()
 	feeGranter := feeTx.FeeGranter()
 

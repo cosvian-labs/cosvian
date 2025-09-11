@@ -91,15 +91,16 @@ func (k msgServer) ChargeFee(ctx context.Context, msg *types.MsgChargeFee) (*typ
 	// Set gas used to equal fee amount (BTO-equivalent shown via ubto)
 	sdkCtx.GasMeter().ConsumeGas(feeUbto.Uint64(), "fee charge")
 
-	// Emit event
+	// Emit standardized event (no legacy FeeCharged)
 	sdkCtx.EventManager().EmitEvent(
 		sdk.NewEvent(types.EventTypeFeeCharged,
 			sdk.NewAttribute("category", msg.Category),
-			sdk.NewAttribute("creator", msg.Creator),
-			sdk.NewAttribute("fee_usd", feeUSD.String()),
-			sdk.NewAttribute("fee_bto", btoAmount.String()),
-			sdk.NewAttribute("fee_ubto", feeUbto.String()),
-			sdk.NewAttribute("gas_used", feeUbto.String()),
+			// alias for backward compatibility
+			sdk.NewAttribute("fee_type", msg.Category),
+			sdk.NewAttribute("usd_amount", feeUSD.String()),
+			sdk.NewAttribute("bto_amount", btoAmount.String()),
+			sdk.NewAttribute("provided_fee", sdk.NewCoins(sdk.NewCoin("ubto", feeUbto)).String()),
+			sdk.NewAttribute("system_exempt", "false"),
 		),
 	)
 

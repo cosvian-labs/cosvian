@@ -29,7 +29,7 @@ const (
 // ChargeAndSplitFee memotong fee dari sender dan membagi 50:50 ke treasury dan infrastructure
 func (k Keeper) ChargeAndSplitFee(ctx sdk.Context, sender sdk.AccAddress, usdAmount math.LegacyDec) error {
 	// Use the central fees keeper to convert USD to BTO/ubto
-	feeBTO, pd, err := k.feesKeeper.ConvertUSDToBTO(ctx, usdAmount)
+	feeBTO, _, err := k.feesKeeper.ConvertUSDToBTO(ctx, usdAmount)
 	if err != nil {
 		return errors.Wrapf(err, "failed to convert USD to BTO")
 	}
@@ -59,17 +59,7 @@ func (k Keeper) ChargeAndSplitFee(ctx sdk.Context, sender sdk.AccAddress, usdAmo
 		return errors.Wrapf(err, "failed to send fee to infrastructure")
 	}
 
-	// 7. Emit event
-	ctx.EventManager().EmitEvent(
-		sdk.NewEvent("FeeCharged",
-			sdk.NewAttribute("sender", sender.String()),
-			sdk.NewAttribute("fee_usd", usdAmount.String()),
-			sdk.NewAttribute("bto_price", pd.String()),
-			sdk.NewAttribute("total_fee_ubto", feeCoin.String()),
-			sdk.NewAttribute("treasury_fee", toTreasury.String()),
-			sdk.NewAttribute("infrastructure_fee", toInfra.String()),
-		),
-	)
+	// Do not emit legacy FeeCharged; unified fee_charged is emitted by central fees ante logic for user txs.
 
 	return nil
 }
@@ -101,14 +91,7 @@ func (k Keeper) ChargeAndDistributeFeeByType(
 
 	// If fee is zero (free transactions), skip charging
 	if feeUSD.IsZero() {
-		ctx.EventManager().EmitEvent(
-			sdk.NewEvent("FeeCharged",
-				sdk.NewAttribute("sender", sender.String()),
-				sdk.NewAttribute("fee_type", feeType),
-				sdk.NewAttribute("fee_usd", "0"),
-				sdk.NewAttribute("total_fee_ubto", "0"),
-			),
-		)
+		// free categories: skip emitting here to avoid duplicates; ante handler already handles event with is_free=true
 		return nil
 	}
 
