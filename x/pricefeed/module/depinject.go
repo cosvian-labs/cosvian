@@ -9,6 +9,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	ibckeeper "github.com/cosmos/ibc-go/v10/modules/core/keeper"
+	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
 
 	"bitora/x/pricefeed/keeper"
 	"bitora/x/pricefeed/types"
@@ -44,6 +45,7 @@ type ModuleInputs struct {
 	OracleKeeper types.OracleKeeper
 
 	IBCKeeperFn func() *ibckeeper.Keeper `optional:"true"`
+	ScopedKeeper *capabilitykeeper.ScopedKeeper `optional:"true"`
 }
 
 type ModuleOutputs struct {
@@ -65,6 +67,7 @@ func ProvideModule(in ModuleInputs) ModuleOutputs {
 		in.AddressCodec,
 		authority,
 		in.IBCKeeperFn,
+		in.ScopedKeeper,
 		in.FeesKeeper,
 		in.OracleKeeper,
 	)

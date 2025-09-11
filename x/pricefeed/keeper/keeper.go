@@ -9,6 +9,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	ibckeeper "github.com/cosmos/ibc-go/v10/modules/core/keeper"
 
+	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
+
 	feesTypes "bitora/x/fees/types"
 	"bitora/x/pricefeed/types"
 )
@@ -29,6 +31,7 @@ type Keeper struct {
 	feesKeeper feesTypes.FeesKeeper
 
 	ibcKeeperFn func() *ibckeeper.Keeper
+	scopedKeeper *capabilitykeeper.ScopedKeeper
 
 	// oracleKeeper is the canonical store for BTO/USD, used to expose to fees
 	oracleKeeper types.OracleKeeper
@@ -40,6 +43,7 @@ func NewKeeper(
 	addressCodec address.Codec,
 	authority []byte,
 	ibcKeeperFn func() *ibckeeper.Keeper,
+	scopedKeeper *capabilitykeeper.ScopedKeeper,
 	feesKeeper feesTypes.FeesKeeper,
 	oracleKeeper types.OracleKeeper,
 
@@ -57,6 +61,7 @@ func NewKeeper(
 		authority:    authority,
 		feesKeeper:   feesKeeper,
 		ibcKeeperFn:  ibcKeeperFn,
+		scopedKeeper: scopedKeeper,
 		oracleKeeper: oracleKeeper,
 		Port:         collections.NewItem(sb, types.PortKey, "port", collections.StringValue),
 		Params:       collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),

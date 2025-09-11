@@ -55,6 +55,7 @@ func initFixture(t *testing.T) *fixture {
 		func() *ibckeeper.Keeper {
 			return ibckeeper.NewKeeper(encCfg.Codec, storeService, newMockParams(), mockUpgradeKeeper, authority.String())
 		},
+		nil,
 		(feesTypes.FeesKeeper)(nil),
 		mockOracleKeeper{},
 	)
@@ -157,6 +158,7 @@ func TestOnRecvOracleResponse_StoresPrice(t *testing.T) {
 		func() *ibckeeper.Keeper {
 			return ibckeeper.NewKeeper(encCfg.Codec, storeService, newMockParams(), mockUpgradeKeeper, authority.String())
 		},
+		nil,
 		(feesTypes.FeesKeeper)(nil),
 		spy,
 	)

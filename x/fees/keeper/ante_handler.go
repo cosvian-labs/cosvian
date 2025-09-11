@@ -251,9 +251,7 @@ func (dfd DeductFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bo
 		return ctx, sdkerrors.ErrTxDecode.Wrap("Tx must be a FeeTx")
 	}
 
-	// Fail-open guard: kita tidak punya akses langsung module address di AuthKeeper interface.
-	// Jika nanti deduction memicu panic (module not found) akan ditangkap recover di BaseApp dan code non-zero.
-	// Di sini tidak bisa cek, jadi lanjut.
+	// Distribution and deduction must be strict now; any misconfiguration should error and surface.
 
 	if !simulate {
 		fee := feeTx.GetFee()
@@ -304,8 +302,6 @@ func (dfd DeductFeeDecorator) deductFees(ctx sdk.Context, feeTx sdk.FeeTx, fee s
 
 // distributeFees distributes collected fees according to the fee table splits
 func (dfd DeductFeeDecorator) distributeFees(ctx sdk.Context, fee sdk.Coins) error {
-	// Kita tidak bisa cek keberadaan module account treasury dari interface ini.
-
 	md := map[string]interface{}{}
 	if v := ctx.Context().Value(types.FeeMetadataContextKey); v != nil {
 		if m, ok := v.(*FeeMetadata); ok {
@@ -319,10 +315,8 @@ func (dfd DeductFeeDecorator) distributeFees(ctx sdk.Context, fee sdk.Coins) err
 		}
 	}
 	for _, coin := range fee {
-		// Jika treasuryAddr nil, kita modifikasi metadata agar distribusi treat seluruh amount tetap di akun fees tanpa redistribusi.
 		if err := dfd.feeKeeper.DistributeFeeFromModule(ctx, types.ModuleName, feeType, coin, md); err != nil {
-			// Jika error karena params belum siap atau module treasury tidak ada, ignore (fail-open) agar tx tidak gagal.
-			return nil
+			return err
 		}
 	}
 	return nil
