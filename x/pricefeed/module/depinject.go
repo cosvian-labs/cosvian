@@ -8,8 +8,8 @@ import (
 	"cosmossdk.io/depinject/appconfig"
 	"github.com/cosmos/cosmos-sdk/codec"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	ibckeeper "github.com/cosmos/ibc-go/v10/modules/core/keeper"
 	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
+	ibckeeper "github.com/cosmos/ibc-go/v10/modules/core/keeper"
 
 	"bitora/x/pricefeed/keeper"
 	"bitora/x/pricefeed/types"

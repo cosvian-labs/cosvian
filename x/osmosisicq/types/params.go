@@ -10,12 +10,12 @@ import (
 // NewParams creates a new Params instance.
 func NewParams() Params {
 	return Params{
-	ConnectionId:         "connection-0", // placeholder; set to real Osmosis connection ID
+	ConnectionId:         "connection-0", // target connection to osmo-test-5
 	UpdateIntervalSeconds: 30,
-	// Practical defaults to enable ICQ registration out-of-the-box in local setups
-	PoolId:               1464,                 // OSMO/USDC main pool on Osmosis (example)
-	BaseDenom:            "uosmo",             // Osmosis on-chain base denom
-	QuoteDenom:           "ibc/PLACEHOLDER_HASH", // Replace with real USDC ibc/<HASH> on Osmosis
+	// Defaults aligned with osmo-test-5 OSMO/USDC
+	PoolId:               553,                   // OSMO/USDC pool id on osmo-test-5
+	BaseDenom:            "uosmo",              // base denom on Osmosis
+	QuoteDenom:           "ibc/DE6792CF9E521F6AD6E9A4BDF6225C9571A3B74ACC0A529F92BC5122A39D2E58", // USDC IBC denom on osmo-test-5
 		UseTwap:              true,
 		TwapWindowSeconds:    300,
 		MinLiquidity:         "0",
