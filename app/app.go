@@ -52,6 +52,7 @@ import (
 	bitoramodulekeeper "bitora/x/bitora/keeper"
 	feesmodulekeeper "bitora/x/fees/keeper"
 	feesmoduletypes "bitora/x/fees/types"
+	icqcontrollermodulekeeper "bitora/x/icqcontroller/keeper"
 	osmosisicqmodulekeeper "bitora/x/osmosisicq/keeper"
 
 	// conversionpoolmodulekeeper "bitora/x/conversionpool/keeper" // Temporarily commented for testing
@@ -124,8 +125,9 @@ type App struct {
 	// CosmWasm
 	WasmKeeper wasmkeeper.Keeper
 
-	FeesKeeper       feesmodulekeeper.Keeper
-	OsmosisicqKeeper osmosisicqmodulekeeper.Keeper
+	FeesKeeper          feesmodulekeeper.Keeper
+	OsmosisicqKeeper    osmosisicqmodulekeeper.Keeper
+	IcqcontrollerKeeper icqcontrollermodulekeeper.Keeper
 	// this line is used by starport scaffolding # stargate/app/keeperDeclaration
 
 	// simulation manager
@@ -215,6 +217,7 @@ func New(
 		&app.RegistryKeeper,
 		&app.FeesKeeper,
 		&app.OsmosisicqKeeper,
+		&app.IcqcontrollerKeeper,
 	); err != nil {
 		panic(err)
 	}

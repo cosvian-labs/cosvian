@@ -7,13 +7,13 @@ import (
 )
 
 func TestBuildGammPoolKey(t *testing.T) {
-    q := BuildGammPoolKey(42)
-    require.Equal(t, "gamm", q.Store)
-    require.Equal(t, []byte("pool/42"), q.Key)
+	q := BuildGammPoolKey(42)
+	require.Equal(t, "gamm", q.Store)
+	require.Equal(t, []byte("pool/42"), q.Key)
 }
 
 func TestBuildTwapToNowKey(t *testing.T) {
-    q := BuildTwapToNowKey("ubto", "uusdc", 300)
-    require.Equal(t, "twap", q.Store)
-    require.Equal(t, []byte("twap/ubto/uusdc/300"), q.Key)
+	q := BuildTwapToNowKey("ubto", "uusdc", 300)
+	require.Equal(t, "twap", q.Store)
+	require.Equal(t, []byte("twap/ubto/uusdc/300"), q.Key)
 }

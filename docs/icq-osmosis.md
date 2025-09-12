@@ -87,3 +87,11 @@ Stub ICQ adapter
 
 - `x/osmosisicq/controller/adapter_stub.go` menyediakan adapter in-process yang memenuhi `types.ICQClient`.
 - Gunakan untuk prototyping: adapter.RegisterKVQuery(...) → adapter.ReceiveKVResult(...) yang memanggil `keeper.OnKVResult`.
+
+Async ICQ (opsional, di balik build tag)
+
+- Untuk mengaktifkan controller ICQ nyata berbasis `async-icq`, sediakan implementasi `types.ICQClient` dan wiring IBC port/controller di balik build tag, misal `-tags icq_async`.
+- Hook yang disediakan:
+  - `app/maybeRegisterICQStores` dan `app/registerICQAsync` untuk registrasi store & route IBC.
+  - Provider depinject opsional di `x/osmosisicq/module/icq_async_provider_*.go` untuk menyuplai `ICQClient` nyata.
+- Build default tanpa tag tetap menggunakan client registrasi minimal dan tidak mengirim paket ICQ.

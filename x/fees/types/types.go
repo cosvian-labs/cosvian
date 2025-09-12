@@ -2,8 +2,8 @@ package types
 
 // Fee mode constants
 const (
-	FeeModeTable  = "table"
-	FeeModeHybrid = "hybrid"
+	FeeModeTable   = "table"
+	FeeModeHybrid  = "hybrid"
 	FeeModeGasOnly = "gas_only"
 )
 

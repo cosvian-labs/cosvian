@@ -35,5 +35,4 @@ message Params {
 
   // max_deviation is a string-encoded decimal; discard prices deviating more than this from LGP.
   string max_deviation = 9 [(gogoproto.moretags) = "yaml:\"max_deviation\""];
-
 }

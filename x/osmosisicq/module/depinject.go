@@ -33,8 +33,8 @@ type ModuleInputs struct {
 	Cdc          codec.Codec
 	AddressCodec address.Codec
 
-	AuthKeeper types.AuthKeeper
-	BankKeeper types.BankKeeper
+	AuthKeeper   types.AuthKeeper
+	BankKeeper   types.BankKeeper
 	OracleKeeper types.OracleKeeper
 	// Optional ICQ client implementation
 	ICQClient types.ICQClient `optional:"true"`

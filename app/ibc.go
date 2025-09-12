@@ -1,6 +1,8 @@
 package app
 
 import (
+	icqcontrollermodule "bitora/x/icqcontroller/module"
+	icqcontrollermoduletypes "bitora/x/icqcontroller/types"
 	pricefeedmodule "bitora/x/pricefeed/module"
 	pricefeedmoduletypes "bitora/x/pricefeed/types"
 
@@ -46,6 +48,11 @@ func (app *App) registerIBCModules(appOpts servertypes.AppOptions) error {
 		storetypes.NewKVStoreKey(icahosttypes.StoreKey),
 		storetypes.NewKVStoreKey(icacontrollertypes.StoreKey),
 	); err != nil {
+		return err
+	}
+
+	// Optionally register any additional IBC-related stores (e.g., ICQ) under build tags.
+	if err := maybeRegisterICQStores(app); err != nil {
 		return err
 	}
 
@@ -130,7 +137,14 @@ func (app *App) registerIBCModules(appOpts servertypes.AppOptions) error {
 
 	pricefeedIBCModule := pricefeedmodule.NewIBCModule(app.appCodec, app.PricefeedKeeper)
 	ibcRouter.AddRoute(pricefeedmoduletypes.ModuleName, pricefeedIBCModule)
+	icqcontrollerIBCModule := icqcontrollermodule.NewIBCModule(app.appCodec, app.IcqcontrollerKeeper)
+	ibcRouter.AddRoute(icqcontrollermoduletypes.ModuleName, icqcontrollerIBCModule)
 	// this line is used by starport scaffolding # ibc/app/module
+
+	// Optionally wire ICQ controller routes (enabled behind build tags).
+	if err := registerICQAsync(app, ibcRouter); err != nil {
+		return err
+	}
 
 	app.IBCKeeper.SetRouter(ibcRouter)
 	app.IBCKeeper.SetRouterV2(ibcv2Router)

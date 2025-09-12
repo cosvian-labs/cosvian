@@ -113,13 +113,15 @@ func TestScheduleQueriesIfDue_IntervalSetsLastUpdate(t *testing.T) {
 type mockOracleKeeper struct{}
 
 func (mockOracleKeeper) SetBTOPerUSD(ctx sdk.Context, price sdkmath.LegacyDec) error { return nil }
-func (mockOracleKeeper) GetBTOPerUSD(ctx sdk.Context) sdkmath.LegacyDec        { return sdkmath.LegacyZeroDec() }
+func (mockOracleKeeper) GetBTOPerUSD(ctx sdk.Context) sdkmath.LegacyDec {
+	return sdkmath.LegacyZeroDec()
+}
 
 // mockOracleWithLGP returns a fixed Last Good Price
 type mockOracleWithLGP struct{ lgp sdkmath.LegacyDec }
 
 func (m mockOracleWithLGP) SetBTOPerUSD(ctx sdk.Context, price sdkmath.LegacyDec) error { return nil }
-func (m mockOracleWithLGP) GetBTOPerUSD(ctx sdk.Context) sdkmath.LegacyDec        { return m.lgp }
+func (m mockOracleWithLGP) GetBTOPerUSD(ctx sdk.Context) sdkmath.LegacyDec              { return m.lgp }
 
 // mock ICQ client for tests
 type mockICQClient struct{}
@@ -238,7 +240,7 @@ func TestScheduleRegistersSpotQuery_WhenICQPresent(t *testing.T) {
 }
 
 // capturing oracle mock for persistence assertions
-type mockCaptureOracle struct{
+type mockCaptureOracle struct {
 	last sdkmath.LegacyDec
 	set  bool
 }

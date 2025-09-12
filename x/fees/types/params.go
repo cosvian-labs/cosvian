@@ -105,7 +105,7 @@ func DefaultParams() Params {
 		TokenDevWallet:     "bto1dev000000000000000000000000000000000000", // Placeholder
 		TokenCreatorWallet: "bto1creator00000000000000000000000000000000", // Placeholder
 		// Enable hybrid mode by default on this branch so IBC system txs are gas-only out of the box.
-		FeeMode:            FeeModeHybrid,
+		FeeMode: FeeModeHybrid,
 		SystemMsgTypeUrls: []string{
 			"/ibc.core.client.v1.MsgCreateClient",
 			"/ibc.core.client.v1.MsgUpdateClient",
@@ -129,7 +129,7 @@ func DefaultParams() Params {
 			"/ibc.applications.interchain_accounts.controller.v1.MsgSendTx",
 		},
 		ExemptMsgTypeUrls: []string{},
-		ExemptAddresses:  []string{},
+		ExemptAddresses:   []string{},
 	}
 }
 
@@ -166,13 +166,21 @@ func (p Params) validateHybridFields() error {
 	// Basic sanity: no duplicates in system or exempt lists
 	seen := map[string]struct{}{}
 	for _, s := range p.SystemMsgTypeUrls {
-		if s == "" { continue }
-		if _, ok := seen[s]; ok { return fmt.Errorf("duplicate system_msg_type_url: %s", s) }
+		if s == "" {
+			continue
+		}
+		if _, ok := seen[s]; ok {
+			return fmt.Errorf("duplicate system_msg_type_url: %s", s)
+		}
 		seen[s] = struct{}{}
 	}
 	for _, s := range p.ExemptMsgTypeUrls {
-		if s == "" { continue }
-		if _, ok := seen[s]; ok { return fmt.Errorf("type url appears in both system and exempt lists: %s", s) }
+		if s == "" {
+			continue
+		}
+		if _, ok := seen[s]; ok {
+			return fmt.Errorf("type url appears in both system and exempt lists: %s", s)
+		}
 	}
 	return nil
 }

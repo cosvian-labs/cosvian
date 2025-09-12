@@ -44,7 +44,7 @@ type ModuleInputs struct {
 	// Inject canonical Oracle keeper to persist aggregated prices
 	OracleKeeper types.OracleKeeper
 
-	IBCKeeperFn func() *ibckeeper.Keeper `optional:"true"`
+	IBCKeeperFn  func() *ibckeeper.Keeper       `optional:"true"`
 	ScopedKeeper *capabilitykeeper.ScopedKeeper `optional:"true"`
 }
 

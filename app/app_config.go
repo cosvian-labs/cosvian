@@ -5,6 +5,8 @@ import (
 	bitoramoduletypes "bitora/x/bitora/types"
 	_ "bitora/x/fees/module"
 	feesmoduletypes "bitora/x/fees/types"
+	_ "bitora/x/icqcontroller/module"
+	icqcontrollermoduletypes "bitora/x/icqcontroller/types"
 	_ "bitora/x/osmosisicq/module"
 	osmosisicqmoduletypes "bitora/x/osmosisicq/types"
 
@@ -172,6 +174,7 @@ var (
 						registrymoduletypes.ModuleName,
 						feesmoduletypes.ModuleName,
 						osmosisicqmoduletypes.ModuleName,
+						icqcontrollermoduletypes.ModuleName,
 						// this line is used by starport scaffolding # stargate/app/beginBlockers
 					},
 					EndBlockers: []string{
@@ -191,6 +194,7 @@ var (
 						registrymoduletypes.ModuleName,
 						feesmoduletypes.ModuleName,
 						osmosisicqmoduletypes.ModuleName,
+						icqcontrollermoduletypes.ModuleName,
 						// this line is used by starport scaffolding # stargate/app/endBlockers
 					},
 					// The following is mostly only needed when ModuleName != StoreKey name.
@@ -238,6 +242,7 @@ var (
 						registrymoduletypes.ModuleName,
 						feesmoduletypes.ModuleName,
 						osmosisicqmoduletypes.ModuleName,
+						icqcontrollermoduletypes.ModuleName,
 						// this line is used by starport scaffolding # stargate/app/initGenesis
 					},
 				}),
@@ -370,6 +375,10 @@ var (
 			{
 				Name:   osmosisicqmoduletypes.ModuleName,
 				Config: appconfig.WrapAny(&osmosisicqmoduletypes.Module{}),
+			},
+			{
+				Name:   icqcontrollermoduletypes.ModuleName,
+				Config: appconfig.WrapAny(&icqcontrollermoduletypes.Module{}),
 			},
 			// this line is used by starport scaffolding # stargate/app/moduleConfig
 		},

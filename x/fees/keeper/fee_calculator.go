@@ -20,7 +20,9 @@ type FeeCalculator struct {
 }
 
 // NewFeeCalculator constructs a FeeCalculator
-func NewFeeCalculator(keeper Keeper, oracleAdapter *OracleAdapter) *FeeCalculator { return &FeeCalculator{keeper: keeper, oracleAdapter: oracleAdapter} }
+func NewFeeCalculator(keeper Keeper, oracleAdapter *OracleAdapter) *FeeCalculator {
+	return &FeeCalculator{keeper: keeper, oracleAdapter: oracleAdapter}
+}
 
 // TransactionCategory represents the fee category for a transaction
 type TransactionCategory string
@@ -196,7 +198,6 @@ func (fc *FeeCalculator) classifyTransaction(ctx sdk.Context, msgs []sdk.Msg, me
 		return CategoryWizard
 	}
 
-
 	// Hybrid system detection: if all msgs system, mark system; if mix system+user mark mixed
 	// Context-aware system detection (needs params): evaluate here now that ctx is available.
 	allSystem := true
@@ -216,7 +217,6 @@ func (fc *FeeCalculator) classifyTransaction(ctx sdk.Context, msgs []sdk.Msg, me
 	if anySystem && anyUser {
 		return CategoryMixed
 	}
-
 
 	// Classify based on message types (user/economic)
 	for _, msg := range msgs {
@@ -255,7 +255,9 @@ func (fc *FeeCalculator) classifyTransaction(ctx sdk.Context, msgs []sdk.Msg, me
 
 // expandMessages unwraps authz MsgExec and ICA controller MsgSendTx recursively
 func (fc *FeeCalculator) expandMessages(msgs []sdk.Msg, depth int) []sdk.Msg {
-	if depth <= 0 { return msgs }
+	if depth <= 0 {
+		return msgs
+	}
 	var out []sdk.Msg
 	for _, m := range msgs {
 		switch m := m.(type) {

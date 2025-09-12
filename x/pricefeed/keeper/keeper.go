@@ -30,7 +30,7 @@ type Keeper struct {
 
 	feesKeeper feesTypes.FeesKeeper
 
-	ibcKeeperFn func() *ibckeeper.Keeper
+	ibcKeeperFn  func() *ibckeeper.Keeper
 	scopedKeeper *capabilitykeeper.ScopedKeeper
 
 	// oracleKeeper is the canonical store for BTO/USD, used to expose to fees

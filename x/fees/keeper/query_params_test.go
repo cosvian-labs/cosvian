@@ -19,9 +19,17 @@ func TestParamsQuery(t *testing.T) {
 	response, err := qs.Params(f.ctx, &types.QueryParamsRequest{})
 	require.NoError(t, err)
 	// normalize nil vs empty slices for comparison
-	if params.ExemptMsgTypeUrls == nil { params.ExemptMsgTypeUrls = []string{} }
-	if params.ExemptAddresses == nil { params.ExemptAddresses = []string{} }
-	if response.Params.ExemptMsgTypeUrls == nil { response.Params.ExemptMsgTypeUrls = []string{} }
-	if response.Params.ExemptAddresses == nil { response.Params.ExemptAddresses = []string{} }
+	if params.ExemptMsgTypeUrls == nil {
+		params.ExemptMsgTypeUrls = []string{}
+	}
+	if params.ExemptAddresses == nil {
+		params.ExemptAddresses = []string{}
+	}
+	if response.Params.ExemptMsgTypeUrls == nil {
+		response.Params.ExemptMsgTypeUrls = []string{}
+	}
+	if response.Params.ExemptAddresses == nil {
+		response.Params.ExemptAddresses = []string{}
+	}
 	require.Equal(t, &types.QueryParamsResponse{Params: params}, response)
 }

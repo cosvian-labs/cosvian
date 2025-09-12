@@ -26,14 +26,14 @@ type Keeper struct {
 	// oracleKeeper is used to persist computed BTO/USD.
 	oracleKeeper types.OracleKeeper
 	// icqClient is optional and used to register KV queries when present
-	icqClient   types.ICQClient
+	icqClient types.ICQClient
 
-	Schema collections.Schema
-	Params collections.Item[types.Params]
-	LastUpdate collections.Item[int64]
-	NextUpdate      collections.Item[int64]
-	LastResultTime  collections.Item[int64]
-	QueryIDs        collections.Map[string, string]
+	Schema         collections.Schema
+	Params         collections.Item[types.Params]
+	LastUpdate     collections.Item[int64]
+	NextUpdate     collections.Item[int64]
+	LastResultTime collections.Item[int64]
+	QueryIDs       collections.Map[string, string]
 }
 
 func NewKeeper(
@@ -56,14 +56,14 @@ func NewKeeper(
 		cdc:          cdc,
 		addressCodec: addressCodec,
 		authority:    authority,
-	oracleKeeper: oracleKeeper,
-	icqClient:    icqClient,
+		oracleKeeper: oracleKeeper,
+		icqClient:    icqClient,
 
 		Params:         collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
 		LastUpdate:     collections.NewItem(sb, types.LastUpdateKey, "last_update", collections.Int64Value),
-		NextUpdate:      collections.NewItem(sb, types.NextUpdateKey, "next_update", collections.Int64Value),
-		LastResultTime:  collections.NewItem(sb, types.LastResultTimeKey, "last_result_time", collections.Int64Value),
-		QueryIDs:        collections.NewMap(sb, types.QueryIDsKey, "query_ids", collections.StringKey, collections.StringValue),
+		NextUpdate:     collections.NewItem(sb, types.NextUpdateKey, "next_update", collections.Int64Value),
+		LastResultTime: collections.NewItem(sb, types.LastResultTimeKey, "last_result_time", collections.Int64Value),
+		QueryIDs:       collections.NewMap(sb, types.QueryIDsKey, "query_ids", collections.StringKey, collections.StringValue),
 	}
 
 	schema, err := sb.Build()

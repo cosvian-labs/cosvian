@@ -19,11 +19,11 @@ func TestGenesisState_Validate(t *testing.T) {
 			genState: types.DefaultGenesis(),
 			valid:    true,
 		},
-			{
-				desc:     "valid genesis state",
-				genState: &types.GenesisState{Params: types.DefaultParams()},
-				valid:    true,
-			},
+		{
+			desc:     "valid genesis state",
+			genState: &types.GenesisState{Params: types.DefaultParams()},
+			valid:    true,
+		},
 	}
 	for _, tc := range tests {
 		t.Run(tc.desc, func(t *testing.T) {
