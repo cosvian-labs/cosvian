@@ -12,7 +12,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	icqctrlkeeper "bitora/x/icqcontroller/keeper"
-	"bitora/x/osmosisicq/types"
+	types "bitora/x/osmosisicq/types"
 )
 
 // Register a provider that adds the async-icq controller keeper to the container and
@@ -57,7 +57,7 @@ func (a icqClientAdapter) RegisterKVQuery(ctx sdk.Context, connectionID, store s
 				sdk.NewAttribute("note", "no_active_channel"),
 			),
 		)
-		return "", fmt.Errorf("no active icq channel for %s", connectionID)
+	return "", types.ErrNoActiveChannel
 	}
 	qid, err := a.ctrl.SendKVQuery(ctx, connectionID, store, key)
 	if err != nil {

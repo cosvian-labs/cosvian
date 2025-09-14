@@ -42,8 +42,19 @@ func (k Keeper) SendKVQuery(ctx sdk.Context, connectionID, store string, key []b
 	// Use a reasonable timeout (e.g. 2 minutes from now)
 	timeoutTimestamp := uint64(ctx.BlockTime().Add(2 * time.Minute).UnixNano())
 
+	// Determine next sequence and persist pending correlation BEFORE sending
+	nextSeq, found := k.ibcKeeperFn().ChannelKeeper.GetNextSequenceSend(ctx, portID, channelID)
+	if !found {
+		return "", fmt.Errorf("cannot get next sequence for %s/%s", portID, channelID)
+	}
+	if err := k.SetPending(ctx, channelID, nextSeq, store, key, connectionID); err != nil {
+		return "", err
+	}
+
 	seq, err := k.ibcKeeperFn().ChannelKeeper.SendPacket(ctx, portID, channelID, clienttypes.ZeroHeight(), timeoutTimestamp, packet.GetBytes())
 	if err != nil {
+		// cleanup pending on failure
+		_ = k.RemovePending(ctx, channelID, nextSeq)
 		return "", err
 	}
 	// Return a simple correlation id

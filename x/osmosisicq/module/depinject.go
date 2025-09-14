@@ -1,14 +1,17 @@
 package osmosisicq
 
 import (
+	"sync"
 	"cosmossdk.io/core/address"
 	"cosmossdk.io/core/appmodule"
 	"cosmossdk.io/core/store"
 	"cosmossdk.io/depinject"
 	"cosmossdk.io/depinject/appconfig"
 	"github.com/cosmos/cosmos-sdk/codec"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
+	icqctrltypes "bitora/x/icqcontroller/types"
 	"bitora/x/osmosisicq/keeper"
 	"bitora/x/osmosisicq/types"
 )
@@ -19,11 +22,16 @@ var _ depinject.OnePerModuleType = AppModule{}
 func (AppModule) IsOnePerModuleType() {}
 
 func init() {
-	appconfig.Register(
-		&types.Module{},
-		appconfig.Provide(ProvideModule),
-	)
+	registerOnce.Do(func() {
+		appconfig.Register(
+			&types.Module{},
+			appconfig.Provide(ProvideModule),
+		)
+	})
 }
+
+// ensure registration happens only once even if this package is imported multiple times
+var registerOnce sync.Once
 
 type ModuleInputs struct {
 	depinject.In
@@ -43,8 +51,9 @@ type ModuleInputs struct {
 type ModuleOutputs struct {
 	depinject.Out
 
-	OsmosisicqKeeper keeper.Keeper
 	Module           appmodule.AppModule
+	// also export keeper as an ICQ KV consumer for other modules (e.g., icqcontroller)
+	KVConsumer icqctrltypes.KVResultConsumer
 }
 
 func ProvideModule(in ModuleInputs) ModuleOutputs {
@@ -68,5 +77,14 @@ func ProvideModule(in ModuleInputs) ModuleOutputs {
 	)
 	m := NewAppModule(in.Cdc, k, in.AuthKeeper, in.BankKeeper)
 
-	return ModuleOutputs{OsmosisicqKeeper: k, Module: m}
+	// Return a thin adapter for KVConsumer to avoid duplicate concrete-type registration.
+	return ModuleOutputs{Module: m, KVConsumer: kvConsumerAdapter{k: k}}
+}
+
+// kvConsumerAdapter forwards KV results to the keeper while presenting a distinct
+// concrete type for DI to bind to the KVResultConsumer interface.
+type kvConsumerAdapter struct{ k keeper.Keeper }
+
+func (a kvConsumerAdapter) OnKVResult(ctx sdk.Context, store string, key, value []byte) error {
+	return a.k.OnKVResult(ctx, store, key, value)
 }

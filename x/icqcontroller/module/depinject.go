@@ -40,6 +40,9 @@ type ModuleInputs struct {
 
 	IBCKeeperFn func() *ibckeeper.Keeper `optional:"true"`
 	ScopedKeeper *capabilitykeeper.ScopedKeeper `optional:"true"`
+
+	// optional consumer of KV results (e.g., osmosisicq keeper)
+	KVConsumer types.KVResultConsumer `optional:"true"`
 }
 
 type ModuleOutputs struct {
@@ -62,6 +65,7 @@ func ProvideModule(in ModuleInputs) ModuleOutputs {
 		authority,
 	in.IBCKeeperFn,
 	in.ScopedKeeper,
+	in.KVConsumer,
 	)
 	m := NewAppModule(in.Cdc, k, in.AuthKeeper, in.BankKeeper)
 

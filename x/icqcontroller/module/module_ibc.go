@@ -152,23 +152,11 @@ func (im IBCModule) OnAcknowledgementPacket(
 	acknowledgement []byte,
 	relayer sdk.AccAddress,
 ) error {
-	var ack channeltypes.Acknowledgement
-	if err := im.cdc.UnmarshalJSON(acknowledgement, &ack); err != nil {
-		return errorsmod.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal packet acknowledgement: %v", err)
+	// Deliver to keeper for async-icq ack decoding and forwarding.
+	if err := im.keeper.HandlePacketAcknowledgement(ctx, modulePacket.GetSourcePort(), modulePacket.GetSourceChannel(), modulePacket.GetSequence(), acknowledgement); err != nil {
+		return err
 	}
-
-	var modulePacketData types.IcqcontrollerPacketData
-	if err := modulePacketData.Unmarshal(modulePacket.GetData()); err != nil {
-		return errorsmod.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal packet data: %s", err.Error())
-	}
-
-	// Dispatch packet
-	switch packet := modulePacketData.Packet.(type) {
-	// this line is used by starport scaffolding # ibc/packet/module/ack
-	default:
-		errMsg := fmt.Sprintf("unrecognized %s packet type: %T", types.ModuleName, packet)
-		return errorsmod.Wrap(sdkerrors.ErrUnknownRequest, errMsg)
-	}
+	return nil
 }
 
 // OnTimeoutPacket implements the IBCModule interface
@@ -178,16 +166,9 @@ func (im IBCModule) OnTimeoutPacket(
 	modulePacket channeltypes.Packet,
 	relayer sdk.AccAddress,
 ) error {
-	var modulePacketData types.IcqcontrollerPacketData
-	if err := modulePacketData.Unmarshal(modulePacket.GetData()); err != nil {
-		return errorsmod.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal packet data: %s", err.Error())
+	// Clean pending and optionally emit events
+	if err := im.keeper.HandlePacketTimeout(ctx, modulePacket.GetSourcePort(), modulePacket.GetSourceChannel(), modulePacket.GetSequence()); err != nil {
+		return err
 	}
-
-	// Dispatch packet
-	switch packet := modulePacketData.Packet.(type) {
-	// this line is used by starport scaffolding # ibc/packet/module/timeout
-	default:
-		errMsg := fmt.Sprintf("unrecognized %s packet type: %T", types.ModuleName, packet)
-		return errorsmod.Wrap(sdkerrors.ErrUnknownRequest, errMsg)
-	}
+	return nil
 }

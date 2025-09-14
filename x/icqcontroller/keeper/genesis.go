@@ -17,8 +17,8 @@ func (k Keeper) InitGenesis(ctx context.Context, genState types.GenesisState) er
 		return err
 	}
 
-	// Ensure IBC port capability exists under this module's scope so channel handshake can succeed.
-	// Not all environments will have capability keeper wired; skip if unavailable.
+	// Ensure the port capability exists for this module so channel handshakes can succeed.
+	// We don’t call BindPort here; instead, ensure ownership of the standard capability path.
 	if k.scopedKeeper != nil {
 		sdkCtx := sdk.UnwrapSDKContext(ctx)
 		name := fmt.Sprintf("ports/%s", genState.PortId)
