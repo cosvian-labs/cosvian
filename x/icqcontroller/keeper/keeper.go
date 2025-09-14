@@ -12,8 +12,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
-	ibckeeper "github.com/cosmos/ibc-go/v10/modules/core/keeper"
 	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
+	ibckeeper "github.com/cosmos/ibc-go/v10/modules/core/keeper"
 
 	"bitora/x/icqcontroller/types"
 )

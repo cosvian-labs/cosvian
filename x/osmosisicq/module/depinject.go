@@ -2,6 +2,7 @@ package osmosisicq
 
 import (
 	"sync"
+
 	"cosmossdk.io/core/address"
 	"cosmossdk.io/core/appmodule"
 	"cosmossdk.io/core/store"

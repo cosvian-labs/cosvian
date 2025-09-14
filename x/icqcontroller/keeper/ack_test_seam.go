@@ -3,7 +3,7 @@
 package keeper
 
 import (
-    sdk "github.com/cosmos/cosmos-sdk/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // testAckExtractor allows tests to inject a custom ack decoder without importing async-icq.
