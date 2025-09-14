@@ -16,6 +16,9 @@ accounts:
   - name: norix_ecosystem
     coins: ["5000000000000ubto"] # 5M BTO
 
+  - name: pool_ecosystem
+    coins: ["5000000000000ubto"] # 5M BTO
+
   - name: infra_validators
     coins: ["6000000000000ubto"] # 6M BTO
 
