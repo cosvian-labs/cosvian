@@ -4,6 +4,9 @@ validation: "sovereign"
 default_denom: "ubto"
 
 accounts:
+  - name: pool_ecosystem
+    coins: ["5000000000000ubto"] # 5M BTO
+
   - name: conversion_pool
     coins: ["25000000000000ubto"] # 25M BTO
 
@@ -14,9 +17,6 @@ accounts:
     coins: ["5000000000000ubto"] # 5M BTO
 
   - name: norix_ecosystem
-    coins: ["5000000000000ubto"] # 5M BTO
-
-  - name: pool_ecosystem
     coins: ["5000000000000ubto"] # 5M BTO
 
   - name: infra_validators

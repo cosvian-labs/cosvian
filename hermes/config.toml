@@ -17,7 +17,7 @@ enabled = true
 enabled = false
 
 [mode.packets]
-enabled = false
+enabled = true
 clear_interval = 0
 clear_on_start = false
 tx_confirmation = false
@@ -39,7 +39,7 @@ port = 3001
 id = 'bitora'
 type = 'CosmosSdk'
 account_prefix = 'bto'
-key_name = 'bitora-relayer'
+key_name = 'pool_ecosystem'
 store_prefix = 'ibc'
 address_type = { derivation = 'cosmos' }
 clock_drift = '30s'
@@ -53,6 +53,11 @@ event_source = { mode = 'push', url = 'ws://localhost:26657/websocket', batch_de
 
 rpc_timeout = '15s'
 trusted_node = false
+
+# Restrict packet relaying on Bitora to ICQ channel on connection-0
+[chains.packet_filter]
+policy = 'allow'
+list = [[ 'icqcontroller', 'channel-4' ]]
 
  # (packet filter removed – default allow)
 
