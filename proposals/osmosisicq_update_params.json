@@ -1,0 +1,23 @@
+{
+  "messages": [
+    {
+      "@type": "/bitora.osmosisicq.v1.MsgUpdateParams",
+      "authority": "<GOV_AUTH_ADDRESS>",
+      "params": {
+        "connection_id": "connection-0",
+        "update_interval_seconds": 30,
+        "pool_id": 666,
+        "base_denom": "uosmo",
+        "quote_denom": "ibc/C5B7196709BDFC3A312B06D7292892FA53F379CD3D556B65DB00E1531D471BBA",
+        "use_twap": false,
+        "twap_window_seconds": 300,
+        "min_liquidity": "0",
+        "max_deviation": "0.8"
+      }
+    }
+  ],
+  "metadata": "",
+  "deposit": "1000000ubto",
+  "title": "Update Osmosis ICQ Params for osmotest5",
+  "summary": "Set connection-0, use GAMM pool 666 (uosmo/USDC), and disable TWAP for now."
+}

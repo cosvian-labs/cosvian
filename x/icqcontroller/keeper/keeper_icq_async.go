@@ -6,9 +6,10 @@ import (
 	"fmt"
 	"time"
 
+	"bitora/x/icqcontroller/icqwire"
+
 	abcitypes "github.com/cometbft/cometbft/abci/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	iqctypes "github.com/cosmos/ibc-apps/modules/async-icq/v8/types"
 	clienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types"
 
 	"bitora/x/icqcontroller/types"
@@ -33,11 +34,11 @@ func (k Keeper) SendKVQuery(ctx sdk.Context, connectionID, store string, key []b
 		Data:  key,
 		Prove: false,
 	}
-	bz, err := iqctypes.SerializeCosmosQuery([]abcitypes.RequestQuery{req})
+	bz, err := icqwire.SerializeCosmosQuery([]abcitypes.RequestQuery{req})
 	if err != nil {
 		return "", err
 	}
-	packet := iqctypes.InterchainQueryPacketData{Data: bz}
+	packet := icqwire.InterchainQueryPacketData{Data: bz}
 
 	// Use a reasonable timeout (e.g. 2 minutes from now)
 	timeoutTimestamp := uint64(ctx.BlockTime().Add(2 * time.Minute).UnixNano())

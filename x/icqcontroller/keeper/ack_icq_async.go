@@ -5,9 +5,10 @@ package keeper
 import (
 	"encoding/json"
 
+	"bitora/x/icqcontroller/icqwire"
+
 	abcitypes "github.com/cometbft/cometbft/abci/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	iqctypes "github.com/cosmos/ibc-apps/modules/async-icq/v8/types"
 	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
 )
 
@@ -23,13 +24,13 @@ func (k Keeper) extractValueFromAck(ctx sdk.Context, acknowledgement []byte) ([]
         // error ack: nothing to deliver
         return nil, nil
     }
-    // inner bytes are InterchainQueryPacketAck (JSON-encoded via async-icq ModuleCdc)
-    var inner iqctypes.InterchainQueryPacketAck
-    if err := iqctypes.ModuleCdc.UnmarshalJSON(ack.GetResult(), &inner); err != nil {
+    // inner bytes are InterchainQueryPacketAck (JSON-encoded)
+    var inner icqwire.InterchainQueryPacketAck
+    if err := json.Unmarshal(ack.GetResult(), &inner); err != nil {
         return nil, err
     }
     // decode CosmosResponse
-    resps, err := iqctypes.DeserializeCosmosResponse(inner.GetData())
+    resps, err := icqwire.DeserializeCosmosResponse(inner.Data)
     if err != nil {
         return nil, err
     }

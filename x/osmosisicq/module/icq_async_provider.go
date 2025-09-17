@@ -20,7 +20,7 @@ import (
 func init() {
 	appconfig.Register(
 		&types.Module{},
-		appconfig.Provide(provideICQAsyncClient),
+		appconfig.Provide(ProvideICQAsyncClient),
 	)
 }
 
@@ -39,7 +39,7 @@ type asyncOutputs struct {
 	ICQClient types.ICQClient
 }
 
-func provideICQAsyncClient(in asyncInputs) (asyncOutputs, error) {
+func ProvideICQAsyncClient(in asyncInputs) (asyncOutputs, error) {
 	return asyncOutputs{ICQClient: icqClientAdapter{ctrl: in.IcqCtrlKeeper}}, nil
 }
 
