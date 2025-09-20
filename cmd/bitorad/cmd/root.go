@@ -18,6 +18,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"bitora/app"
+	osmosisicqtypes "bitora/x/osmosisicq/types"
 )
 
 // NewRootCmd creates a new root command for bitorad. It is called once in the main function.
@@ -99,6 +100,9 @@ func ProvideClientContext(
 	txConfigOpts tx.ConfigOptions,
 	legacyAmino *codec.LegacyAmino,
 ) client.Context {
+	// Defensive registration: ensure custom osmosisicq Msg types are available to CLI JSON decoding
+	// even if wiring misses them in certain build/tag scenarios.
+	osmosisicqtypes.RegisterInterfaces(interfaceRegistry)
 	clientCtx := client.Context{}.
 		WithCodec(appCodec).
 		WithInterfaceRegistry(interfaceRegistry).

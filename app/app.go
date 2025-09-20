@@ -56,6 +56,7 @@ import (
 
 	// conversionpoolmodulekeeper "bitora/x/conversionpool/keeper" // Temporarily commented for testing
 	oraclemodulekeeper "bitora/x/oracle/keeper"
+	osmosisicqtypes "bitora/x/osmosisicq/types"
 	pricefeedmodulekeeper "bitora/x/pricefeed/keeper"
 	registrymodulekeeper "bitora/x/registry/keeper"
 	tokenmodulekeeper "bitora/x/token/keeper"
@@ -225,6 +226,10 @@ func New(
 
 	// build app
 	app.App = appBuilder.Build(db, traceStore, baseAppOptions...)
+
+	// Explicitly (re)register osmosisicq interfaces to guarantee type URLs available to CLI JSON decoder.
+	// This is defensive; runtime wiring should already register, but avoids 'unable to resolve type URL /bitora.osmosisicq.v1.MsgUpdateParams'.
+	osmosisicqtypes.RegisterInterfaces(app.interfaceRegistry)
 
 	// register legacy modules
 	if err := app.registerIBCModules(appOpts); err != nil {
