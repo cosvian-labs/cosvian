@@ -52,7 +52,9 @@ type ModuleInputs struct {
 type ModuleOutputs struct {
 	depinject.Out
 
-	Module           appmodule.AppModule
+	Module appmodule.AppModule
+	// Expose keeper explicitly so the application can inject &app.OsmosisicqKeeper (for debugging / cross-module usage)
+	OsmosisicqKeeper keeper.Keeper
 	// also export keeper as an ICQ KV consumer for other modules (e.g., icqcontroller)
 	KVConsumer icqctrltypes.KVResultConsumer
 }
@@ -79,7 +81,7 @@ func ProvideModule(in ModuleInputs) ModuleOutputs {
 	m := NewAppModule(in.Cdc, k, in.AuthKeeper, in.BankKeeper)
 
 	// Return a thin adapter for KVConsumer to avoid duplicate concrete-type registration.
-	return ModuleOutputs{Module: m, KVConsumer: kvConsumerAdapter{k: k}}
+	return ModuleOutputs{Module: m, OsmosisicqKeeper: k, KVConsumer: kvConsumerAdapter{k: k}}
 }
 
 // kvConsumerAdapter forwards KV results to the keeper while presenting a distinct

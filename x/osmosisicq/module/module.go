@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"sync/atomic"
 
 	"cosmossdk.io/core/appmodule"
 	"github.com/cosmos/cosmos-sdk/client"
@@ -132,9 +133,15 @@ func (AppModule) ConsensusVersion() uint64 { return 1 }
 
 // BeginBlock contains the logic that is automatically triggered at the beginning of each block.
 // The begin block implementation is optional.
+var firstBeginLogged int32
+
 func (am AppModule) BeginBlock(ctx context.Context) error {
-	// Call scheduling hook. Ignore errors to avoid halting the chain in early stages.
 	if sdkCtx, ok := ctx.(sdk.Context); ok {
+		// Log once to prove module active in runtime.
+		if atomic.CompareAndSwapInt32(&firstBeginLogged, 0, 1) {
+			sdkCtx.Logger().Info("osmosisicq: BeginBlock (module active)", "height", sdkCtx.BlockHeight())
+		}
+		// Schedule queries (ignore error to avoid halting early boot).
 		_ = am.keeper.ScheduleQueriesIfDue(sdkCtx)
 	}
 	return nil

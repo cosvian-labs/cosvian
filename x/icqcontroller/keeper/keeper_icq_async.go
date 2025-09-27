@@ -1,5 +1,3 @@
-//go:build icq_async
-
 package keeper
 
 import (

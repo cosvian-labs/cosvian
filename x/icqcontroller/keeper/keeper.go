@@ -61,9 +61,6 @@ func NewKeeper(
 	authority []byte,
 	ibcKeeperFn func() *ibckeeper.Keeper,
 	scopedKeeper *capabilitykeeper.ScopedKeeper,
-	// optional consumer, may be nil
-	consumer types.KVResultConsumer,
-
 ) Keeper {
 	if _, err := addressCodec.BytesToString(authority); err != nil {
 		panic(fmt.Sprintf("invalid authority address %s: %s", authority, err))
@@ -79,7 +76,8 @@ func NewKeeper(
 
 	ibcKeeperFn:  ibcKeeperFn,
 		scopedKeeper: scopedKeeper,
-	consumer:     consumer,
+	// default to no consumer; can be set later via SetKVConsumer
+	consumer:     nil,
 	Port:          collections.NewItem(sb, types.PortKey, "port", collections.StringValue),
 	Params:        collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
 	ActiveChannel: collections.NewMap(sb, collections.NewPrefix("ac_icqcontroller"), "active_channel", collections.StringKey, collections.StringValue),
@@ -94,6 +92,9 @@ func NewKeeper(
 
 	return k
 }
+
+// SetKVConsumer allows wiring a consumer for KV results after keeper construction.
+func (k *Keeper) SetKVConsumer(c types.KVResultConsumer) { k.consumer = c }
 
 // GetAuthority returns the module's authority.
 func (k Keeper) GetAuthority() []byte {

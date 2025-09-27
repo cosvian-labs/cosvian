@@ -2,6 +2,7 @@ package app
 
 import (
 	"io"
+	"sort"
 
 	clienthelpers "cosmossdk.io/client/v2/helpers"
 	"cosmossdk.io/core/appmodule"
@@ -57,6 +58,7 @@ import (
 	// conversionpoolmodulekeeper "bitora/x/conversionpool/keeper" // Temporarily commented for testing
 	oraclemodulekeeper "bitora/x/oracle/keeper"
 	osmosisicqtypes "bitora/x/osmosisicq/types"
+	osmosisicqkeeper "bitora/x/osmosisicq/keeper"
 	pricefeedmodulekeeper "bitora/x/pricefeed/keeper"
 	registrymodulekeeper "bitora/x/registry/keeper"
 	tokenmodulekeeper "bitora/x/token/keeper"
@@ -121,6 +123,7 @@ type App struct {
 	RegistryKeeper registrymodulekeeper.Keeper
 	OracleKeeper   oraclemodulekeeper.Keeper
 	FeeGrantKeeper feegrantkeeper.Keeper
+	OsmosisicqKeeper osmosisicqkeeper.Keeper // exposed (may be used directly by other modules / debugging)
 
 	// CosmWasm
 	WasmKeeper wasmkeeper.Keeper
@@ -214,10 +217,31 @@ func New(
 		// &app.TreasuryKeeper, // Temporarily commented for testing
 		// &app.ConversionpoolKeeper, // Temporarily commented for testing
 		&app.RegistryKeeper,
-	&app.FeesKeeper,
+		&app.FeesKeeper,
 		&app.IcqcontrollerKeeper,
 	); err != nil {
 		panic(err)
+	}
+
+	// Debug: log all wired modules (deterministic order) to confirm presence at runtime.
+	// This helps diagnose issues where CLI binary differs from node binary causing missing interfaces.
+	if logger != nil && len(appModules) > 0 {
+		keys := make([]string, 0, len(appModules))
+		for k := range appModules {
+			keys = append(keys, k)
+		}
+		sort.Strings(keys)
+		logger.Info("wired app modules", "count", len(keys), "modules", keys)
+		if _, ok := appModules["gov"]; ok {
+			logger.Info("gov module detected in wiring")
+		} else {
+			logger.Info("gov module MISSING in wiring (unexpected)")
+		}
+		if _, ok := appModules["osmosisicq"]; ok {
+			logger.Info("osmosisicq module detected in wiring")
+		} else {
+			logger.Info("osmosisicq module NOT present in DI map (check app_config)")
+		}
 	}
 
 	// add to default baseapp options
@@ -226,6 +250,10 @@ func New(
 
 	// build app
 	app.App = appBuilder.Build(db, traceStore, baseAppOptions...)
+
+	// NOTE: Legacy router removed in newer SDK; governance executes Msg services directly.
+	// If proposals still fail, focus on interface registration & Msg service registration (already handled)
+	// plus legacy sdk.Msg methods (implemented in x/osmosisicq/types/legacy_msg.go).
 
 	// Explicitly (re)register osmosisicq interfaces to guarantee type URLs available to CLI JSON decoder.
 	// This is defensive; runtime wiring should already register, but avoids 'unable to resolve type URL /bitora.osmosisicq.v1.MsgUpdateParams'.

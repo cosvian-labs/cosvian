@@ -39,7 +39,7 @@ port = 3001
 id = 'bitora'
 type = 'CosmosSdk'
 account_prefix = 'bto'
-key_name = 'pool_ecosystem'
+key_name = 'bitora_relayer'
 store_prefix = 'ibc'
 address_type = { derivation = 'cosmos' }
 clock_drift = '30s'

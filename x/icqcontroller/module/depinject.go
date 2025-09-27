@@ -38,18 +38,16 @@ type ModuleInputs struct {
 	AuthKeeper types.AuthKeeper
 	BankKeeper types.BankKeeper
 
-	IBCKeeperFn func() *ibckeeper.Keeper `optional:"true"`
+	IBCKeeperFn  func() *ibckeeper.Keeper       `optional:"true"`
 	ScopedKeeper *capabilitykeeper.ScopedKeeper `optional:"true"`
-
-	// optional consumer of KV results (e.g., osmosisicq keeper)
-	KVConsumer types.KVResultConsumer `optional:"true"`
 }
 
 type ModuleOutputs struct {
 	depinject.Out
 
-	IcqcontrollerKeeper keeper.Keeper
-	Module              appmodule.AppModule
+	IcqcontrollerKeeper    keeper.Keeper
+	IcqcontrollerKeeperPtr *keeper.Keeper
+	Module                 appmodule.AppModule
 }
 
 func ProvideModule(in ModuleInputs) ModuleOutputs {
@@ -63,11 +61,14 @@ func ProvideModule(in ModuleInputs) ModuleOutputs {
 		in.Cdc,
 		in.AddressCodec,
 		authority,
-	in.IBCKeeperFn,
-	in.ScopedKeeper,
-	in.KVConsumer,
+		in.IBCKeeperFn,
+		in.ScopedKeeper,
 	)
 	m := NewAppModule(in.Cdc, k, in.AuthKeeper, in.BankKeeper)
 
-	return ModuleOutputs{IcqcontrollerKeeper: k, Module: m}
+	return ModuleOutputs{
+		IcqcontrollerKeeper:    k,
+		IcqcontrollerKeeperPtr: &k,
+		Module:                 m,
+	}
 }

@@ -1,97 +1,93 @@
-# Bitora Pricefeed ICQ Test (Hermes + ibc-go v10)
+# Bitora Pricefeed ICQ Test (ibc-go v10 + Hermes)
 
-Tujuan:
+Tujuan singkat:
 
-1. Nyalakan chain via Ignite (tag `icq_async`)
-2. Pastikan key relayer Hermes (bitora & osmo testnet) ada
-3. Fund relayer Bitora
-4. Buat connection & channel ICQ (UNORDERED)
-5. Set params modul `osmosisicq` via governance
-6. Relay paket ICQ hingga harga masuk (non‑fallback)
-7. Verifikasi fee memakai harga oracle
+1. Jalankan chain (tag icq_async)
+2. Siapkan keys & fund relayer
+3. Buat connection & channel ICQ
+4. Set params modul osmosisicq via governance (script)
+5. Jalankan Hermes, pastikan harga non‑fallback
+6. Uji fee event pakai harga oracle
 
-## 0. Variabel Lingkungan (opsional)
+---
+
+## 0. Export Variabel
 
 ```bash
 export BITORA_HOME=~/.bitora
 export BITORA_CHAIN=bitora
 export OSMO_CHAIN=osmo-test-5
+
 export BITORA_RELAYER_KEY=bitora_relayer
 export OSMO_RELAYER_KEY=osmo-test-relayer
+
 export FUND_SOURCE=public_sale
 export RELAYER_FUND_AMOUNT=2000000000ubto
-# Gunakan fee tinggi agar lolos guard rails (hybrid fee validation)
 export RELAYER_FEE=1000000ubto
 ```
 
-## 1. Start Chain (Ignite)
+Cek binary:
 
 ```bash
-cd /home/munra/project/bitora/bitora-blockchain
+which bitorad
+bitorad version
+```
+
+## 1. Start Chain
+
+```bash
+cd /mnt/c/Project/Cosvian/bitora-blockchain
 ignite chain serve --reset-once -v --build.tags "icq_async"
 ```
 
-Simpan semua mnemonic yang muncul (copy ke file aman).
-
-## 2. Cek Chain ID & Akun Funding
+Tunggu blok jalan:
 
 ```bash
-bitorad status 2>/dev/null | jq -r '.NodeInfo.network'
-bitorad keys list --home $BITORA_HOME --keyring-backend test | jq '.[].name'
-bitorad keys show $FUND_SOURCE -a --home $BITORA_HOME --keyring-backend test
+watch -n2 'bitorad status 2>/dev/null | jq -r ".SyncInfo.latest_block_height"'
 ```
 
-## 3. Cek Hermes Keys
+## 2. Keys Hermes
 
 ```bash
 hermes keys list --chain $BITORA_CHAIN || true
 hermes keys list --chain $OSMO_CHAIN || true
 ```
 
-## 4. Tambah Key Bitora Relayer (jika belum ada)
-
-Kalau output sebelumnya belum ada `- $BITORA_RELAYER_KEY (`:
+Tambahkan jika belum:
 
 ```bash
-# Recover dari mnemonic yang kamu pilih untuk relayer bitora:
-read -p "Paste mnemonic relayer bitora: " MNEMONIC
-printf "%s" "$MNEMONIC" > /tmp/bitora_relayer.mn
-hermes keys add --chain $BITORA_CHAIN --key-name $BITORA_RELAYER_KEY --mnemonic-file /tmp/bitora_relayer.mn --overwrite
-shred -u /tmp/bitora_relayer.mn
-hermes keys list --chain $BITORA_CHAIN | grep $BITORA_RELAYER_KEY
+# Bitora
+read -rsp "Mnemonic relayer bitora: " M1; echo
+printf '%s\n' "$M1" > /tmp/b_relayer.mn
+hermes keys add --chain $BITORA_CHAIN --key-name $BITORA_RELAYER_KEY --mnemonic-file /tmp/b_relayer.mn --overwrite
+rm -f /tmp/b_relayer.mn
+
+# Osmosis
+read -rsp "Mnemonic relayer osmo: " M2; echo
+printf '%s\n' "$M2" > /tmp/o_relayer.mn
+hermes keys add --chain $OSMO_CHAIN --key-name $OSMO_RELAYER_KEY --mnemonic-file /tmp/o_relayer.mn --overwrite
+rm -f /tmp/o_relayer.mn
 ```
 
-## 5. Tambah Key Osmosis Relayer (jika belum)
-
-```bash
-read -p "Paste mnemonic osmosis relayer: " OM
-printf "%s" "$OM" > /tmp/osmo_relayer.mn
-hermes keys add --chain $OSMO_CHAIN --key-name $OSMO_RELAYER_KEY --mnemonic-file /tmp/osmo_relayer.mn --overwrite
-shred -u /tmp/osmo_relayer.mn
-hermes keys list --chain $OSMO_CHAIN | grep $OSMO_RELAYER_KEY
-```
-
-## 6. Fund Relayer Bitora
+## 3. Fund Relayer Bitora
 
 ```bash
 RELAYER_ADDR=$(hermes keys list --chain $BITORA_CHAIN | awk -v K=$BITORA_RELAYER_KEY '$2==K {gsub(/[()]/,"",$3); print $3}')
-echo "Relayer address: $RELAYER_ADDR"
-bitorad q bank balances $RELAYER_ADDR --home $BITORA_HOME --keyring-backend test
+echo $RELAYER_ADDR
 bitorad tx bank send $FUND_SOURCE $RELAYER_ADDR $RELAYER_FUND_AMOUNT \
-  --home $BITORA_HOME --keyring-backend test --chain-id $BITORA_CHAIN --fees $RELAYER_FEE -y
+  --chain-id $BITORA_CHAIN --keyring-backend test --fees $RELAYER_FEE -y
 bitorad q bank balances $RELAYER_ADDR
 ```
 
-## 7. Buat Connection (connection-0)
-
-Cek dulu:
+## 4. Connection
 
 ```bash
-hermes query connections --chain $BITORA_CHAIN | grep connection-0 || hermes create connection --a-chain $BITORA_CHAIN --b-chain $OSMO_CHAIN
-hermes query connections --chain $BITORA_CHAIN
+hermes query connections --chain $BITORA_CHAIN | grep connection-0 \
+  || hermes create connection --a-chain $BITORA_CHAIN --b-chain $OSMO_CHAIN
+hermes query connections --chain $BITORA_CHAIN | grep connection-0
 ```
 
-## 8. Buat Channel ICQ (UNORDERED)
+## 5. Channel ICQ (UNORDERED)
 
 ```bash
 hermes query channels --chain $BITORA_CHAIN | grep icqcontroller || hermes create channel \
@@ -104,181 +100,123 @@ hermes query channels --chain $BITORA_CHAIN | grep icqcontroller || hermes creat
 hermes query channels --chain $BITORA_CHAIN | grep icqcontroller
 ```
 
-verifikasi cek channel
+## 6. Governance (Set Params osmosisicq)
+
+Gunakan helper script (legacy msg patch sudah ditambahkan). Dua opsi:
+
+### Opsi A: Skrip otomatis submit + vote (robust polling)
 
 ```bash
-bitorad q ibc channel connections connection-0 -o json | jq '.channels'
+JSON=/tmp/osmo_params.json \
+FUND_SOURCE=$FUND_SOURCE \
+BITORA_CHAIN=$BITORA_CHAIN \
+RELAYER_FEE=$RELAYER_FEE \
+./scripts/osmosisicq_make_proposal.sh \
+  --connection connection-0 \
+  --pool 666 \
+  --base uosmo \
+  --quote ibc/... \
+  --interval 30 \
+  --min-liq 0 \
+  --max-dev 0.8 \
+  --twap-window 300 \
+  --deposit 10000000ubto \
+  --submit --vote
+
 ```
 
-Catat:
+Script ini:
+
+- Submit (sync)
+- Poll TX Deliver
+- Deposit (top-up)
+- Vote YES
+- Exit setelah PASSED (output final: Proposal ID)
+
+### Opsi B: Buat & submit proposal kustom (multi parameter)
 
 ```bash
-# Ambil ID channel (kolom sebelum ':', bukan port)
-BITORA_CH=$(hermes query channels --chain $BITORA_CHAIN | awk '/icqcontroller/ {sub(/:.*/,"",$1); print $1; exit}')
-OSMO_CH=$(hermes query channels --chain $OSMO_CHAIN | awk '/icqhost/ {sub(/:.*/,"",$1); print $1; exit}')
-echo "Bitora channel: $BITORA_CH  Osmosis channel: $OSMO_CH"
-if [ -z "$BITORA_CH" ] || [ -z "$OSMO_CH" ]; then
-  echo "[WARN] Channel IDs belum terdeteksi. Pastikan create channel sukses." >&2
-fi
+./scripts/osmosisicq_make_proposal.sh \
+  --connection connection-0 \
+  --pool 666 \
+  --base uosmo \
+  --quote ibc/C5B7196709BDFC3A312B06D7292892FA53F379CD3D556B65DB00E1531D471BBA \
+  --interval 30 \
+  --min-liq 0 \
+  --max-dev 0.8 \
+  --twap-window 300 \
+  --submit --vote
 ```
 
-## 9. Governance: Set Params osmosisicq
-
-Ambil authority gov:
+Cek status kalau perlu:
 
 ```bash
-GOV=$(bitorad q auth module-accounts -o json --home $BITORA_HOME | jq -r '.accounts[] | select(.value.name=="gov") | .value.address')
-echo "$GOV"
-if [ -z "$GOV" ] || [ "$GOV" = "null" ]; then
-  echo "[ERROR] GOV module account tidak ditemukan via module-accounts (cek struktur JSON)." >&2
-  echo "[INFO] Coba fallback genesis (format bisa beda)" >&2
-  GOV=$(jq -r '.app_state.auth.accounts[] | select(.name=="gov") | .base_account.address // empty' $BITORA_HOME/config/genesis.json)
-  if [ -z "$GOV" ]; then
-    GOV=$(jq -r '.app_state.auth.module_accounts[]? | select(.name=="gov") | .base_account.address // .base_vesting_account.base_account.address // empty' $BITORA_HOME/config/genesis.json)
-  fi
-  echo "Genesis GOV address: $GOV" >&2
-  if [ -z "$GOV" ] || [ "$GOV" = "null" ]; then
-    echo "[FATAL] Tidak menemukan address gov. Pastikan govtypes.ModuleName ada di moduleAccPerms & regen chain." >&2
-  fi
-fi
+bitorad q gov proposals -o json | jq '.proposals | length'
 ```
 
-Pastikan node sudah produce blok (hindari error "bitora is not ready"):
-
-```bash
-while true; do HEIGHT=$(bitorad status 2>/dev/null | jq -r '.SyncInfo.latest_block_height'); [ "$HEIGHT" != "0" -a "$HEIGHT" != "null" ] && echo "Height=$HEIGHT" && break; sleep 2; done
-```
-
-Buat proposal:
-
-```bash
-cat > /tmp/osmo_params.json <<'EOF'
-{
-  "messages": [
-    {
-      "@type": "/bitora.osmosisicq.v1.MsgUpdateParams",
-      "authority": "__GOV_PLACEHOLDER__",
-      "params": {
-        "connection_id": "connection-0",
-        "update_interval_seconds": "30",
-        "pool_id": "666",
-        "base_denom": "uosmo",
-        "quote_denom": "ibc/C5B7196709BDFC3A312B06D7292892FA53F379CD3D556B65DB00E1531D471BBA",
-        "use_twap": false,
-        "twap_window_seconds": "300",
-        "min_liquidity": "0",
-        "max_deviation": "0.8"
-      }
-    }
-  ],
-  "deposit": "1000000ubto",
-  "title": "ICQ Params",
-  "summary": "Set pricefeed params"
-}
-EOF
-
-sed -i "s/__GOV_PLACEHOLDER__/$GOV/" /tmp/osmo_params.json
-jq '.' /tmp/osmo_params.json
-```
-
-Sanity test (generate-only sebelum broadcast penuh):
-
-Catatan: Sejak gov v1, proposal JSON dibungkus otomatis menjadi `MsgSubmitProposal` (`/cosmos.gov.v1.MsgSubmitProposal`) yang punya array `messages` internal. Jadi field pertama yang nampak adalah wrapper gov, dan pesan kustom kita ada di `messages[0]` di dalamnya.
-
-```bash
-# Tampilkan tipe wrapper (harus /cosmos.gov.v1.MsgSubmitProposal)
-bitorad tx gov submit-proposal /tmp/osmo_params.json \
-  --from $FUND_SOURCE --chain-id $BITORA_CHAIN --fees $RELAYER_FEE \
-  --keyring-backend test --generate-only -o json | jq -r '.body.messages[0]."@type"'
-
-# Validasi tipe pesan kustom di dalam wrapper
-bitorad tx gov submit-proposal /tmp/osmo_params.json \
-  --from $FUND_SOURCE --chain-id $BITORA_CHAIN --fees $RELAYER_FEE \
-  --keyring-backend test --generate-only -o json | jq -r '.body.messages[0].messages[0]."@type"'
-```
-
-Harus output kedua: `/bitora.osmosisicq.v1.MsgUpdateParams`.
-
-Submit + deposit + vote:
-
-```bash
-# Gunakan fee besar agar tidak ditolak guard rails fee hybrid
-PROPID=$(bitorad tx gov submit-proposal /tmp/osmo_params.json \
-  --from $FUND_SOURCE --chain-id $BITORA_CHAIN --fees $RELAYER_FEE \
-  --keyring-backend test -y -o json | jq -r '.logs[0].events[] | select(.type=="submit_proposal").attributes[] | select(.key=="proposal_id").value')
-echo "Proposal ID: $PROPID"
-
-# Fallback jika parsing gagal (ambil id terbaru)
-if [ -z "$PROPID" ] || [ "$PROPID" = "null" ]; then
-  PROPID=$(bitorad q gov proposals -o json | jq -r '.proposals| last | .proposal_id')
-  echo "(fallback) Proposal ID: $PROPID"
-fi
-
-bitorad tx gov deposit $PROPID 1000000ubto --from $FUND_SOURCE --chain-id $BITORA_CHAIN --fees $RELAYER_FEE --keyring-backend test -y
-bitorad tx gov vote $PROPID yes --from $FUND_SOURCE --chain-id $BITORA_CHAIN --fees $RELAYER_FEE --keyring-backend test -y
-watch -n 4 "bitorad q gov proposal $PROPID -o json | jq -r '.status'"
-```
-
-Setelah PASSED:
+Setelah PASSED verifikasi:
 
 ```bash
 bitorad q osmosisicq params -o json | jq .
 ```
 
-## 10. Start Hermes Relayer (Background)
+Harus tampil nilai:
 
-Terminal baru:
+- connection_id: connection-0
+- pool_id: 666
+- update_interval_seconds: 30
+- base_denom / quote_denom sesuai
+- use_twap false/true sesuai (sesuai script)
+- max_deviation 0.8
+
+## 7. Start Hermes Relayer
+
+Terminal terpisah:
 
 ```bash
 hermes start --chain $BITORA_CHAIN --chain $OSMO_CHAIN
 ```
 
-(Atau tanpa filter: `hermes start`)
-
-## 11. Manual Kick (Jika butuh cepat)
-
-Di terminal lain (opsional):
+## 8. Pantau Harga ICQ
 
 ```bash
-hermes tx packet-recv --dst-chain $OSMO_CHAIN --src-chain $BITORA_CHAIN --src-port icqcontroller --src-channel $BITORA_CH
-hermes tx packet-recv --dst-chain $BITORA_CHAIN --src-chain $OSMO_CHAIN --src-port icqhost --src-channel $OSMO_CH
-hermes tx packet-ack  --src-chain $OSMO_CHAIN --dst-chain $BITORA_CHAIN --src-port icqhost --src-channel $OSMO_CH
-hermes tx packet-ack  --src-chain $BITORA_CHAIN --dst-chain $OSMO_CHAIN --src-port icqcontroller --src-channel $BITORA_CH
+tail -f ignite_run.log | grep -E 'osmosisicq|icq_|price'
 ```
 
-## 12. Pantau Event Harga
+Pastikan harga menjadi non‑fallback setelah paket ACK.
 
-```bash
-tail -f ignite_run.log | grep -E 'icq_|osmosisicq_|price'
-```
-
-## 13. Uji Fee Menggunakan Harga (Non-fallback)
-
-Kirim tx kecil:
+## 9. Uji Fee Pakai Oracle
 
 ```bash
 RELAYER_ADDR=$(hermes keys list --chain $BITORA_CHAIN | awk -v K=$BITORA_RELAYER_KEY '$2==K {gsub(/[()]/,"",$3); print $3}')
 bitorad tx bank send $FUND_SOURCE $RELAYER_ADDR 1ubto \
-  --chain-id $BITORA_CHAIN --fees 50000ubto -y --broadcast-mode=block -o json \
-  | jq '.events[] | select(.type|test("oracle|fees|price"))'
+  --chain-id $BITORA_CHAIN --fees 50000ubto -y -o json --broadcast-mode=sync \
+  | jq '.events[] | select(.type|test("oracle|fee|price|fee_charged"))'
 ```
 
-Periksa event: tidak ada indikator fallback (misal `fallback_used=true`).
+Pastikan event tidak menunjukkan fallback (misal is_fallback=false apabila ada field serupa).
 
-## 14. Troubleshooting Cepat
+## 10. Troubleshooting Cepat
 
-| Gejala                | Solusi                                           |
-| --------------------- | ------------------------------------------------ |
-| Proposal tidak PASSED | Cek deposit & vote, tunggu voting period         |
-| Channel tidak OPEN    | Pastikan UNORDERED & connection-0 OK             |
-| Harga tidak muncul    | Relay packet (packet-recv/ack) ulang; cek params |
-| Fallback terus        | Tunggu interval berikut & pastikan ack sukses    |
+| Gejala                                          | Aksi                                                    |
+| ----------------------------------------------- | ------------------------------------------------------- |
+| Proposal gagal code=10 “message not recognized” | Pastikan rebuild dengan legacy msg patch & restart node |
+| Tidak muncul subcommand osmosisicq              | Gunakan binary dengan tag icq_async, periksa PATH       |
+| Harga tetap fallback                            | Pastikan channel OPEN, Hermes aktif, params benar       |
+| TX fee event tidak muncul                       | Naikkan fees (RELAYER_FEE), cek log hybrid fee          |
 
-## 15. Reset Ulang (Jika Perlu Mulai Bersih)
+Log tx detail:
+
+```bash
+bitorad q tx <TXHASH> -o json | jq '{code,raw_log,events:([.events[].type]|unique)}'
+```
+
+## 11. Reset (Jika Perlu)
 
 ```bash
 pkill bitorad || true
-ignite chain serve --reset-once --build.tags icq_async
+rm -rf $BITORA_HOME
+ignite chain serve --reset-once --build.tags "icq_async"
 ```
 
-Selesai. Ikuti urutan tanpa lompat untuk hasil konsisten.
+Selesai.

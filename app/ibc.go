@@ -144,7 +144,7 @@ func (app *App) registerIBCModules(appOpts servertypes.AppOptions) error {
 	// Optionally wire ICQ controller routes (enabled behind build tags).
 	if err := registerICQAsync(app, ibcRouter); err != nil {
 		return err
-	}
+	} 
 
 	app.IBCKeeper.SetRouter(ibcRouter)
 	app.IBCKeeper.SetRouterV2(ibcv2Router)
