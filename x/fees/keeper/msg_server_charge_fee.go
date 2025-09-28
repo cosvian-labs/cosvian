@@ -65,15 +65,15 @@ func (k msgServer) ChargeFee(ctx context.Context, msg *types.MsgChargeFee) (*typ
 		return nil, errorsmod.Wrap(err, "failed to convert USD to CSV")
 	}
 
-	// Scale CSV to ubto (assume 6 decimals)
-	feeUbto := btoAmount.MulInt64(1_000_000).TruncateInt()
+	// Scale CSV to ucsv (assume 6 decimals)
+	feeucsv := btoAmount.MulInt64(1_000_000).TruncateInt()
 
 	// Check if user has sufficient balance
 	userBalance := k.bankKeeper.SpendableCoins(sdkCtx, creatorAddr)
-	ubtoBalance := userBalance.AmountOf("ubto")
-	if ubtoBalance.LT(feeUbto) {
-		return nil, errorsmod.Wrapf(sdkerrors.ErrInsufficientFunds, "insufficient balance: required %s ubto, available %s ubto",
-			feeUbto.String(), ubtoBalance.String())
+	ucsvBalance := userBalance.AmountOf("ucsv")
+	if ucsvBalance.LT(feeucsv) {
+		return nil, errorsmod.Wrapf(sdkerrors.ErrInsufficientFunds, "insufficient balance: required %s ucsv, available %s ucsv",
+			feeucsv.String(), ucsvBalance.String())
 	}
 
 	// Build metadata map from msg.Metadata for dynamic recipients
@@ -83,13 +83,13 @@ func (k msgServer) ChargeFee(ctx context.Context, msg *types.MsgChargeFee) (*typ
 	}
 
 	// Delegate distribution to keeper with dynamic logic
-	feeCoin := sdk.NewCoin("ubto", feeUbto)
+	feeCoin := sdk.NewCoin("ucsv", feeucsv)
 	if err := k.DistributeFee(sdkCtx, creatorAddr, msg.Category, feeCoin, md); err != nil {
 		return nil, errorsmod.Wrap(err, "fee distribution failed")
 	}
 
-	// Set gas used to equal fee amount (CSV-equivalent shown via ubto)
-	sdkCtx.GasMeter().ConsumeGas(feeUbto.Uint64(), "fee charge")
+	// Set gas used to equal fee amount (CSV-equivalent shown via ucsv)
+	sdkCtx.GasMeter().ConsumeGas(feeucsv.Uint64(), "fee charge")
 
 	// Emit standardized event (no legacy FeeCharged)
 	sdkCtx.EventManager().EmitEvent(
@@ -99,13 +99,13 @@ func (k msgServer) ChargeFee(ctx context.Context, msg *types.MsgChargeFee) (*typ
 			sdk.NewAttribute("fee_type", msg.Category),
 			sdk.NewAttribute("usd_amount", feeUSD.String()),
 			sdk.NewAttribute("bto_amount", btoAmount.String()),
-			sdk.NewAttribute("provided_fee", sdk.NewCoins(sdk.NewCoin("ubto", feeUbto)).String()),
+			sdk.NewAttribute("provided_fee", sdk.NewCoins(sdk.NewCoin("ucsv", feeucsv)).String()),
 			sdk.NewAttribute("system_exempt", "false"),
 		),
 	)
 
 	return &types.MsgChargeFeeResponse{
-		GasUsed:    feeUbto.String(),
-		FeeCharged: feeUbto.String(),
+		GasUsed:    feeucsv.String(),
+		FeeCharged: feeucsv.String(),
 	}, nil
 }

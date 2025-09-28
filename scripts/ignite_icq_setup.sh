@@ -21,9 +21,9 @@ OSMO_ADDR=${OSMO_ADDR:-osmo1au6l8aj9my5q4fg0drlq4hspzf6p9patea2w4t}
 COSVIAN_HOME=${COSVIAN_HOME:-$HOME/.cosvian}
 NODE=${NODE:-http://localhost:26657}
 FUND_SOURCE=${FUND_SOURCE:-public_sale}
-FUND_AMOUNT=${FUND_AMOUNT:-5000000ubto}
+FUND_AMOUNT=${FUND_AMOUNT:-5000000ucsv}
 FUND_MIN_BAL=${FUND_MIN_BAL:-3000000}
-FUND_FEE=${FUND_FEE:-1000000ubto}
+FUND_FEE=${FUND_FEE:-1000000ucsv}
 HERMES_CONFIG=${HERMES_CONFIG:-hermes/config.toml}
 HERMES_ONCE_SCRIPT=${HERMES_ONCE_SCRIPT:-scripts/hermes_icq_once.sh}
 GO_TEST_PKGS=${GO_TEST_PKGS:-./x/pricefeed/...}
@@ -148,7 +148,7 @@ PY
 }
 
 printf '[+] Ensuring Cosvian relayer account has funds\n'
-CURRENT_BAL=$(./cosviand q bank balances "$COSVIAN_ADDR" --home "$COSVIAN_HOME" --node "$NODE" -o json 2>/dev/null | jq -r '.balances[]? | select(.denom=="ubto") | .amount' | head -n1)
+CURRENT_BAL=$(./cosviand q bank balances "$COSVIAN_ADDR" --home "$COSVIAN_HOME" --node "$NODE" -o json 2>/dev/null | jq -r '.balances[]? | select(.denom=="ucsv") | .amount' | head -n1)
 CURRENT_BAL=${CURRENT_BAL:-0}
 
 python3 - "$CURRENT_BAL" "$FUND_MIN_BAL" "$FUND_AMOUNT" "$FUND_SOURCE" "$COSVIAN_ADDR" "$COSVIAN_HOME" "$NODE" "$CHAIN_ID" "$FUND_FEE" <<'PY'
@@ -163,7 +163,7 @@ node = sys.argv[7]
 chain_id = sys.argv[8]
 fees = sys.argv[9]
 if bal >= min_bal:
-    print(f"    Balance already sufficient: {bal} ubto")
+    print(f"    Balance already sufficient: {bal} ucsv")
     sys.exit(0)
 print(f"    Funding {to_addr} from {from_key} with {amount} (fees {fees})")
 cmd = ["./cosviand", "tx", "bank", "send", from_key, to_addr, amount,
@@ -176,8 +176,8 @@ PY
 
 sleep ${FUND_WAIT_SECONDS:-2}
 
-CURRENT_BAL=$(./cosviand q bank balances "$COSVIAN_ADDR" --home "$COSVIAN_HOME" --node "$NODE" -o json 2>/dev/null | jq -r '.balances[]? | select(.denom=="ubto") | .amount' | head -n1)
-printf '    Current relayer balance: %s ubto\n' "${CURRENT_BAL:-0}"
+CURRENT_BAL=$(./cosviand q bank balances "$COSVIAN_ADDR" --home "$COSVIAN_HOME" --node "$NODE" -o json 2>/dev/null | jq -r '.balances[]? | select(.denom=="ucsv") | .amount' | head -n1)
+printf '    Current relayer balance: %s ucsv\n' "${CURRENT_BAL:-0}"
 
 CHANNEL_OUTPUT=$(run_hermes query channels --chain "$COSVIAN_CHAIN")
 readarray -t EXISTING_IDS < <(python3 - "$CHANNEL_OUTPUT" <<'PY'

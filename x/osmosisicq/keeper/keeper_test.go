@@ -267,9 +267,9 @@ func TestHandleSpot_NormalizesBTOUSD(t *testing.T) {
 	cap := &mockCaptureOracle{}
 	k := keeper.NewKeeper(storeService, encCfg.Codec, addressCodec, authority, cap, nil)
 
-	// Params: base=ubto, quote=uusdc -> given price is USDC per CSV; we invert to CSV per USD
+	// Params: base=ucsv, quote=uusdc -> given price is USDC per CSV; we invert to CSV per USD
 	p := types.DefaultParams()
-	p.BaseDenom = "ubto"
+	p.BaseDenom = "ucsv"
 	p.QuoteDenom = "uusdc"
 	p.MinLiquidity = "1"
 	require.NoError(t, k.Params.Set(ctx, p))
@@ -291,9 +291,9 @@ func TestOnKVResult_StubJSON_Twap(t *testing.T) {
 	cap := &mockCaptureOracle{}
 	k := keeper.NewKeeper(storeService, encCfg.Codec, addressCodec, authority, cap, nil)
 
-	// Params assume ubto/uusdc inversion path
+	// Params assume ucsv/uusdc inversion path
 	p := types.DefaultParams()
-	p.BaseDenom = "ubto"
+	p.BaseDenom = "ucsv"
 	p.QuoteDenom = "uusdc"
 	p.MinLiquidity = "1"
 	require.NoError(t, k.Params.Set(ctx, p))
@@ -318,7 +318,7 @@ func TestOnKVResult_StubDelimited_Spot(t *testing.T) {
 
 	p := types.DefaultParams()
 	p.BaseDenom = "uusdc"
-	p.QuoteDenom = "ubto"
+	p.QuoteDenom = "ucsv"
 	p.MinLiquidity = "1"
 	require.NoError(t, k.Params.Set(ctx, p))
 

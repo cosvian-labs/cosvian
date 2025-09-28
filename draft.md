@@ -334,7 +334,7 @@ func (k Keeper) ChargeAndDistributeFeeByType(
     oracleKeeper := k.getOracleKeeper(ctx)
     btoPrice := oracleKeeper.GetBTOPerUSD(ctx)
     feeBTO := feeConfig.AmountUSD.Quo(btoPrice).Mul(math.LegacyNewDec(1_000_000))
-    feeCoin := sdk.NewCoin("ubto", feeBTO.TruncateInt())
+    feeCoin := sdk.NewCoin("ucsv", feeBTO.TruncateInt())
 
     // 3. Charge fee dari sender
     err = k.bankKeeper.SendCoinsFromAccountToModule(ctx, sender, "treasury", sdk.NewCoins(feeCoin))
@@ -359,7 +359,7 @@ func (k Keeper) ChargeAndDistributeFeeByType(
 
    ```bash
    # Command to test:
-   ./build/cosviand tx token mint [amount] [recipient] --from validator --chain-id cosvian-testnet --keyring-backend test --gas-prices 0ubto --gas auto --gas-adjustment 1.3 --yes
+   ./build/cosviand tx token mint [amount] [recipient] --from validator --chain-id cosvian-testnet --keyring-backend test --gas-prices 0ucsv --gas auto --gas-adjustment 1.3 --yes
    ```
 
    - ✅ **EXPECTED**: No fee charged, transaction succeeds
@@ -369,7 +369,7 @@ func (k Keeper) ChargeAndDistributeFeeByType(
 
    ```bash
    # Command to test:
-   ./build/cosviand tx token burn [amount] --from validator --chain-id cosvian-testnet --keyring-backend test --gas-prices 0ubto --gas auto --gas-adjustment 1.3 --yes
+   ./build/cosviand tx token burn [amount] --from validator --chain-id cosvian-testnet --keyring-backend test --gas-prices 0ucsv --gas auto --gas-adjustment 1.3 --yes
    ```
 
    - ✅ **EXPECTED**: No fee charged, transaction succeeds
@@ -378,7 +378,7 @@ func (k Keeper) ChargeAndDistributeFeeByType(
 3. **Test Smart Contract Deploy**
    ```bash
    # If wasm module available:
-   ./build/cosviand tx wasm store [contract.wasm] --from validator --chain-id cosvian-testnet --keyring-backend test --gas-prices 0ubto --gas auto --gas-adjustment 1.3 --yes
+   ./build/cosviand tx wasm store [contract.wasm] --from validator --chain-id cosvian-testnet --keyring-backend test --gas-prices 0ucsv --gas auto --gas-adjustment 1.3 --yes
    ```
    - ✅ **EXPECTED**: Falls to default case = FREE
    - ✅ **VERIFY**: No FeeCharged event
@@ -411,7 +411,7 @@ func (k Keeper) ChargeAndDistributeFeeByType(
 - [ ] **Event Verification**: Check for `FeeCharged` event with correct details:
   - `fee_type`: Correct type string
   - `fee_usd`: Correct USD amount
-  - `total_fee_ubto`: Correct CSV amount calculated
+  - `total_fee_ucsv`: Correct CSV amount calculated
   - `treasury_fee`: Correct treasury portion
   - `[other]_fee`: Correct other account portions
 - [ ] **Module Account Balances**: Verify fee distribution to correct accounts
@@ -468,7 +468,7 @@ func (k Keeper) ChargeAndDistributeFeeByType(
 
 - [x] **Native Transfer (MsgSend)**: $1.00 fee → 100% treasury ✅ **TESTED & VERIFIED**
 
-  - ✅ Correct fee amount: 2 CSV (2,000,000 ubto) for $1.00 at $0.50/CSV
+  - ✅ Correct fee amount: 2 CSV (2,000,000 ucsv) for $1.00 at $0.50/CSV
   - ✅ Fee event: `FeeCharged` dengan `fee_type: native_transfer`
   - ✅ Treasury distribution: 100% masuk treasury account
   - ✅ Transaction hash: `B2788B9716A489E584064D7A696DBCDA92D5D7F05B3B8E31858FBABEF15EA069`

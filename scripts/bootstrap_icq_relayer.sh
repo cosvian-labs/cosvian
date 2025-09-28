@@ -8,8 +8,8 @@ HOME_DIR="${HOME_DIR:-$HOME/.cosvian-stub}"
 MONIKER="${MONIKER:-infra-validator}"
 KEYRING_BACKEND="${KEYRING_BACKEND:-test}"
 RELAYER_KEY_NAME="${RELAYER_KEY_NAME:-relayer}"
-RELAYER_FUNDS="${RELAYER_FUNDS:-200000000ubto}"
-RELAYER_FEE="${RELAYER_FEE:-1000000ubto}"
+RELAYER_FUNDS="${RELAYER_FUNDS:-200000000ucsv}"
+RELAYER_FEE="${RELAYER_FEE:-1000000ucsv}"
 RELAYER_FUNDING_SOURCE="${RELAYER_FUNDING_SOURCE:-public_sale}"
 HERMES_CONFIG="${HERMES_CONFIG:-$HOME/.hermes/config.toml}"
 HERMES_CHAIN_ID="$CHAIN_ID"
@@ -20,20 +20,20 @@ SUCCESS=0
 KEYS_DIR="$ROOT_DIR/hermes/keys"
 
 ACCOUNTS=(
-  "pool_ecosystem:5000000000000ubto"
-  "conversion_pool:25000000000000ubto"
-  "pos_infra:10000000000000ubto"
-  "exchange_fund:5000000000000ubto"
-  "norix_ecosystem:5000000000000ubto"
-  "infra_validators:6000000000000ubto"
-  "education_ops:4000000000000ubto"
-  "compliance_vault:5000000000000ubto"
-  "emergency_reserve:5000000000000ubto"
-  "strategic_growth:5000000000000ubto"
-  "team:8000000000000ubto"
-  "dao_reserve:4000000000000ubto"
-  "public_sale:18000000000000ubto"
-  "tester:100000000ubto"
+  "pool_ecosystem:5000000000000ucsv"
+  "conversion_pool:25000000000000ucsv"
+  "pos_infra:10000000000000ucsv"
+  "exchange_fund:5000000000000ucsv"
+  "norix_ecosystem:5000000000000ucsv"
+  "infra_validators:6000000000000ucsv"
+  "education_ops:4000000000000ucsv"
+  "compliance_vault:5000000000000ucsv"
+  "emergency_reserve:5000000000000ucsv"
+  "strategic_growth:5000000000000ucsv"
+  "team:8000000000000ucsv"
+  "dao_reserve:4000000000000ucsv"
+  "public_sale:18000000000000ucsv"
+  "tester:100000000ucsv"
 )
 
 FEE_SPLIT_KEYS=(
@@ -96,7 +96,7 @@ initialize_genesis() {
     "$BINARY" genesis add-genesis-account "$address" "$amount" --home "$HOME_DIR"
   done
 
-  local validator_amount=6000000000000ubto
+  local validator_amount=6000000000000ucsv
   "$BINARY" genesis gentx infra_validators "$validator_amount" \
     --chain-id "$CHAIN_ID" \
     --moniker "$MONIKER" \
@@ -109,7 +109,7 @@ initialize_genesis() {
   tmp=$(mktemp)
 
   jq \
-    --arg denom "ubto" \
+    --arg denom "ucsv" \
     '.app_state.staking.params.bond_denom = $denom |
      .app_state.mint.minter.inflation = "0.000000000000000000" |
      .app_state.mint.params.inflation_rate_change = "0.000000000000000000" |
@@ -121,11 +121,11 @@ initialize_genesis() {
      .app_state.distribution.params.community_tax = "0.000000000000000000" |
      .app_state.bank.denom_metadata = [
        {
-         "base": "ubto",
+         "base": "ucsv",
          "display": "CSV",
          "description": "Cosvian native token",
          "denom_units": [
-           {"denom": "ubto", "exponent": 0},
+           {"denom": "ucsv", "exponent": 0},
            {"denom": "CSV", "exponent": 6}
          ],
          "name": "Cosvian Token",
@@ -186,7 +186,7 @@ NODE_ARGS=(
   start
   --home "$HOME_DIR"
   --chain-id "$CHAIN_ID"
-  --minimum-gas-prices 0.1ubto
+  --minimum-gas-prices 0.1ucsv
   --grpc.address 127.0.0.1:9090
   --grpc.enable true
   --api.enable false

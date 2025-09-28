@@ -13,7 +13,7 @@ func TestBuildGammPoolKey(t *testing.T) {
 }
 
 func TestBuildTwapToNowKey(t *testing.T) {
-	q := BuildTwapToNowKey("ubto", "uusdc", 300)
+	q := BuildTwapToNowKey("ucsv", "uusdc", 300)
 	require.Equal(t, "twap", q.Store)
-	require.Equal(t, []byte("twap/ubto/uusdc/300"), q.Key)
+	require.Equal(t, []byte("twap/ucsv/uusdc/300"), q.Key)
 }

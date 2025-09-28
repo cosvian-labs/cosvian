@@ -22,8 +22,8 @@ export COSVIAN_RELAYER_KEY=cosvian_relayer
 export OSMO_RELAYER_KEY=osmo-test-relayer
 
 export FUND_SOURCE=public_sale
-export RELAYER_FUND_AMOUNT=2000000000ubto
-export RELAYER_FEE=1000000ubto
+export RELAYER_FUND_AMOUNT=2000000000ucsv
+export RELAYER_FEE=1000000ucsv
 ```
 
 Cek binary:
@@ -120,7 +120,7 @@ RELAYER_FEE=$RELAYER_FEE \
   --min-liq 0 \
   --max-dev 0.8 \
   --twap-window 300 \
-  --deposit 10000000ubto \
+  --deposit 10000000ucsv \
   --submit --vote
 
 ```
@@ -189,8 +189,8 @@ Pastikan harga menjadi non‑fallback setelah paket ACK.
 
 ```bash
 RELAYER_ADDR=$(hermes keys list --chain $COSVIAN_CHAIN | awk -v K=$COSVIAN_RELAYER_KEY '$2==K {gsub(/[()]/,"",$3); print $3}')
-cosviand tx bank send $FUND_SOURCE $RELAYER_ADDR 1ubto \
-  --chain-id $COSVIAN_CHAIN --fees 50000ubto -y -o json --broadcast-mode=sync \
+cosviand tx bank send $FUND_SOURCE $RELAYER_ADDR 1ucsv \
+  --chain-id $COSVIAN_CHAIN --fees 50000ucsv -y -o json --broadcast-mode=sync \
   | jq '.events[] | select(.type|test("oracle|fee|price|fee_charged"))'
 ```
 

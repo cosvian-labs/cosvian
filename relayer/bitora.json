@@ -8,7 +8,7 @@
     "account-prefix": "csv",
     "keyring-backend": "test",
     "gas-adjustment": 1.2,
-    "gas-prices": "0.025ubto",
+    "gas-prices": "0.025ucsv",
     "min-gas-amount": 1,
     "debug": true,
     "timeout": "30s",

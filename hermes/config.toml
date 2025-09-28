@@ -45,7 +45,7 @@ address_type = { derivation = 'cosmos' }
 clock_drift = '30s'
 max_block_time = '10s'
 max_gas = 3_000_000
-gas_price = { price = 0.025, denom = 'ubto' }
+gas_price = { price = 0.025, denom = 'ucsv' }
 
 rpc_addr = 'http://localhost:26657'
 grpc_addr = 'http://localhost:9090'

@@ -1,61 +1,61 @@
 version: 1
 validation: "sovereign"
 
-default_denom: "ubto"
+default_denom: "ucsv"
 
 accounts:
   - name: conversion_pool
-    coins: ["25000000000000ubto"] # 25M CSV
+    coins: ["25000000000000ucsv"] # 25M CSV
 
   - name: pos_infra
-    coins: ["10000000000000ubto"] # 10M CSV
+    coins: ["10000000000000ucsv"] # 10M CSV
 
   - name: exchange_fund
-    coins: ["5000000000000ubto"] # 5M CSV
+    coins: ["5000000000000ucsv"] # 5M CSV
 
   - name: norix_ecosystem
-    coins: ["5000000000000ubto"] # 5M CSV
+    coins: ["5000000000000ucsv"] # 5M CSV
 
   - name: infra_validators
-    coins: ["6000000000000ubto"] # 6M CSV
+    coins: ["6000000000000ucsv"] # 6M CSV
 
   - name: education_ops
-    coins: ["4000000000000ubto"] # 4M CSV
+    coins: ["4000000000000ucsv"] # 4M CSV
 
   - name: compliance_vault
-    coins: ["5000000000000ubto"] # 5M CSV
+    coins: ["5000000000000ucsv"] # 5M CSV
 
   - name: emergency_reserve
-    coins: ["5000000000000ubto"] # 5M CSV
+    coins: ["5000000000000ucsv"] # 5M CSV
 
   - name: strategic_growth
-    coins: ["5000000000000ubto"] # 5M CSV
+    coins: ["5000000000000ucsv"] # 5M CSV
 
   - name: team
-    coins: ["8000000000000ubto"] # 8M CSV
+    coins: ["8000000000000ucsv"] # 8M CSV
 
   - name: dao_reserve
-    coins: ["4000000000000ubto"] # 4M CSV
+    coins: ["4000000000000ucsv"] # 4M CSV
 
   - name: public_sale
-    coins: ["18000000000000ubto"] # 18M CSV
+    coins: ["18000000000000ucsv"] # 18M CSV
 
   - name: cosvian_relayer
-    coins: ["0ubto"] # 0 CSV
+    coins: ["0ucsv"] # 0 CSV
 
   # Developer / testing account (added for permanent availability)
   - name: tester
-    coins: ["100000000ubto"] # 100 CSV (adjust as needed)
+    coins: ["100000000ucsv"] # 100 CSV (adjust as needed)
 
 faucet:
   name: public_sale
-  coins: ["1000000000000ubto"] # 1M CSV
-  coins_max: ["5000000000000ubto"] # 5M CSV
+  coins: ["1000000000000ucsv"] # 1M CSV
+  coins_max: ["5000000000000ucsv"] # 5M CSV
   port: 4500
 
 validators:
   - name: infra_validators
-    bonded: "6000000000000ubto"
+    bonded: "6000000000000ucsv"
     app:
       pruning: "nothing"
     config:
@@ -67,7 +67,7 @@ genesis:
   app_state:
     staking:
       params:
-        bond_denom: "ubto"
+        bond_denom: "ucsv"
     mint:
       minter:
         inflation: "0.000000000000000000"
@@ -75,7 +75,7 @@ genesis:
         inflation_rate_change: "0.000000000000000000"
         inflation_max: "0.000000000000000000"
         inflation_min: "0.000000000000000000"
-        mint_denom: "ubto"
+        mint_denom: "ucsv"
     distribution:
       params:
         base_proposer_reward: "0.0"
@@ -83,13 +83,13 @@ genesis:
         community_tax: "0.0"
     bank:
       denom_metadata:
-        - base: "ubto"
+        - base: "ucsv"
           display: "CSV"
           name: "Cosvian Token"
           symbol: "CSV"
           description: "Cosvian native token"
           denom_units:
-            - denom: "ubto"
+            - denom: "ucsv"
               exponent: 0
             - denom: "CSV"
               exponent: 6

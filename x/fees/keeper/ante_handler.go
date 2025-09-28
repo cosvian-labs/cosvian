@@ -73,7 +73,7 @@ func (fah *FeeAnteHandler) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool,
 
 	// params sudah diambil di awal; gunakan langsung.
 
-	btoDenom := "ubto" // Default CSV denom - should be configurable
+	btoDenom := "ucsv" // Default CSV denom - should be configurable
 
 	// Hybrid / gas-only branching
 	switch {

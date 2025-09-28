@@ -351,7 +351,7 @@ func (fc *FeeCalculator) BuildFeeFromEstimate(estimate *FeeEstimate, denom strin
 
 	// Convert decimal to integer amount
 	amount := estimate.BTOAmount.TruncateInt()
-	// If building a fee in micro-denom (e.g., "ubto"), scale by 1e6
+	// If building a fee in micro-denom (e.g., "ucsv"), scale by 1e6
 	if strings.HasPrefix(denom, "u") {
 		amount = estimate.BTOAmount.MulInt64(1_000_000).TruncateInt()
 	}

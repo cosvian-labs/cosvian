@@ -28,26 +28,26 @@ const (
 
 // ChargeAndSplitFee memotong fee dari sender dan membagi 50:50 ke treasury dan infrastructure
 func (k Keeper) ChargeAndSplitFee(ctx sdk.Context, sender sdk.AccAddress, usdAmount math.LegacyDec) error {
-	// Use the central fees keeper to convert USD to CSV/ubto
+	// Use the central fees keeper to convert USD to CSV/ucsv
 	feeBTO, _, err := k.feesKeeper.ConvertUSDToBTO(ctx, usdAmount)
 	if err != nil {
 		return errors.Wrapf(err, "failed to convert USD to CSV")
 	}
-	// scale CSV to ubto (assume 6 decimals)
-	feeCoin := sdk.NewCoin("ubto", feeBTO.MulInt64(1_000_000).TruncateInt())
+	// scale CSV to ucsv (assume 6 decimals)
+	feeCoin := sdk.NewCoin("ucsv", feeBTO.MulInt64(1_000_000).TruncateInt())
 
 	// 3. Cek apakah sender memiliki saldo yang cukup
 	balance := k.bankKeeper.SpendableCoins(ctx, sender)
-	if balance.AmountOf("ubto").LT(feeCoin.Amount) {
+	if balance.AmountOf("ucsv").LT(feeCoin.Amount) {
 		return errors.Wrapf(ErrInsufficientFunds,
-			"insufficient funds: required %s, available %s ubto",
-			feeCoin.Amount.String(), balance.AmountOf("ubto").String())
+			"insufficient funds: required %s, available %s ucsv",
+			feeCoin.Amount.String(), balance.AmountOf("ucsv").String())
 	}
 
 	// 4. Bagi fee 50:50
 	split := feeCoin.Amount.Quo(math.NewInt(2))
-	toTreasury := sdk.NewCoin("ubto", split)
-	toInfra := sdk.NewCoin("ubto", feeCoin.Amount.Sub(split)) // Sisa untuk infra (menghindari rounding error)
+	toTreasury := sdk.NewCoin("ucsv", split)
+	toInfra := sdk.NewCoin("ucsv", feeCoin.Amount.Sub(split)) // Sisa untuk infra (menghindari rounding error)
 
 	// 5. Potong fee dari sender ke treasury module account
 	if err = k.bankKeeper.SendCoinsFromAccountToModule(ctx, sender, TreasuryModuleAccount, sdk.NewCoins(toTreasury)); err != nil {
@@ -64,13 +64,13 @@ func (k Keeper) ChargeAndSplitFee(ctx sdk.Context, sender sdk.AccAddress, usdAmo
 	return nil
 }
 
-// GetFeeInUBTO menghitung berapa ubto yang dibutuhkan untuk fee USD tertentu
-func (k Keeper) GetFeeInUBTO(ctx sdk.Context, usdAmount math.LegacyDec) (sdk.Coin, error) {
+// GetFeeInucsv menghitung berapa ucsv yang dibutuhkan untuk fee USD tertentu
+func (k Keeper) GetFeeInucsv(ctx sdk.Context, usdAmount math.LegacyDec) (sdk.Coin, error) {
 	feeBTO, _, err := k.feesKeeper.ConvertUSDToBTO(ctx, usdAmount)
 	if err != nil {
 		return sdk.Coin{}, errors.Wrapf(err, "failed to convert USD to CSV")
 	}
-	return sdk.NewCoin("ubto", feeBTO.MulInt64(1_000_000).TruncateInt()), nil
+	return sdk.NewCoin("ucsv", feeBTO.MulInt64(1_000_000).TruncateInt()), nil
 }
 
 // GetFeeByType returns the USD fee amount for a given fee type
@@ -100,14 +100,14 @@ func (k Keeper) ChargeAndDistributeFeeByType(
 	if err != nil {
 		return errors.Wrapf(err, "failed to convert USD to CSV")
 	}
-	feeCoin := sdk.NewCoin("ubto", feeBTO.MulInt64(1_000_000).TruncateInt())
+	feeCoin := sdk.NewCoin("ucsv", feeBTO.MulInt64(1_000_000).TruncateInt())
 
 	// Check if sender has enough balance
 	balance := k.bankKeeper.SpendableCoins(ctx, sender)
-	if balance.AmountOf("ubto").LT(feeCoin.Amount) {
+	if balance.AmountOf("ucsv").LT(feeCoin.Amount) {
 		return errors.Wrapf(ErrInsufficientFunds,
-			"insufficient funds: required %s, available %s ubto",
-			feeCoin.Amount.String(), balance.AmountOf("ubto").String())
+			"insufficient funds: required %s, available %s ucsv",
+			feeCoin.Amount.String(), balance.AmountOf("ucsv").String())
 	}
 
 	// Delegate distribution to fees module

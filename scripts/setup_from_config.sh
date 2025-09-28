@@ -19,20 +19,20 @@ if ! command -v jq >/dev/null 2>&1; then
 fi
 
 ACCOUNTS=(
-  "pool_ecosystem:5000000000000ubto"
-  "conversion_pool:25000000000000ubto"
-  "pos_infra:10000000000000ubto"
-  "exchange_fund:5000000000000ubto"
-  "norix_ecosystem:5000000000000ubto"
-  "infra_validators:6000000000000ubto"
-  "education_ops:4000000000000ubto"
-  "compliance_vault:5000000000000ubto"
-  "emergency_reserve:5000000000000ubto"
-  "strategic_growth:5000000000000ubto"
-  "team:8000000000000ubto"
-  "dao_reserve:4000000000000ubto"
-  "public_sale:18000000000000ubto"
-  "tester:100000000ubto"
+  "pool_ecosystem:5000000000000ucsv"
+  "conversion_pool:25000000000000ucsv"
+  "pos_infra:10000000000000ucsv"
+  "exchange_fund:5000000000000ucsv"
+  "norix_ecosystem:5000000000000ucsv"
+  "infra_validators:6000000000000ucsv"
+  "education_ops:4000000000000ucsv"
+  "compliance_vault:5000000000000ucsv"
+  "emergency_reserve:5000000000000ucsv"
+  "strategic_growth:5000000000000ucsv"
+  "team:8000000000000ucsv"
+  "dao_reserve:4000000000000ucsv"
+  "public_sale:18000000000000ucsv"
+  "tester:100000000ucsv"
 )
 
 FEE_SPLIT_KEYS=(
@@ -58,7 +58,7 @@ done
 
 echo "\n>>> Creating validator gentx"
 VALIDATOR_NAME=infra_validators
-VALIDATOR_AMOUNT=6000000000000ubto
+VALIDATOR_AMOUNT=6000000000000ucsv
 "$BINARY" genesis gentx "$VALIDATOR_NAME" "$VALIDATOR_AMOUNT" \
   --chain-id "$CHAIN_ID" \
   --moniker "$MONIKER" \
@@ -71,7 +71,7 @@ GEN_FILE="$HOME_DIR/config/genesis.json"
 tmp=$(mktemp)
 
 jq \
-  --arg denom "ubto" \
+  --arg denom "ucsv" \
   '.app_state.staking.params.bond_denom = $denom |
    .app_state.mint.minter.inflation = "0.000000000000000000" |
    .app_state.mint.params.inflation_rate_change = "0.000000000000000000" |
@@ -83,11 +83,11 @@ jq \
    .app_state.distribution.params.community_tax = "0.000000000000000000" |
    .app_state.bank.denom_metadata = [
      {
-       "base": "ubto",
+       "base": "ucsv",
        "display": "CSV",
        "description": "Cosvian native token",
        "denom_units": [
-         {"denom": "ubto", "exponent": 0},
+         {"denom": "ucsv", "exponent": 0},
          {"denom": "CSV", "exponent": 6}
        ],
        "name": "Cosvian Token",
@@ -140,4 +140,4 @@ done
 
 "$BINARY" genesis validate --home "$HOME_DIR"
 
-echo "\nSetup complete. Start the node with:\n  $BINARY start --home $HOME_DIR --minimum-gas-prices 0.1ubto"
+echo "\nSetup complete. Start the node with:\n  $BINARY start --home $HOME_DIR --minimum-gas-prices 0.1ucsv"

@@ -115,7 +115,7 @@ type App struct {
 	IBCFeeKeeper        interface{} // placeholder for ICS29 keeper (set in ibc.go)
 
 	CosvianKeeper cosvianmodulekeeper.Keeper
-	TokenKeeper  tokenmodulekeeper.Keeper
+	TokenKeeper   tokenmodulekeeper.Keeper
 
 	PricefeedKeeper pricefeedmodulekeeper.Keeper
 	// TreasuryKeeper       treasurymodulekeeper.Keeper // Temporarily commented for testing
@@ -138,7 +138,7 @@ type App struct {
 
 func init() {
 
-	sdk.DefaultBondDenom = "ubto"
+	sdk.DefaultBondDenom = "ucsv"
 
 	var err error
 	clienthelpers.EnvPrefix = Name

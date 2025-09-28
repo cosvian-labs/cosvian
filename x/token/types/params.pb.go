@@ -31,7 +31,7 @@ type Params struct {
 	MaxTokensPerCreator uint64 `protobuf:"varint,1,opt,name=max_tokens_per_creator,json=maxTokensPerCreator,proto3" json:"max_tokens_per_creator,omitempty"`
 	// List of reserved symbols that cannot be used
 	ReservedSymbols []string `protobuf:"bytes,2,rep,name=reserved_symbols,json=reservedSymbols,proto3" json:"reserved_symbols,omitempty"`
-	// Token creation fee amount in ubto
+	// Token creation fee amount in ucsv
 	CreationFeeAmount cosmossdk_io_math.Int `protobuf:"bytes,3,opt,name=creation_fee_amount,json=creationFeeAmount,proto3,customtype=cosmossdk.io/math.Int" json:"creation_fee_amount"`
 }
 

@@ -17,7 +17,7 @@
     }
   ],
   "metadata": "",
-  "deposit": "1000000ubto",
+  "deposit": "1000000ucsv",
   "title": "Update Osmosis ICQ Params for osmotest5",
   "summary": "Set connection-0, use GAMM pool 666 (uosmo/USDC), and disable TWAP for now."
 }

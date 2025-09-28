@@ -21,7 +21,7 @@ func (k msgServer) SetPrice(ctx context.Context, msg *types.MsgSetPrice) (*types
 	}
 
 	// Validate denom/symbol: currently only supports CSV priced in USD
-	if msg.Denom != "CSV" && msg.Denom != "ubto" {
+	if msg.Denom != "CSV" && msg.Denom != "ucsv" {
 		return nil, errorsmod.Wrapf(types.ErrInvalidDenom, "unsupported denom: %s", msg.Denom)
 	}
 

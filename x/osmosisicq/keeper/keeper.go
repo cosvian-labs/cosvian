@@ -238,8 +238,8 @@ func (k Keeper) ValidateAndPersistPrice(ctx sdk.Context, price sdkmath.LegacyDec
 }
 
 // normalizeToBTOPerUSD converts a quote/base price into canonical CSV per USD using params.BaseDenom/QuoteDenom.
-// If BaseDenom=="ubto" and QuoteDenom=="uusdc", given price is USDC per CSV, so CSV per USD = 1/price.
-// If BaseDenom=="uusdc" and QuoteDenom=="ubto", given price is CSV per USD already.
+// If BaseDenom=="ucsv" and QuoteDenom=="uusdc", given price is USDC per CSV, so CSV per USD = 1/price.
+// If BaseDenom=="uusdc" and QuoteDenom=="ucsv", given price is CSV per USD already.
 // Otherwise, assume provided price is already CSV per USD (e.g., two-hop aggregated externally).
 func (k Keeper) normalizeToBTOPerUSD(ctx sdk.Context, priceQuotePerBase sdkmath.LegacyDec) sdkmath.LegacyDec {
 	params, err := k.Params.Get(ctx)
@@ -248,13 +248,13 @@ func (k Keeper) normalizeToBTOPerUSD(ctx sdk.Context, priceQuotePerBase sdkmath.
 	}
 	base := params.BaseDenom
 	quote := params.QuoteDenom
-	if base == "ubto" && quote == "uusdc" {
+	if base == "ucsv" && quote == "uusdc" {
 		if priceQuotePerBase.IsZero() {
 			return sdkmath.LegacyZeroDec()
 		}
 		return sdkmath.LegacyOneDec().Quo(priceQuotePerBase)
 	}
-	if base == "uusdc" && quote == "ubto" {
+	if base == "uusdc" && quote == "ucsv" {
 		return priceQuotePerBase
 	}
 	// Unknown pair mapping; treat as already normalized

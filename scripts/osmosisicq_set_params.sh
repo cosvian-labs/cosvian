@@ -8,8 +8,8 @@ KEY=${KEY:-public_sale}
 FROM=${FROM:-$KEY}
 CHAIN_ID=${CHAIN_ID:-cosvian-1}
 NODE=${NODE:-http://localhost:26657}
-FEES=${FEES:-10000ubto}
-DEPOSIT=${DEPOSIT:-1000000ubto}
+FEES=${FEES:-10000ucsv}
+DEPOSIT=${DEPOSIT:-1000000ucsv}
 PROPOSAL_FILE=${PROPOSAL_FILE:-proposals/osmosisicq_update_params.json}
 
 # Replace authority placeholder with gov module address dynamically (robust resolution)

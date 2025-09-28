@@ -82,7 +82,7 @@ feeCalculator := keeper.NewFeeCalculator(keeper, oracleAdapter)
 estimate, err := feeCalculator.EstimateFee(ctx, msgs, memo, gasWanted)
 
 // Build transaction with calculated fee
-fee := feeCalculator.BuildFeeFromEstimate(estimate, "ubto")
+fee := feeCalculator.BuildFeeFromEstimate(estimate, "ucsv")
 ```
 
 ### Transaction Categories
