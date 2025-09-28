@@ -7,7 +7,6 @@ release/
 *.dot
 *.log
 *.ign
-cosviand
 build/
 bin/
 *.exe
