@@ -15,9 +15,9 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/stretchr/testify/require"
 
-	"bitora/x/osmosisicq/keeper"
-	module "bitora/x/osmosisicq/module"
-	"bitora/x/osmosisicq/types"
+	"cosvian/x/osmosisicq/keeper"
+	module "cosvian/x/osmosisicq/module"
+	"cosvian/x/osmosisicq/types"
 )
 
 type fixture struct {
@@ -267,7 +267,7 @@ func TestHandleSpot_NormalizesBTOUSD(t *testing.T) {
 	cap := &mockCaptureOracle{}
 	k := keeper.NewKeeper(storeService, encCfg.Codec, addressCodec, authority, cap, nil)
 
-	// Params: base=ubto, quote=uusdc -> given price is USDC per BTO; we invert to BTO per USD
+	// Params: base=ubto, quote=uusdc -> given price is USDC per CSV; we invert to CSV per USD
 	p := types.DefaultParams()
 	p.BaseDenom = "ubto"
 	p.QuoteDenom = "uusdc"
@@ -275,7 +275,7 @@ func TestHandleSpot_NormalizesBTOUSD(t *testing.T) {
 	require.NoError(t, k.Params.Set(ctx, p))
 
 	sdkCtx := ctx
-	// price 2.0 USDC per BTO -> BTO per USD = 0.5
+	// price 2.0 USDC per CSV -> CSV per USD = 0.5
 	err := k.HandleSpotResult(sdkCtx, sdkmath.LegacyNewDec(2), sdkmath.LegacyNewDec(100))
 	require.NoError(t, err)
 	require.True(t, cap.last.Equal(sdkmath.LegacyMustNewDecFromStr("0.5")))
@@ -298,7 +298,7 @@ func TestOnKVResult_StubJSON_Twap(t *testing.T) {
 	p.MinLiquidity = "1"
 	require.NoError(t, k.Params.Set(ctx, p))
 
-	// JSON payload where price is 2 USDC per BTO, liquidity 100
+	// JSON payload where price is 2 USDC per CSV, liquidity 100
 	payload := []byte(`{"price":"2","liquidity":"100"}`)
 	err := k.OnKVResult(ctx, "twap", []byte("unused"), payload)
 	require.NoError(t, err)
@@ -322,7 +322,7 @@ func TestOnKVResult_StubDelimited_Spot(t *testing.T) {
 	p.MinLiquidity = "1"
 	require.NoError(t, k.Params.Set(ctx, p))
 
-	// Delimited form price|liquidity represents BTO per USD directly (no inversion for this pair)
+	// Delimited form price|liquidity represents CSV per USD directly (no inversion for this pair)
 	payload := []byte("1.25|1000")
 	err := k.OnKVResult(ctx, "gamm", []byte("pool/42"), payload)
 	require.NoError(t, err)

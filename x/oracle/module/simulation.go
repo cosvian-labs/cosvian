@@ -7,8 +7,8 @@ import (
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/cosmos/cosmos-sdk/x/simulation"
 
-	oraclesimulation "bitora/x/oracle/simulation"
-	"bitora/x/oracle/types"
+	oraclesimulation "cosvian/x/oracle/simulation"
+	"cosvian/x/oracle/types"
 )
 
 // GenerateGenesisState creates a randomized GenState of the module.

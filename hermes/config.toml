@@ -1,4 +1,4 @@
-# Hermes relayer configuration (Bitora ↔ Osmosis Testnet + placeholder Mainnet)
+# Hermes relayer configuration (Cosvian ↔ Osmosis Testnet + placeholder Mainnet)
 # Generated: 2025-09-08
 
 [global]
@@ -33,13 +33,13 @@ host = '127.0.0.1'
 port = 3001
 
 #################################################################
-# Chain: Bitora (local dev)                                     #
+# Chain: Cosvian (local dev)                                     #
 #################################################################
 [[chains]]
-id = 'bitora'
+id = 'cosvian'
 type = 'CosmosSdk'
-account_prefix = 'bto'
-key_name = 'bitora_relayer'
+account_prefix = 'csv'
+key_name = 'cosvian_relayer'
 store_prefix = 'ibc'
 address_type = { derivation = 'cosmos' }
 clock_drift = '30s'
@@ -54,12 +54,12 @@ event_source = { mode = 'push', url = 'ws://localhost:26657/websocket', batch_de
 rpc_timeout = '15s'
 trusted_node = false
 
-# Restrict packet relaying on Bitora to ICQ channel on connection-0
+# Restrict packet relaying on Cosvian to ICQ channel on connection-0
 [chains.packet_filter]
 policy = 'allow'
-list = [[ 'icqcontroller', 'channel-4' ]]
+list = [['icqcontroller', 'channel-4']]
 
- # (packet filter removed – default allow)
+# (packet filter removed – default allow)
 
 #################################################################
 # Chain: Osmosis Testnet (osmo-test-5)
@@ -102,5 +102,3 @@ grpc_addr = 'https://grpc.osmosis.zone:443'
 event_source = { mode = 'push', url = 'wss://rpc.osmosis.zone/websocket', batch_delay = '400ms' }
 rpc_timeout = '20s'
 trusted_node = false
-
-

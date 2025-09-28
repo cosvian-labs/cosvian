@@ -10,7 +10,7 @@ import (
 	authztypes "github.com/cosmos/cosmos-sdk/x/authz"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
-	"bitora/x/fees/types"
+	"cosvian/x/fees/types"
 )
 
 // FeeCalculator handles fee calculation for SDK/Wallet middleware
@@ -118,10 +118,10 @@ func (fc *FeeCalculator) EstimateFee(ctx sdk.Context, msgs []sdk.Msg, memo strin
 		}, nil
 	}
 
-	// Convert USD fee to BTO
+	// Convert USD fee to CSV
 	btoAmount, priceData, err := fc.oracleAdapter.ConvertUSDToBTO(ctx, feeConfig.UsdAmount)
 	if err != nil {
-		return nil, fmt.Errorf("failed to convert USD to BTO: %w", err)
+		return nil, fmt.Errorf("failed to convert USD to CSV: %w", err)
 	}
 
 	// Apply guard rails
@@ -330,13 +330,13 @@ func (fc *FeeCalculator) applyGuardRails(btoAmount math.LegacyDec, gasWanted uin
 
 	// Apply minimum gas price
 	if gasPrice.LT(guardRails.MinGasPriceBto) {
-		// Adjust BTO amount to meet minimum gas price
+		// Adjust CSV amount to meet minimum gas price
 		btoAmount = guardRails.MinGasPriceBto.MulInt64(int64(gasWanted))
 	}
 
 	// Apply maximum gas price
 	if gasPrice.GT(guardRails.MaxGasPriceBto) {
-		// Cap BTO amount to maximum gas price
+		// Cap CSV amount to maximum gas price
 		btoAmount = guardRails.MaxGasPriceBto.MulInt64(int64(gasWanted))
 	}
 

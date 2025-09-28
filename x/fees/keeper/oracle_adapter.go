@@ -7,10 +7,10 @@ import (
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"bitora/x/fees/types"
+	"cosvian/x/fees/types"
 )
 
-// OracleAdapter handles Band Protocol integration for BTO/USD price feeds
+// OracleAdapter handles Band Protocol integration for CSV/USD price feeds
 type OracleAdapter struct {
 	keeper       Keeper
 	oracleKeeper types.OracleKeeper
@@ -24,7 +24,7 @@ func NewOracleAdapter(keeper Keeper, oracleKeeper types.OracleKeeper) *OracleAda
 	}
 }
 
-// GetBTOUSDPrice retrieves BTO/USD price with fallback logic
+// GetBTOUSDPrice retrieves CSV/USD price with fallback logic
 func (oa *OracleAdapter) GetBTOUSDPrice(ctx sdk.Context) (*types.PriceData, error) {
 	params, err := oa.keeper.Params.Get(ctx)
 	if err != nil {
@@ -33,8 +33,8 @@ func (oa *OracleAdapter) GetBTOUSDPrice(ctx sdk.Context) (*types.PriceData, erro
 	}
 	oracleParams := params.OracleParams
 
-	// Query oracle module for BTO exchange rate (BTO per USD)
-	price, err := oa.oracleKeeper.GetExchangeRate(ctx, "BTO")
+	// Query oracle module for CSV exchange rate (CSV per USD)
+	price, err := oa.oracleKeeper.GetExchangeRate(ctx, "CSV")
 	if err == nil && !price.IsZero() {
 		priceData := &types.PriceData{
 			Price:      price,
@@ -81,7 +81,7 @@ func (oa *OracleAdapter) isPriceValid(price *OraclePrice, params types.OraclePar
 
 // getFallbackPrice returns a default fallback price when oracle is unavailable
 func (oa *OracleAdapter) getFallbackPrice(ctx sdk.Context, params types.OracleParams) (*types.PriceData, error) {
-	// Use a hardcoded fallback price for now (e.g., $1.00 for BTO)
+	// Use a hardcoded fallback price for now (e.g., $1.00 for CSV)
 	fallbackPrice := math.LegacyOneDec()
 
 	priceData := &types.PriceData{
@@ -116,14 +116,14 @@ func (oa *OracleAdapter) emitOracleEvent(ctx sdk.Context, priceData *types.Price
 	)
 }
 
-// ConvertUSDToBTO converts USD amount to BTO using current oracle price
+// ConvertUSDToBTO converts USD amount to CSV using current oracle price
 func (oa *OracleAdapter) ConvertUSDToBTO(ctx sdk.Context, usdAmount math.LegacyDec) (math.LegacyDec, *types.PriceData, error) {
 	priceData, err := oa.GetBTOUSDPrice(ctx)
 	if err != nil {
 		return math.LegacyZeroDec(), nil, err
 	}
 
-	// priceData.TwapPrice represents BTO per USD. For a USD amount, multiply to get BTO.
+	// priceData.TwapPrice represents CSV per USD. For a USD amount, multiply to get CSV.
 	btoAmount := usdAmount.Mul(priceData.TwapPrice)
 
 	return btoAmount, priceData, nil

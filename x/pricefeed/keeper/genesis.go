@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"bitora/x/pricefeed/types"
+	"cosvian/x/pricefeed/types"
 
 	"cosmossdk.io/collections"
 	sdk "github.com/cosmos/cosmos-sdk/types"

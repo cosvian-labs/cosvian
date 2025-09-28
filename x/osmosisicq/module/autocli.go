@@ -3,7 +3,7 @@ package osmosisicq
 import (
 	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
 
-	"bitora/x/osmosisicq/types"
+	"cosvian/x/osmosisicq/types"
 )
 
 // AutoCLIOptions implements the autocli.HasAutoCLIConfig interface.

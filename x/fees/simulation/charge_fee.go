@@ -8,8 +8,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 
-	"bitora/x/fees/keeper"
-	"bitora/x/fees/types"
+	"cosvian/x/fees/keeper"
+	"cosvian/x/fees/types"
 )
 
 func SimulateMsgChargeFee(

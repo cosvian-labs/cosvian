@@ -13,9 +13,9 @@ import (
 	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
-	"bitora/x/treasury/keeper"
-	module "bitora/x/treasury/module"
-	"bitora/x/treasury/types"
+	"cosvian/x/treasury/keeper"
+	module "cosvian/x/treasury/module"
+	"cosvian/x/treasury/types"
 )
 
 type fixture struct {

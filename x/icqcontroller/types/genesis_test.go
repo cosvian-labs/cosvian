@@ -3,7 +3,7 @@ package types_test
 import (
 	"testing"
 
-	"bitora/x/icqcontroller/types"
+	"cosvian/x/icqcontroller/types"
 
 	"github.com/stretchr/testify/require"
 )

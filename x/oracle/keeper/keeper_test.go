@@ -13,9 +13,9 @@ import (
 	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
-	"bitora/x/oracle/keeper"
-	module "bitora/x/oracle/module"
-	"bitora/x/oracle/types"
+	"cosvian/x/oracle/keeper"
+	module "cosvian/x/oracle/module"
+	"cosvian/x/oracle/types"
 )
 
 type fixture struct {

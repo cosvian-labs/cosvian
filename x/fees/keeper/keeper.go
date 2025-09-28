@@ -11,7 +11,7 @@ import (
 	math "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"bitora/x/fees/types"
+	"cosvian/x/fees/types"
 )
 
 type Keeper struct {
@@ -68,11 +68,11 @@ func (k Keeper) GetAuthority() []byte {
 	return k.authority
 }
 
-// ConvertUSDToBTO converts a USD amount to BTO using the module's oracle adapter
+// ConvertUSDToBTO converts a USD amount to CSV using the module's oracle adapter
 func (k Keeper) ConvertUSDToBTO(ctx sdk.Context, usd math.LegacyDec) (math.LegacyDec, *types.PriceData, error) {
 	oa := NewOracleAdapter(k, k.oracleKeeper)
-	bto, pd, err := oa.ConvertUSDToBTO(ctx, usd)
-	return bto, pd, err
+	csv, pd, err := oa.ConvertUSDToBTO(ctx, usd)
+	return csv, pd, err
 }
 
 // GetFeeByType returns the USD fee amount for a given fee type by reading module params
@@ -100,7 +100,7 @@ func (k Keeper) GetFeeByType(ctx sdk.Context, feeType string) math.LegacyDec {
 }
 
 // DistributeFee distributes a fee coin according to configured params for the feeType.
-// sender is the account paying the fee, feeType selects the fee table entry, feeCoin is in BTO denom.
+// sender is the account paying the fee, feeType selects the fee table entry, feeCoin is in CSV denom.
 func (k Keeper) DistributeFee(ctx sdk.Context, sender sdk.AccAddress, feeType string, feeCoin sdk.Coin, metadata map[string]interface{}) error {
 	params, err := k.Params.Get(ctx)
 	if err != nil {
@@ -240,7 +240,7 @@ func (k Keeper) DistributeFee(ctx sdk.Context, sender sdk.AccAddress, feeType st
 
 // DistributeFeeFromModule distributes a fee coin held by a module account according to configured params.
 // moduleName is the source module account currently holding the coins (e.g., types.ModuleName).
-// feeType selects the fee table entry, feeCoin is in BTO denom.
+// feeType selects the fee table entry, feeCoin is in CSV denom.
 func (k Keeper) DistributeFeeFromModule(ctx sdk.Context, moduleName, feeType string, feeCoin sdk.Coin, metadata map[string]interface{}) error {
 	params, err := k.Params.Get(ctx)
 	if err != nil {

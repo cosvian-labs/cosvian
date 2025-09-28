@@ -3,7 +3,7 @@ package keeper
 import (
 	"context"
 
-	"bitora/x/oracle/types"
+	"cosvian/x/oracle/types"
 
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -20,12 +20,12 @@ func (k msgServer) SetPrice(ctx context.Context, msg *types.MsgSetPrice) (*types
 		return nil, errorsmod.Wrap(err, "invalid creator address")
 	}
 
-	// Validate denom/symbol: currently only supports BTO priced in USD
-	if msg.Denom != "BTO" && msg.Denom != "ubto" {
+	// Validate denom/symbol: currently only supports CSV priced in USD
+	if msg.Denom != "CSV" && msg.Denom != "ubto" {
 		return nil, errorsmod.Wrapf(types.ErrInvalidDenom, "unsupported denom: %s", msg.Denom)
 	}
 
-	// Parse price (BTO per 1 USD)
+	// Parse price (CSV per 1 USD)
 	price, err := math.LegacyNewDecFromStr(msg.Price)
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "invalid price format")
@@ -46,7 +46,7 @@ func (k msgServer) SetPrice(ctx context.Context, msg *types.MsgSetPrice) (*types
 	sdkCtx.EventManager().EmitEvent(
 		sdk.NewEvent("PriceSet",
 			sdk.NewAttribute("creator", msg.Creator),
-			sdk.NewAttribute("symbol", "BTO"),
+			sdk.NewAttribute("symbol", "CSV"),
 			sdk.NewAttribute("price", price.String()),
 		),
 	)

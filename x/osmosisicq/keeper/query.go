@@ -5,7 +5,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"bitora/x/osmosisicq/types"
+	"cosvian/x/osmosisicq/types"
 )
 
 var _ types.QueryServer = queryServer{}

@@ -1,4 +1,4 @@
-# Bitora Pricefeed ICQ Test (ibc-go v10 + Hermes)
+# Cosvian Pricefeed ICQ Test (ibc-go v10 + Hermes)
 
 Tujuan singkat:
 
@@ -14,11 +14,11 @@ Tujuan singkat:
 ## 0. Export Variabel
 
 ```bash
-export BITORA_HOME=~/.bitora
-export BITORA_CHAIN=bitora
+export COSVIAN_HOME=~/.cosvian
+export COSVIAN_CHAIN=cosvian
 export OSMO_CHAIN=osmo-test-5
 
-export BITORA_RELAYER_KEY=bitora_relayer
+export COSVIAN_RELAYER_KEY=cosvian_relayer
 export OSMO_RELAYER_KEY=osmo-test-relayer
 
 export FUND_SOURCE=public_sale
@@ -29,37 +29,37 @@ export RELAYER_FEE=1000000ubto
 Cek binary:
 
 ```bash
-which bitorad
-bitorad version
+which cosviand
+cosviand version
 ```
 
 ## 1. Start Chain
 
 ```bash
-cd /mnt/c/Project/Cosvian/bitora-blockchain
+cd /mnt/c/Project/Cosvian/cosvian-blockchain
 ignite chain serve --reset-once -v --build.tags "icq_async"
 ```
 
 Tunggu blok jalan:
 
 ```bash
-watch -n2 'bitorad status 2>/dev/null | jq -r ".SyncInfo.latest_block_height"'
+watch -n2 'cosviand status 2>/dev/null | jq -r ".SyncInfo.latest_block_height"'
 ```
 
 ## 2. Keys Hermes
 
 ```bash
-hermes keys list --chain $BITORA_CHAIN || true
+hermes keys list --chain $COSVIAN_CHAIN || true
 hermes keys list --chain $OSMO_CHAIN || true
 ```
 
 Tambahkan jika belum:
 
 ```bash
-# Bitora
-read -rsp "Mnemonic relayer bitora: " M1; echo
+# Cosvian
+read -rsp "Mnemonic relayer cosvian: " M1; echo
 printf '%s\n' "$M1" > /tmp/b_relayer.mn
-hermes keys add --chain $BITORA_CHAIN --key-name $BITORA_RELAYER_KEY --mnemonic-file /tmp/b_relayer.mn --overwrite
+hermes keys add --chain $COSVIAN_CHAIN --key-name $COSVIAN_RELAYER_KEY --mnemonic-file /tmp/b_relayer.mn --overwrite
 rm -f /tmp/b_relayer.mn
 
 # Osmosis
@@ -69,35 +69,35 @@ hermes keys add --chain $OSMO_CHAIN --key-name $OSMO_RELAYER_KEY --mnemonic-file
 rm -f /tmp/o_relayer.mn
 ```
 
-## 3. Fund Relayer Bitora
+## 3. Fund Relayer Cosvian
 
 ```bash
-RELAYER_ADDR=$(hermes keys list --chain $BITORA_CHAIN | awk -v K=$BITORA_RELAYER_KEY '$2==K {gsub(/[()]/,"",$3); print $3}')
+RELAYER_ADDR=$(hermes keys list --chain $COSVIAN_CHAIN | awk -v K=$COSVIAN_RELAYER_KEY '$2==K {gsub(/[()]/,"",$3); print $3}')
 echo $RELAYER_ADDR
-bitorad tx bank send $FUND_SOURCE $RELAYER_ADDR $RELAYER_FUND_AMOUNT \
-  --chain-id $BITORA_CHAIN --keyring-backend test --fees $RELAYER_FEE -y
-bitorad q bank balances $RELAYER_ADDR
+cosviand tx bank send $FUND_SOURCE $RELAYER_ADDR $RELAYER_FUND_AMOUNT \
+  --chain-id $COSVIAN_CHAIN --keyring-backend test --fees $RELAYER_FEE -y
+cosviand q bank balances $RELAYER_ADDR
 ```
 
 ## 4. Connection
 
 ```bash
-hermes query connections --chain $BITORA_CHAIN | grep connection-0 \
-  || hermes create connection --a-chain $BITORA_CHAIN --b-chain $OSMO_CHAIN
-hermes query connections --chain $BITORA_CHAIN | grep connection-0
+hermes query connections --chain $COSVIAN_CHAIN | grep connection-0 \
+  || hermes create connection --a-chain $COSVIAN_CHAIN --b-chain $OSMO_CHAIN
+hermes query connections --chain $COSVIAN_CHAIN | grep connection-0
 ```
 
 ## 5. Channel ICQ (UNORDERED)
 
 ```bash
-hermes query channels --chain $BITORA_CHAIN | grep icqcontroller || hermes create channel \
-  --a-chain $BITORA_CHAIN \
+hermes query channels --chain $COSVIAN_CHAIN | grep icqcontroller || hermes create channel \
+  --a-chain $COSVIAN_CHAIN \
   --a-connection connection-0 \
   --a-port icqcontroller \
   --b-port icqhost \
   --order unordered \
   --channel-version icq-1
-hermes query channels --chain $BITORA_CHAIN | grep icqcontroller
+hermes query channels --chain $COSVIAN_CHAIN | grep icqcontroller
 ```
 
 ## 6. Governance (Set Params osmosisicq)
@@ -109,7 +109,7 @@ Gunakan helper script (legacy msg patch sudah ditambahkan). Dua opsi:
 ```bash
 JSON=/tmp/osmo_params.json \
 FUND_SOURCE=$FUND_SOURCE \
-BITORA_CHAIN=$BITORA_CHAIN \
+COSVIAN_CHAIN=$COSVIAN_CHAIN \
 RELAYER_FEE=$RELAYER_FEE \
 ./scripts/osmosisicq_make_proposal.sh \
   --connection connection-0 \
@@ -151,13 +151,13 @@ Script ini:
 Cek status kalau perlu:
 
 ```bash
-bitorad q gov proposals -o json | jq '.proposals | length'
+cosviand q gov proposals -o json | jq '.proposals | length'
 ```
 
 Setelah PASSED verifikasi:
 
 ```bash
-bitorad q osmosisicq params -o json | jq .
+cosviand q osmosisicq params -o json | jq .
 ```
 
 Harus tampil nilai:
@@ -174,7 +174,7 @@ Harus tampil nilai:
 Terminal terpisah:
 
 ```bash
-hermes start --chain $BITORA_CHAIN --chain $OSMO_CHAIN
+hermes start --chain $COSVIAN_CHAIN --chain $OSMO_CHAIN
 ```
 
 ## 8. Pantau Harga ICQ
@@ -188,9 +188,9 @@ Pastikan harga menjadi non‑fallback setelah paket ACK.
 ## 9. Uji Fee Pakai Oracle
 
 ```bash
-RELAYER_ADDR=$(hermes keys list --chain $BITORA_CHAIN | awk -v K=$BITORA_RELAYER_KEY '$2==K {gsub(/[()]/,"",$3); print $3}')
-bitorad tx bank send $FUND_SOURCE $RELAYER_ADDR 1ubto \
-  --chain-id $BITORA_CHAIN --fees 50000ubto -y -o json --broadcast-mode=sync \
+RELAYER_ADDR=$(hermes keys list --chain $COSVIAN_CHAIN | awk -v K=$COSVIAN_RELAYER_KEY '$2==K {gsub(/[()]/,"",$3); print $3}')
+cosviand tx bank send $FUND_SOURCE $RELAYER_ADDR 1ubto \
+  --chain-id $COSVIAN_CHAIN --fees 50000ubto -y -o json --broadcast-mode=sync \
   | jq '.events[] | select(.type|test("oracle|fee|price|fee_charged"))'
 ```
 
@@ -208,14 +208,14 @@ Pastikan event tidak menunjukkan fallback (misal is_fallback=false apabila ada f
 Log tx detail:
 
 ```bash
-bitorad q tx <TXHASH> -o json | jq '{code,raw_log,events:([.events[].type]|unique)}'
+cosviand q tx <TXHASH> -o json | jq '{code,raw_log,events:([.events[].type]|unique)}'
 ```
 
 ## 11. Reset (Jika Perlu)
 
 ```bash
-pkill bitorad || true
-rm -rf $BITORA_HOME
+pkill cosviand || true
+rm -rf $COSVIAN_HOME
 ignite chain serve --reset-once --build.tags "icq_async"
 ```
 

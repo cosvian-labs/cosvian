@@ -3,7 +3,7 @@ package keeper_test
 import (
 	"testing"
 
-	"bitora/x/pricefeed/types"
+	"cosvian/x/pricefeed/types"
 
 	"github.com/stretchr/testify/require"
 )

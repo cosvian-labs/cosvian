@@ -2,9 +2,9 @@
 set -euo pipefail
 
 ROOT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
-BINARY="$ROOT_DIR/build/bitorad"
-CHAIN_ID="${CHAIN_ID:-bitora-1}"
-HOME_DIR="${HOME_DIR:-$HOME/.bitora-stub}"
+BINARY="$ROOT_DIR/build/cosviand"
+CHAIN_ID="${CHAIN_ID:-cosvian-1}"
+HOME_DIR="${HOME_DIR:-$HOME/.cosvian-stub}"
 MONIKER="${MONIKER:-infra-validator}"
 KEYRING_BACKEND="${KEYRING_BACKEND:-test}"
 RELAYER_KEY_NAME="${RELAYER_KEY_NAME:-relayer}"
@@ -14,7 +14,7 @@ RELAYER_FUNDING_SOURCE="${RELAYER_FUNDING_SOURCE:-public_sale}"
 HERMES_CONFIG="${HERMES_CONFIG:-$HOME/.hermes/config.toml}"
 HERMES_CHAIN_ID="$CHAIN_ID"
 HERMES_BINARY="${HERMES_BINARY:-hermes}"
-NODE_LOG="${NODE_LOG:-$HOME_DIR/bitorad.log}"
+NODE_LOG="${NODE_LOG:-$HOME_DIR/cosviand.log}"
 HERMES_LOG="${HERMES_LOG:-$ROOT_DIR/hermes/hermes.log}"
 SUCCESS=0
 KEYS_DIR="$ROOT_DIR/hermes/keys"
@@ -64,8 +64,8 @@ cleanup() {
 trap cleanup EXIT
 
 if [[ ! -x "$BINARY" ]]; then
-  echo "\n>>> Building bitorad binary"
-  (cd "$ROOT_DIR" && go build -o "$BINARY" ./cmd/bitorad)
+  echo "\n>>> Building cosviand binary"
+  (cd "$ROOT_DIR" && go build -o "$BINARY" ./cmd/cosviand)
 fi
 
 echo "\n>>> Stopping existing processes"
@@ -122,14 +122,14 @@ initialize_genesis() {
      .app_state.bank.denom_metadata = [
        {
          "base": "ubto",
-         "display": "BTO",
-         "description": "Bitora native token",
+         "display": "CSV",
+         "description": "Cosvian native token",
          "denom_units": [
            {"denom": "ubto", "exponent": 0},
-           {"denom": "BTO", "exponent": 6}
+           {"denom": "CSV", "exponent": 6}
          ],
-         "name": "Bitora Token",
-         "symbol": "BTO"
+         "name": "Cosvian Token",
+         "symbol": "CSV"
        }
      ] |
      .app_state.wasm.params.code_upload_access.permission = "Everybody" |
@@ -252,7 +252,7 @@ python3 - <<PY
 from pathlib import Path
 config_path = Path("$HERMES_CONFIG").expanduser()
 text = config_path.read_text()
-text = text.replace("id = 'bitora'", "id = '$CHAIN_ID'")
+text = text.replace("id = 'cosvian'", "id = '$CHAIN_ID'")
 text = text.replace("id = 'stubchain'", "id = '$CHAIN_ID'")
 text = text.replace("key_name = 'pool_ecosystem'", "key_name = '$RELAYER_KEY_NAME'")
 config_path.write_text(text)

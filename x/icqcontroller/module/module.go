@@ -16,9 +16,9 @@ import (
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
 
-	"bitora/x/icqcontroller/client/cli"
-	"bitora/x/icqcontroller/keeper"
-	"bitora/x/icqcontroller/types"
+	"cosvian/x/icqcontroller/client/cli"
+	"cosvian/x/icqcontroller/keeper"
+	"cosvian/x/icqcontroller/types"
 )
 
 var (

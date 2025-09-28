@@ -3,7 +3,7 @@ package keeper
 import (
 	"context"
 
-	"bitora/x/conversionpool/types"
+	"cosvian/x/conversionpool/types"
 )
 
 // InitGenesis initializes the module's state from a provided genesis state.

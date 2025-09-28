@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Simple looped ICQ packet relay using Hermes tx commands.
 
-SRC_CHAIN=${SRC_CHAIN:-bitora}
+SRC_CHAIN=${SRC_CHAIN:-cosvian}
 DST_CHAIN=${DST_CHAIN:-osmo-test-5}
 SRC_PORT=${SRC_PORT:-icqcontroller}
 SRC_CHANNEL=${SRC_CHANNEL:-channel-0}

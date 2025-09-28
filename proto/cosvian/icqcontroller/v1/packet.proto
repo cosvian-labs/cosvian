@@ -1,0 +1,14 @@
+syntax = "proto3";
+package cosvian.icqcontroller.v1;
+
+option go_package = "cosvian/x/icqcontroller/types";
+
+// IcqcontrollerPacketData defines the Icqcontroller data packet.
+message IcqcontrollerPacketData {
+  oneof packet {
+    NoData noData = 1;
+  }
+}
+
+// NoData defines an empty data packet.
+message NoData {}

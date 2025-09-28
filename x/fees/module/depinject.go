@@ -9,10 +9,10 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
-	"bitora/x/fees/keeper"
-	"bitora/x/fees/types"
+	"cosvian/x/fees/keeper"
+	"cosvian/x/fees/types"
 
-	oraclekeeper "bitora/x/oracle/keeper"
+	oraclekeeper "cosvian/x/oracle/keeper"
 )
 
 var _ depinject.OnePerModuleType = AppModule{}

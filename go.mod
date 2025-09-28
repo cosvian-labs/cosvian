@@ -1,4 +1,4 @@
-module bitora
+module cosvian
 
 go 1.24.0
 

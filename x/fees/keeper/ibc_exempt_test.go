@@ -10,8 +10,8 @@ import (
 	clienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types"
 	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
 
-	"bitora/x/fees/keeper"
-	"bitora/x/fees/types"
+	"cosvian/x/fees/keeper"
+	"cosvian/x/fees/types"
 )
 
 // Test that IBC control-plane msgs are classified as system (exempt) while ICS20 transfers are not.

@@ -4,7 +4,7 @@ import (
 	"context"
 	"strings"
 
-	"bitora/x/token/types"
+	"cosvian/x/token/types"
 
 	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"

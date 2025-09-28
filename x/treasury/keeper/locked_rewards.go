@@ -6,7 +6,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
-	"bitora/x/treasury/types"
+	"cosvian/x/treasury/types"
 )
 
 // LockedReward represents a time-locked reward for retail wallet POS payments

@@ -3,7 +3,7 @@ package keeper
 import (
 	"fmt"
 
-	"bitora/x/oracle/types"
+	"cosvian/x/oracle/types"
 
 	"cosmossdk.io/collections"
 	"cosmossdk.io/core/address"
@@ -23,7 +23,7 @@ type Keeper struct {
 
 	Schema   collections.Schema
 	Params   collections.Item[types.Params]
-	BTOPrice collections.Map[string, string] // Store BTO/USD price as string
+	BTOPrice collections.Map[string, string] // Store CSV/USD price as string
 }
 
 func NewKeeper(
@@ -62,7 +62,7 @@ func (k Keeper) GetAuthority() []byte {
 	return k.authority
 }
 
-// GetBTOPerUSD returns the current BTO/USD exchange rate
+// GetBTOPerUSD returns the current CSV/USD exchange rate
 func (k Keeper) GetBTOPerUSD(ctx sdk.Context) math.LegacyDec {
 	priceStr, err := k.BTOPrice.Get(ctx, "BTO_USD")
 	if err != nil {
@@ -79,17 +79,17 @@ func (k Keeper) GetBTOPerUSD(ctx sdk.Context) math.LegacyDec {
 	return price
 }
 
-// SetBTOPerUSD sets the BTO/USD exchange rate
+// SetBTOPerUSD sets the CSV/USD exchange rate
 func (k Keeper) SetBTOPerUSD(ctx sdk.Context, price math.LegacyDec) error {
 	return k.BTOPrice.Set(ctx, "BTO_USD", price.String())
 }
 
 // GetExchangeRate gets exchange rate for any symbol (implements BandOracleKeeper interface)
 func (k Keeper) GetExchangeRate(ctx sdk.Context, symbol string) (math.LegacyDec, error) {
-	if symbol == "BTO" {
+	if symbol == "CSV" {
 		price := k.GetBTOPerUSD(ctx)
 		if price.IsZero() {
-			return math.LegacyZeroDec(), fmt.Errorf("BTO price not available")
+			return math.LegacyZeroDec(), fmt.Errorf("CSV price not available")
 		}
 		return price, nil
 	}

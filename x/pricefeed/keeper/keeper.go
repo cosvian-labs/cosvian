@@ -11,8 +11,8 @@ import (
 
 	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
 
-	feesTypes "bitora/x/fees/types"
-	"bitora/x/pricefeed/types"
+	feesTypes "cosvian/x/fees/types"
+	"cosvian/x/pricefeed/types"
 )
 
 type Keeper struct {
@@ -33,7 +33,7 @@ type Keeper struct {
 	ibcKeeperFn  func() *ibckeeper.Keeper
 	scopedKeeper *capabilitykeeper.ScopedKeeper
 
-	// oracleKeeper is the canonical store for BTO/USD, used to expose to fees
+	// oracleKeeper is the canonical store for CSV/USD, used to expose to fees
 	oracleKeeper types.OracleKeeper
 }
 

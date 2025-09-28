@@ -3,7 +3,7 @@ package token
 import (
 	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
 
-	"bitora/x/token/types"
+	"cosvian/x/token/types"
 )
 
 // AutoCLIOptions implements the autocli.HasAutoCLIConfig interface.

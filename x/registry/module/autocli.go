@@ -3,7 +3,7 @@ package registry
 import (
 	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
 
-	"bitora/x/registry/types"
+	"cosvian/x/registry/types"
 )
 
 // AutoCLIOptions implements the autocli.HasAutoCLIConfig interface.

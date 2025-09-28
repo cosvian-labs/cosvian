@@ -1,12 +1,13 @@
-# Bitora Fee Table Mechanism
+# Cosvian Fee Table Mechanism
 
-This module implements a comprehensive fee table mechanism for the Bitora blockchain with USD-anchored fees converted to BTO using Band Protocol oracle prices.
+This module implements a comprehensive fee table mechanism for the Cosvian blockchain with USD-anchored fees converted to CSV using Band Protocol oracle prices.
 
 ## Features
 
 ### 1. Fee Categories
+
 - **POS Payment**: $0.15 USD
-- **Token Interaction**: $3.00 USD  
+- **Token Interaction**: $3.00 USD
 - **Native Transfer**: $1.00 USD
 - **DEX Native**: $1.00 USD
 - **DEX User**: $3.00 USD
@@ -14,27 +15,31 @@ This module implements a comprehensive fee table mechanism for the Bitora blockc
 - **Wizard**: Free (with gas cap)
 
 ### 2. Oracle Integration
-- Band Protocol integration for BTO/USD price feeds
+
+- Band Protocol integration for CSV/USD price feeds
 - TWAP (Time-Weighted Average Price) calculation
 - Fallback price mechanism when oracle is unavailable
 - Price freshness validation and deviation limits
 
 ### 3. Fee Calculation
-- USD fees converted to BTO using oracle prices
+
+- USD fees converted to CSV using oracle prices
 - Conservative rounding (ceil) to prevent under-collection
 - Gas price calculated as: `gasPrice = feeBTO / gasWanted`
 - Guard rails for min/max gas prices
 
 ### 4. Free Tier Support
+
 - Deploy and Wizard transactions are free
 - Gas caps enforced for free tier transactions
 - Abuse prevention through strict limits
 
 ### 5. Fee Distribution
+
 - Configurable splits per category:
   - Treasury
   - Retail Wallet
-  - Token Developer  
+  - Token Developer
   - Token Creator
 
 ## Implementation Status
@@ -83,19 +88,21 @@ fee := feeCalculator.BuildFeeFromEstimate(estimate, "ubto")
 ### Transaction Categories
 
 Transactions are automatically classified based on:
+
 1. **Message types** (bank.MsgSend, wasm.MsgExecuteContract, etc.)
 2. **Memo content** (keywords like "pos", "dex", "deploy")
 3. **Contract interaction patterns** (token operations, DEX swaps)
 
 ### Gas and Fee Display
 
-- `gas_used` and `gas_wanted` fields show **BTO equivalent amounts**
+- `gas_used` and `gas_wanted` fields show **CSV equivalent amounts**
 - Actual gas consumption is abstracted from users
 - Fees are predictable and flat per category
 
 ## Configuration
 
 ### Oracle Parameters
+
 ```go
 OracleParams{
     BandRequestId: 1,
@@ -107,10 +114,11 @@ OracleParams{
 ```
 
 ### Guard Rails
+
 ```go
 GuardRails{
-    MinGasPriceBto: sdk.NewDecWithPrec(1, 6),    // 0.000001 BTO
-    MaxGasPriceBto: sdk.NewDecWithPrec(1000, 6), // 0.001 BTO  
+    MinGasPriceBto: sdk.NewDecWithPrec(1, 6),    // 0.000001 CSV
+    MaxGasPriceBto: sdk.NewDecWithPrec(1000, 6), // 0.001 CSV
     MaxGasWizard: 2000000,   // 2M gas for wizard
     MaxGasDeploy: 10000000,  // 10M gas for deploy
 }
@@ -119,12 +127,14 @@ GuardRails{
 ## Events
 
 ### Oracle Events
+
 - `oracle_used`: Emitted when oracle price is fetched
 - Includes price, TWAP, freshness, and fallback status
 
-### Fee Events  
+### Fee Events
+
 - `fee_charged`: Emitted when fee is deducted
-- Includes category, USD amount, BTO amount, and metadata
+- Includes category, USD amount, CSV amount, and metadata
 
 ## Error Handling
 

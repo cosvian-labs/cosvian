@@ -1,7 +1,7 @@
 package keeper
 
 import (
-	"bitora/x/icqcontroller/types"
+	"cosvian/x/icqcontroller/types"
 )
 
 type msgServer struct {

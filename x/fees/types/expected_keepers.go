@@ -9,7 +9,7 @@ import (
 )
 
 type OracleKeeper interface {
-	// Returns the exchange rate for a given symbol. For BTO/USD, symbol is "BTO".
+	// Returns the exchange rate for a given symbol. For CSV/USD, symbol is "CSV".
 	GetExchangeRate(ctx sdk.Context, symbol string) (math.LegacyDec, error)
 }
 

@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"bitora/x/pricefeed/types"
+	"cosvian/x/pricefeed/types"
 
 	errorsmod "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"

@@ -5,8 +5,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"bitora/x/icqcontroller/keeper"
-	"bitora/x/icqcontroller/types"
+	"cosvian/x/icqcontroller/keeper"
+	"cosvian/x/icqcontroller/types"
 )
 
 func TestMsgUpdateParams(t *testing.T) {

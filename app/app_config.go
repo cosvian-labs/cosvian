@@ -1,28 +1,28 @@
 package app
 
 import (
-	_ "bitora/x/bitora/module"
-	bitoramoduletypes "bitora/x/bitora/types"
-	_ "bitora/x/fees/module"
-	feesmoduletypes "bitora/x/fees/types"
-	_ "bitora/x/icqcontroller/module"
-	icqcontrollermoduletypes "bitora/x/icqcontroller/types"
-	_ "bitora/x/osmosisicq/module"
-	osmosisicqmoduletypes "bitora/x/osmosisicq/types"
+	_ "cosvian/x/cosvian/module"
+	cosvianmoduletypes "cosvian/x/cosvian/types"
+	_ "cosvian/x/fees/module"
+	feesmoduletypes "cosvian/x/fees/types"
+	_ "cosvian/x/icqcontroller/module"
+	icqcontrollermoduletypes "cosvian/x/icqcontroller/types"
+	_ "cosvian/x/osmosisicq/module"
+	osmosisicqmoduletypes "cosvian/x/osmosisicq/types"
 
-	// _ "bitora/x/conversionpool/module" // Temporarily commented for testing
-	// conversionpoolmoduletypes "bitora/x/conversionpool/types" // Temporarily commented for testing
-	_ "bitora/x/oracle/module"
-	oraclemoduletypes "bitora/x/oracle/types"
-	_ "bitora/x/pricefeed/module"
-	pricefeedmoduletypes "bitora/x/pricefeed/types"
-	_ "bitora/x/registry/module"
-	registrymoduletypes "bitora/x/registry/types"
-	_ "bitora/x/token/module"
-	tokenmoduletypes "bitora/x/token/types"
+	// _ "cosvian/x/conversionpool/module" // Temporarily commented for testing
+	// conversionpoolmoduletypes "cosvian/x/conversionpool/types" // Temporarily commented for testing
+	_ "cosvian/x/oracle/module"
+	oraclemoduletypes "cosvian/x/oracle/types"
+	_ "cosvian/x/pricefeed/module"
+	pricefeedmoduletypes "cosvian/x/pricefeed/types"
+	_ "cosvian/x/registry/module"
+	registrymoduletypes "cosvian/x/registry/types"
+	_ "cosvian/x/token/module"
+	tokenmoduletypes "cosvian/x/token/types"
 
-	// _ "bitora/x/treasury/module" // Temporarily commented for testing
-	// treasurymoduletypes "bitora/x/treasury/types" // Temporarily commented for testing
+	// _ "cosvian/x/treasury/module" // Temporarily commented for testing
+	// treasurymoduletypes "cosvian/x/treasury/types" // Temporarily commented for testing
 	"time"
 
 	runtimev1alpha1 "cosmossdk.io/api/cosmos/app/runtime/v1alpha1"
@@ -163,7 +163,7 @@ var (
 						// ibc modules
 						ibcexported.ModuleName,
 						// chain modules
-						bitoramoduletypes.ModuleName,
+						cosvianmoduletypes.ModuleName,
 						tokenmoduletypes.ModuleName,
 
 						oraclemoduletypes.ModuleName,
@@ -183,7 +183,7 @@ var (
 						feegrant.ModuleName,
 						group.ModuleName,
 						// chain modules
-						bitoramoduletypes.ModuleName,
+						cosvianmoduletypes.ModuleName,
 						tokenmoduletypes.ModuleName,
 
 						oraclemoduletypes.ModuleName,
@@ -231,7 +231,7 @@ var (
 						ibctransfertypes.ModuleName,
 						icatypes.ModuleName,
 						// chain modules
-						bitoramoduletypes.ModuleName,
+						cosvianmoduletypes.ModuleName,
 						tokenmoduletypes.ModuleName,
 
 						oraclemoduletypes.ModuleName,
@@ -340,8 +340,8 @@ var (
 				Config: appconfig.WrapAny(&epochsmodulev1.Module{}),
 			},
 			{
-				Name:   bitoramoduletypes.ModuleName,
-				Config: appconfig.WrapAny(&bitoramoduletypes.Module{}),
+				Name:   cosvianmoduletypes.ModuleName,
+				Config: appconfig.WrapAny(&cosvianmoduletypes.Module{}),
 			},
 			{
 				Name:   tokenmoduletypes.ModuleName,

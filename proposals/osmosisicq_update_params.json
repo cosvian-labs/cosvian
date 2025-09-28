@@ -1,7 +1,7 @@
 {
   "messages": [
     {
-      "@type": "/bitora.osmosisicq.v1.MsgUpdateParams",
+      "@type": "/cosvian.osmosisicq.v1.MsgUpdateParams",
       "authority": "<GOV_AUTH_ADDRESS>",
       "params": {
         "connection_id": "connection-0",

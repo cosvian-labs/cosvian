@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"time"
 
-	"bitora/x/icqcontroller/icqwire"
+	"cosvian/x/icqcontroller/icqwire"
 
 	abcitypes "github.com/cometbft/cometbft/abci/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	clienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types"
 
-	"bitora/x/icqcontroller/types"
+	"cosvian/x/icqcontroller/types"
 )
 
 // SendKVQuery builds and sends an async-icq CosmosQuery packet over the channel mapped to the connection.

@@ -27,6 +27,6 @@ lint:
         - STANDARD
         - FILE_LOWER_SNAKE_CASE
 modules:
-    - name: buf.build/bitora/bitora-blockchain
+    - name: buf.build/cosvian/cosvian-blockchain
       path: proto
 version: v2

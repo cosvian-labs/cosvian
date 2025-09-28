@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 
-	"bitora/x/fees/types"
+	"cosvian/x/fees/types"
 
 	errorsmod "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -59,13 +59,13 @@ func (k msgServer) ChargeFee(ctx context.Context, msg *types.MsgChargeFee) (*typ
 	// Calculate fee in USD (UsdAmount is already in LegacyDec format)
 	feeUSD := feeEntry.UsdAmount
 
-	// Convert USD to BTO using the module's oracle adapter (with fallback)
+	// Convert USD to CSV using the module's oracle adapter (with fallback)
 	btoAmount, _, err := k.ConvertUSDToBTO(sdkCtx, feeUSD)
 	if err != nil {
-		return nil, errorsmod.Wrap(err, "failed to convert USD to BTO")
+		return nil, errorsmod.Wrap(err, "failed to convert USD to CSV")
 	}
 
-	// Scale BTO to ubto (assume 6 decimals)
+	// Scale CSV to ubto (assume 6 decimals)
 	feeUbto := btoAmount.MulInt64(1_000_000).TruncateInt()
 
 	// Check if user has sufficient balance
@@ -88,7 +88,7 @@ func (k msgServer) ChargeFee(ctx context.Context, msg *types.MsgChargeFee) (*typ
 		return nil, errorsmod.Wrap(err, "fee distribution failed")
 	}
 
-	// Set gas used to equal fee amount (BTO-equivalent shown via ubto)
+	// Set gas used to equal fee amount (CSV-equivalent shown via ubto)
 	sdkCtx.GasMeter().ConsumeGas(feeUbto.Uint64(), "fee charge")
 
 	// Emit standardized event (no legacy FeeCharged)

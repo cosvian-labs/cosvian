@@ -10,7 +10,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
-	"bitora/x/fees/types"
+	"cosvian/x/fees/types"
 )
 
 // FeeAnteHandler validates transaction fees against the fee table
@@ -73,7 +73,7 @@ func (fah *FeeAnteHandler) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool,
 
 	// params sudah diambil di awal; gunakan langsung.
 
-	btoDenom := "ubto" // Default BTO denom - should be configurable
+	btoDenom := "ubto" // Default CSV denom - should be configurable
 
 	// Hybrid / gas-only branching
 	switch {

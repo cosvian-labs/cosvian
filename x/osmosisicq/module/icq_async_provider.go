@@ -7,8 +7,8 @@ import (
 	"cosmossdk.io/depinject/appconfig"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	icqctrlkeeper "bitora/x/icqcontroller/keeper"
-	types "bitora/x/osmosisicq/types"
+	icqctrlkeeper "cosvian/x/icqcontroller/keeper"
+	types "cosvian/x/osmosisicq/types"
 )
 
 // Register a provider that adds the async-icq controller keeper to the container and

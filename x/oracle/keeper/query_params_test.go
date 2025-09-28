@@ -5,8 +5,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"bitora/x/oracle/keeper"
-	"bitora/x/oracle/types"
+	"cosvian/x/oracle/keeper"
+	"cosvian/x/oracle/types"
 )
 
 func TestParamsQuery(t *testing.T) {

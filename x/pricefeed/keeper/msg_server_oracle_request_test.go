@@ -8,8 +8,8 @@ import (
 
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
-	"bitora/x/pricefeed/keeper"
-	"bitora/x/pricefeed/types"
+	"cosvian/x/pricefeed/keeper"
+	"cosvian/x/pricefeed/types"
 )
 
 func TestMsgServerSendOracleRequest(t *testing.T) {

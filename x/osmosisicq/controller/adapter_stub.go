@@ -6,8 +6,8 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"bitora/x/osmosisicq/keeper"
-	"bitora/x/osmosisicq/types"
+	"cosvian/x/osmosisicq/keeper"
+	"cosvian/x/osmosisicq/types"
 )
 
 // Ensure Adapter implements the ICQClient interface.

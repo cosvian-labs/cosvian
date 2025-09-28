@@ -1,10 +1,10 @@
 package app
 
 import (
-	icqcontrollermodule "bitora/x/icqcontroller/module"
-	icqcontrollermoduletypes "bitora/x/icqcontroller/types"
-	pricefeedmodule "bitora/x/pricefeed/module"
-	pricefeedmoduletypes "bitora/x/pricefeed/types"
+	icqcontrollermodule "cosvian/x/icqcontroller/module"
+	icqcontrollermoduletypes "cosvian/x/icqcontroller/types"
+	pricefeedmodule "cosvian/x/pricefeed/module"
+	pricefeedmoduletypes "cosvian/x/pricefeed/types"
 
 	"cosmossdk.io/core/appmodule"
 	storetypes "cosmossdk.io/store/types"
@@ -144,7 +144,7 @@ func (app *App) registerIBCModules(appOpts servertypes.AppOptions) error {
 	// Optionally wire ICQ controller routes (enabled behind build tags).
 	if err := registerICQAsync(app, ibcRouter); err != nil {
 		return err
-	} 
+	}
 
 	app.IBCKeeper.SetRouter(ibcRouter)
 	app.IBCKeeper.SetRouterV2(ibcv2Router)

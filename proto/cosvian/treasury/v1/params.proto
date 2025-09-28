@@ -1,0 +1,17 @@
+syntax = "proto3";
+package cosvian.treasury.v1;
+
+import "amino/amino.proto";
+import "gogoproto/gogo.proto";
+
+option go_package = "cosvian/x/treasury/types";
+
+// Params defines the parameters for the module.
+message Params {
+  option (amino.name) = "cosvian/x/treasury/Params";
+  option (gogoproto.equal) = true;
+
+  string distribution_ratio = 1;
+  string validator_reward_percentage = 2;
+  string dev_reward_percentage = 3;
+}

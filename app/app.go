@@ -49,27 +49,27 @@ import (
 	ibctransferkeeper "github.com/cosmos/ibc-go/v10/modules/apps/transfer/keeper"
 	ibckeeper "github.com/cosmos/ibc-go/v10/modules/core/keeper"
 
-	"bitora/docs"
-	bitoramodulekeeper "bitora/x/bitora/keeper"
-	feesmodulekeeper "bitora/x/fees/keeper"
-	feesmoduletypes "bitora/x/fees/types"
-	icqcontrollermodulekeeper "bitora/x/icqcontroller/keeper"
+	"cosvian/docs"
+	cosvianmodulekeeper "cosvian/x/cosvian/keeper"
+	feesmodulekeeper "cosvian/x/fees/keeper"
+	feesmoduletypes "cosvian/x/fees/types"
+	icqcontrollermodulekeeper "cosvian/x/icqcontroller/keeper"
 
-	// conversionpoolmodulekeeper "bitora/x/conversionpool/keeper" // Temporarily commented for testing
-	oraclemodulekeeper "bitora/x/oracle/keeper"
-	osmosisicqtypes "bitora/x/osmosisicq/types"
-	osmosisicqkeeper "bitora/x/osmosisicq/keeper"
-	pricefeedmodulekeeper "bitora/x/pricefeed/keeper"
-	registrymodulekeeper "bitora/x/registry/keeper"
-	tokenmodulekeeper "bitora/x/token/keeper"
-	// treasurymodulekeeper "bitora/x/treasury/keeper" // Temporarily commented for testing
+	// conversionpoolmodulekeeper "cosvian/x/conversionpool/keeper" // Temporarily commented for testing
+	oraclemodulekeeper "cosvian/x/oracle/keeper"
+	osmosisicqkeeper "cosvian/x/osmosisicq/keeper"
+	osmosisicqtypes "cosvian/x/osmosisicq/types"
+	pricefeedmodulekeeper "cosvian/x/pricefeed/keeper"
+	registrymodulekeeper "cosvian/x/registry/keeper"
+	tokenmodulekeeper "cosvian/x/token/keeper"
+	// treasurymodulekeeper "cosvian/x/treasury/keeper" // Temporarily commented for testing
 )
 
 const (
 	// Name is the name of the application.
-	Name = "bitora"
+	Name = "cosvian"
 	// AccountAddressPrefix is the prefix for accounts addresses.
-	AccountAddressPrefix = "bto"
+	AccountAddressPrefix = "csv"
 	// ChainCoinType is the coin type of the chain.
 	ChainCoinType = 90
 )
@@ -114,15 +114,15 @@ type App struct {
 	TransferKeeper      ibctransferkeeper.Keeper
 	IBCFeeKeeper        interface{} // placeholder for ICS29 keeper (set in ibc.go)
 
-	BitoraKeeper bitoramodulekeeper.Keeper
+	CosvianKeeper cosvianmodulekeeper.Keeper
 	TokenKeeper  tokenmodulekeeper.Keeper
 
 	PricefeedKeeper pricefeedmodulekeeper.Keeper
 	// TreasuryKeeper       treasurymodulekeeper.Keeper // Temporarily commented for testing
 	// ConversionpoolKeeper conversionpoolmodulekeeper.Keeper // Temporarily commented for testing
-	RegistryKeeper registrymodulekeeper.Keeper
-	OracleKeeper   oraclemodulekeeper.Keeper
-	FeeGrantKeeper feegrantkeeper.Keeper
+	RegistryKeeper   registrymodulekeeper.Keeper
+	OracleKeeper     oraclemodulekeeper.Keeper
+	FeeGrantKeeper   feegrantkeeper.Keeper
 	OsmosisicqKeeper osmosisicqkeeper.Keeper // exposed (may be used directly by other modules / debugging)
 
 	// CosmWasm
@@ -209,7 +209,7 @@ func New(
 		&app.ConsensusParamsKeeper,
 		&app.CircuitBreakerKeeper,
 		&app.ParamsKeeper,
-		&app.BitoraKeeper,
+		&app.CosvianKeeper,
 		&app.OracleKeeper,
 		&app.TokenKeeper, &app.FeeGrantKeeper,
 		&app.TokenKeeper,
@@ -256,7 +256,7 @@ func New(
 	// plus legacy sdk.Msg methods (implemented in x/osmosisicq/types/legacy_msg.go).
 
 	// Explicitly (re)register osmosisicq interfaces to guarantee type URLs available to CLI JSON decoder.
-	// This is defensive; runtime wiring should already register, but avoids 'unable to resolve type URL /bitora.osmosisicq.v1.MsgUpdateParams'.
+	// This is defensive; runtime wiring should already register, but avoids 'unable to resolve type URL /cosvian.osmosisicq.v1.MsgUpdateParams'.
 	osmosisicqtypes.RegisterInterfaces(app.interfaceRegistry)
 
 	// register legacy modules

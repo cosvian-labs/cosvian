@@ -3,7 +3,7 @@ package types_test
 import (
 	"testing"
 
-	"bitora/x/oracle/types"
+	"cosvian/x/oracle/types"
 
 	"github.com/stretchr/testify/require"
 )

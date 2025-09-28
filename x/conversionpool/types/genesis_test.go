@@ -3,7 +3,7 @@ package types_test
 import (
 	"testing"
 
-	"bitora/x/conversionpool/types"
+	"cosvian/x/conversionpool/types"
 
 	"github.com/stretchr/testify/require"
 )

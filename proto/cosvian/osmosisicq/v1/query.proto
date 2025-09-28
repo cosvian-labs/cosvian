@@ -1,0 +1,46 @@
+syntax = "proto3";
+package cosvian.osmosisicq.v1;
+
+import "amino/amino.proto";
+import "cosvian/osmosisicq/v1/params.proto";
+import "cosmos/base/query/v1beta1/pagination.proto";
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+
+option go_package = "cosvian/x/osmosisicq/types";
+
+// Query defines the gRPC querier service.
+service Query {
+  // Parameters queries the parameters of the module.
+  rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
+    option (google.api.http).get = "/cosvian/osmosisicq/v1/params";
+  }
+
+  // Status returns scheduler and query insights for observability.
+  rpc Status(QueryStatusRequest) returns (QueryStatusResponse) {
+    option (google.api.http).get = "/cosvian/osmosisicq/v1/status";
+  }
+}
+
+// QueryParamsRequest is request type for the Query/Params RPC method.
+message QueryParamsRequest {}
+
+// QueryParamsResponse is response type for the Query/Params RPC method.
+message QueryParamsResponse {
+  // params holds all the parameters of this module.
+  Params params = 1 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
+// QueryStatusRequest is request type for the Query/Status RPC method.
+message QueryStatusRequest {}
+
+// QueryStatusResponse returns high-level scheduler state and registered query IDs.
+message QueryStatusResponse {
+  int64 last_update = 1;
+  int64 next_update = 2;
+  int64 last_result_time = 3;
+  map<string, string> queries = 4;
+}

@@ -16,9 +16,9 @@ import (
 	ibckeeper "github.com/cosmos/ibc-go/v10/modules/core/keeper"
 	"github.com/stretchr/testify/require"
 
-	icqkeeper "bitora/x/icqcontroller/keeper"
-	icqmodule "bitora/x/icqcontroller/module"
-	icqtypes "bitora/x/icqcontroller/types"
+	icqkeeper "cosvian/x/icqcontroller/keeper"
+	icqmodule "cosvian/x/icqcontroller/module"
+	icqtypes "cosvian/x/icqcontroller/types"
 )
 
 type fixture struct {
@@ -39,7 +39,7 @@ func initFixture(t *testing.T) *fixture {
 	ctx := testutil.DefaultContextWithDB(t, storeKey, storetypes.NewTransientStoreKey("transient_test")).Ctx
 	authority := authtypes.NewModuleAddress(icqtypes.GovModuleName)
 
-	k := icqkeeper.NewKeeper(storeService, encCfg.Codec, addressCodec, authority, func() *ibckeeper.Keeper { return nil }, nil, nil)
+	k := icqkeeper.NewKeeper(storeService, encCfg.Codec, addressCodec, authority, func() *ibckeeper.Keeper { return nil }, nil)
 
 	// ensure default port id is present for any caller that reads it
 	_ = k.Port.Set(ctx, icqtypes.PortID)
@@ -83,10 +83,10 @@ func TestHandlePacketTimeout_CleansAndEmits(t *testing.T) {
 }
 
 type mockConsumer struct {
-	called bool
+	called   bool
 	gotStore string
-	gotKey []byte
-	gotVal []byte
+	gotKey   []byte
+	gotVal   []byte
 }
 
 func (m *mockConsumer) OnKVResult(ctx sdk.Context, store string, key, value []byte) error {
@@ -103,7 +103,7 @@ func TestHandlePacketAcknowledgement_ForwardsToConsumer_WithSeam(t *testing.T) {
 
 	// Build a keeper instance with a consumer wired using same deps.
 	mc := &mockConsumer{}
-	k := icqkeeper.NewKeeper(f.storeService, f.cdc, f.addressCodec, f.authority, func() *ibckeeper.Keeper { return nil }, nil, mc)
+	k := icqkeeper.NewKeeper(f.storeService, f.cdc, f.addressCodec, f.authority, func() *ibckeeper.Keeper { return nil }, nil)
 
 	// Prepare pending mapping
 	ch := "channel-seam"

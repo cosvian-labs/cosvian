@@ -8,8 +8,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 
-	"bitora/x/oracle/keeper"
-	"bitora/x/oracle/types"
+	"cosvian/x/oracle/keeper"
+	"cosvian/x/oracle/types"
 )
 
 func SimulateMsgSetPrice(

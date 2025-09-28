@@ -14,8 +14,8 @@ import (
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"google.golang.org/grpc"
 
-	"bitora/x/oracle/keeper"
-	"bitora/x/oracle/types"
+	"cosvian/x/oracle/keeper"
+	"cosvian/x/oracle/types"
 )
 
 var (

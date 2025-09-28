@@ -3,7 +3,7 @@ package oracle
 import (
 	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
 
-	"bitora/x/oracle/types"
+	"cosvian/x/oracle/types"
 )
 
 // AutoCLIOptions implements the autocli.HasAutoCLIConfig interface.

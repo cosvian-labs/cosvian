@@ -11,10 +11,10 @@ import (
 	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
 	ibckeeper "github.com/cosmos/ibc-go/v10/modules/core/keeper"
 
-	"bitora/x/pricefeed/keeper"
-	"bitora/x/pricefeed/types"
+	"cosvian/x/pricefeed/keeper"
+	"cosvian/x/pricefeed/types"
 
-	feesTypes "bitora/x/fees/types"
+	feesTypes "cosvian/x/fees/types"
 )
 
 var _ depinject.OnePerModuleType = AppModule{}

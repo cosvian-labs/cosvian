@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"bitora/x/pricefeed/types"
+	"cosvian/x/pricefeed/types"
 
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -40,7 +40,7 @@ func (k Keeper) RequestPriceData(ctx context.Context, symbols []string, channelI
 		FeeLimit:         "100000uband",                                               // Fee limit in uband
 		PrepareGas:       50000,                                                       // Gas for prepare phase
 		ExecuteGas:       300000,                                                      // Gas for execute phase
-		ClientId:         fmt.Sprintf("bitora-price-req-%d", sdk.UnwrapSDKContext(ctx).BlockHeight()),
+		ClientId:         fmt.Sprintf("cosvian-price-req-%d", sdk.UnwrapSDKContext(ctx).BlockHeight()),
 	}
 
 	// Send the oracle request
@@ -81,11 +81,11 @@ func (k Keeper) ProcessPriceResponse(ctx context.Context, response types.OracleR
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
-	// 1) Prefer response.Rates as direct BTO per USD if provided
+	// 1) Prefer response.Rates as direct CSV per USD if provided
 	if response.Rates != "" {
 		var rateData map[string]interface{}
 		if err := json.Unmarshal([]byte(response.Rates), &rateData); err == nil {
-			if v, ok := rateData["BTO"]; ok {
+			if v, ok := rateData["CSV"]; ok {
 				var rateStr string
 				switch vv := v.(type) {
 				case string:
@@ -98,7 +98,7 @@ func (k Keeper) ProcessPriceResponse(ctx context.Context, response types.OracleR
 					sdkCtx.EventManager().EmitEvent(
 						sdk.NewEvent(
 							"price_updated",
-							sdk.NewAttribute("symbol", "BTO/USD"),
+							sdk.NewAttribute("symbol", "CSV/USD"),
 							sdk.NewAttribute("price", dec.String()),
 							sdk.NewAttribute("source", "band_protocol_rates"),
 							sdk.NewAttribute("request_id", fmt.Sprintf("%d", response.RequestId)),
@@ -110,11 +110,11 @@ func (k Keeper) ProcessPriceResponse(ctx context.Context, response types.OracleR
 		}
 	}
 
-	// 2) Fallback to response.Prices assumed as USD per BTO; invert to get BTO per USD
+	// 2) Fallback to response.Prices assumed as USD per CSV; invert to get CSV per USD
 	if response.Prices != "" {
 		var priceData map[string]interface{}
 		if err := json.Unmarshal([]byte(response.Prices), &priceData); err == nil {
-			if v, ok := priceData["BTO"]; ok {
+			if v, ok := priceData["CSV"]; ok {
 				var usdPerBTOStr string
 				switch vv := v.(type) {
 				case string:
@@ -128,7 +128,7 @@ func (k Keeper) ProcessPriceResponse(ctx context.Context, response types.OracleR
 					sdkCtx.EventManager().EmitEvent(
 						sdk.NewEvent(
 							"price_updated",
-							sdk.NewAttribute("symbol", "BTO/USD"),
+							sdk.NewAttribute("symbol", "CSV/USD"),
 							sdk.NewAttribute("price", btoPerUSD.String()),
 							sdk.NewAttribute("source", "band_protocol_prices_inverted"),
 							sdk.NewAttribute("request_id", fmt.Sprintf("%d", response.RequestId)),

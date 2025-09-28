@@ -3,7 +3,7 @@ package keeper
 import (
 	"context"
 
-	"bitora/x/oracle/types"
+	"cosvian/x/oracle/types"
 )
 
 // InitGenesis initializes the module's state from a provided genesis state.

@@ -1,7 +1,7 @@
 package keeper
 
 import (
-	"bitora/x/treasury/types"
+	"cosvian/x/treasury/types"
 )
 
 var _ types.QueryServer = queryServer{}

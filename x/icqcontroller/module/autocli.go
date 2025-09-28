@@ -3,7 +3,7 @@ package icqcontroller
 import (
 	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
 
-	"bitora/x/icqcontroller/types"
+	"cosvian/x/icqcontroller/types"
 )
 
 // AutoCLIOptions implements the autocli.HasAutoCLIConfig interface.

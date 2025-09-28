@@ -14,8 +14,8 @@ import (
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"google.golang.org/grpc"
 
-	"bitora/x/conversionpool/keeper"
-	"bitora/x/conversionpool/types"
+	"cosvian/x/conversionpool/keeper"
+	"cosvian/x/conversionpool/types"
 )
 
 var (

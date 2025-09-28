@@ -3,7 +3,7 @@ package treasury
 import (
 	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
 
-	"bitora/x/treasury/types"
+	"cosvian/x/treasury/types"
 )
 
 // AutoCLIOptions implements the autocli.HasAutoCLIConfig interface.

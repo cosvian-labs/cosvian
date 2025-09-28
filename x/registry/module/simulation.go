@@ -4,7 +4,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 
-	"bitora/x/registry/types"
+	"cosvian/x/registry/types"
 )
 
 // GenerateGenesisState creates a randomized GenState of the module.

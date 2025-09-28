@@ -13,10 +13,10 @@ import (
 	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
-	feesTypes "bitora/x/fees/types"
-	"bitora/x/token/keeper"
-	module "bitora/x/token/module"
-	"bitora/x/token/types"
+	feesTypes "cosvian/x/fees/types"
+	"cosvian/x/token/keeper"
+	module "cosvian/x/token/module"
+	"cosvian/x/token/types"
 )
 
 // MockBankKeeper untuk testing

@@ -1,19 +1,19 @@
-# 🚧 BITORA - Implementasi Modul Token BTO
+# 🚧 COSVIAN - Implementasi Modul Token CSV
 
-Berdasarkan hasil evaluasi kode pada Phase 1, berikut adalah pekerjaan yang harus diselesaikan agar modul token **BTO** dianggap lengkap dan Phase 1 benar-benar rampung.
+Berdasarkan hasil evaluasi kode pada Phase 1, berikut adalah pekerjaan yang harus diselesaikan agar modul token **CSV** dianggap lengkap dan Phase 1 benar-benar rampung.
 
 ---
 
-## 📋 TODO List Pengembangan Modul Token BTO
+## 📋 TODO List Pengembangan Modul Token CSV
 
 ### 1. 📦 Struktur Modul
 
-- [ ] Buat direktori `/x/bitora/` (jika modul token dipisah dari `bitora`)
+- [ ] Buat direktori `/x/cosvian/` (jika modul token dipisah dari `cosvian`)
 - [ ] Buat struktur standar: `keeper/`, `types/`, `module.go`, `handler.go`, dll.
 
 ### 2. 📜 Protobuf Definition
 
-- [ ] Tambahkan file `tx.proto` dan `query.proto` untuk modul BTO
+- [ ] Tambahkan file `tx.proto` dan `query.proto` untuk modul CSV
 - [ ] Definisikan pesan:
   - [ ] `MsgMint`
   - [ ] `MsgBurn`
@@ -32,13 +32,13 @@ Berdasarkan hasil evaluasi kode pada Phase 1, berikut adalah pekerjaan yang haru
 
 ### 5. 🧩 Integrasi ke Aplikasi
 
-- [ ] Register modul `bto` di `app.go`
+- [ ] Register modul `csv` di `app.go`
 - [ ] Tambahkan keeper `BtoKeeper`
 - [ ] Tambahkan modul ke `ModuleBasics` dan `app.ModuleManager`
 
 ### 6. ⚙️ Genesis
 
-- [ ] Tambahkan state awal BTO token jika diperlukan di `genesis.go`
+- [ ] Tambahkan state awal CSV token jika diperlukan di `genesis.go`
 - [ ] Buat `DefaultGenesis()` dan `ValidateGenesis()`
 
 ### 7. 🛠️ CLI Support

@@ -1,7 +1,7 @@
 package keeper
 
 import (
-	"bitora/x/fees/types"
+	"cosvian/x/fees/types"
 )
 
 var _ types.QueryServer = queryServer{}

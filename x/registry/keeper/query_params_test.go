@@ -5,8 +5,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"bitora/x/registry/keeper"
-	"bitora/x/registry/types"
+	"cosvian/x/registry/keeper"
+	"cosvian/x/registry/types"
 )
 
 func TestParamsQuery(t *testing.T) {

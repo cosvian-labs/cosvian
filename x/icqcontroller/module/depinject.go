@@ -11,8 +11,8 @@ import (
 	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
 	ibckeeper "github.com/cosmos/ibc-go/v10/modules/core/keeper"
 
-	"bitora/x/icqcontroller/keeper"
-	"bitora/x/icqcontroller/types"
+	"cosvian/x/icqcontroller/keeper"
+	"cosvian/x/icqcontroller/types"
 )
 
 var _ depinject.OnePerModuleType = AppModule{}

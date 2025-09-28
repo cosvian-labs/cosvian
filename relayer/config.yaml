@@ -4,15 +4,15 @@ global:
   memo: ""
   light-cache-size: 20
 chains:
-  bitora:
+  cosvian:
     type: cosmos
     value:
-      key-directory: /home/munra/.relayer/keys/bitora
+      key-directory: /home/munra/.relayer/keys/cosvian
       key: default
-      chain-id: bitora
+      chain-id: cosvian
       rpc-addr: http://localhost:26657
       grpc-addr: localhost:9090
-      account-prefix: bto
+      account-prefix: csv
       keyring-backend: test
       gas-adjustment: 1.2
       gas-prices: 0.025ubto
@@ -157,7 +157,7 @@ chains:
 paths:
   oracle_path_mainnet:
     src:
-      chain-id: bitora
+      chain-id: cosvian
       client-id: ""
       connection-id: ""
     dst:
@@ -170,7 +170,7 @@ paths:
 
   oracle_path_testnet6:
     src:
-      chain-id: bitora
+      chain-id: cosvian
       client-id: ""
       connection-id: ""
     dst:
@@ -183,7 +183,7 @@ paths:
 
   oracle_path_v3:
     src:
-      chain-id: bitora
+      chain-id: cosvian
       client-id: ""
       connection-id: ""
     dst:
@@ -196,7 +196,7 @@ paths:
 
   osmosis_mainnet_path:
     src:
-      chain-id: bitora
+      chain-id: cosvian
       client-id: ""
       connection-id: ""
     dst:
@@ -209,7 +209,7 @@ paths:
 
   osmosis_testnet_path:
     src:
-      chain-id: bitora
+      chain-id: cosvian
       client-id: ""
       connection-id: connection-0
     dst:

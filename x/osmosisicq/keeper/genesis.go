@@ -3,7 +3,7 @@ package keeper
 import (
 	"context"
 
-	"bitora/x/osmosisicq/types"
+	"cosvian/x/osmosisicq/types"
 )
 
 // InitGenesis initializes the module's state from a provided genesis state.

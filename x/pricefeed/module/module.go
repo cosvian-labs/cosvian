@@ -16,9 +16,9 @@ import (
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
 
-	"bitora/x/pricefeed/client/cli"
-	"bitora/x/pricefeed/keeper"
-	"bitora/x/pricefeed/types"
+	"cosvian/x/pricefeed/client/cli"
+	"cosvian/x/pricefeed/keeper"
+	"cosvian/x/pricefeed/types"
 )
 
 var (

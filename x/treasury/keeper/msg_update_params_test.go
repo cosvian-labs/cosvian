@@ -5,8 +5,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"bitora/x/treasury/keeper"
-	"bitora/x/treasury/types"
+	"cosvian/x/treasury/keeper"
+	"cosvian/x/treasury/types"
 )
 
 func TestMsgUpdateParams(t *testing.T) {

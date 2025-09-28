@@ -14,8 +14,8 @@ import (
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"google.golang.org/grpc"
 
-	"bitora/x/treasury/keeper"
-	"bitora/x/treasury/types"
+	"cosvian/x/treasury/keeper"
+	"cosvian/x/treasury/types"
 )
 
 var (

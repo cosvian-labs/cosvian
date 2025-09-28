@@ -3,7 +3,7 @@ package types_test
 import (
 	"testing"
 
-	"bitora/x/osmosisicq/types"
+	"cosvian/x/osmosisicq/types"
 
 	"github.com/stretchr/testify/require"
 )

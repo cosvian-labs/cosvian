@@ -3,7 +3,7 @@ package pricefeed
 import (
 	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
 
-	"bitora/x/pricefeed/types"
+	"cosvian/x/pricefeed/types"
 )
 
 // AutoCLIOptions implements the autocli.HasAutoCLIConfig interface.

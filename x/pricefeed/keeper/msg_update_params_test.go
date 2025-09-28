@@ -5,8 +5,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"bitora/x/pricefeed/keeper"
-	"bitora/x/pricefeed/types"
+	"cosvian/x/pricefeed/keeper"
+	"cosvian/x/pricefeed/types"
 )
 
 func TestMsgUpdateParams(t *testing.T) {

@@ -3,7 +3,7 @@ package keeper_test
 import (
 	"testing"
 
-	"bitora/x/treasury/types"
+	"cosvian/x/treasury/types"
 
 	"github.com/stretchr/testify/require"
 )

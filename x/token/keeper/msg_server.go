@@ -1,7 +1,7 @@
 package keeper
 
 import (
-	"bitora/x/token/types"
+	"cosvian/x/token/types"
 )
 
 type msgServer struct {

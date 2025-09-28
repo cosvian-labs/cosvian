@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"bitora/x/token/types"
+	"cosvian/x/token/types"
 
 	errorsmod "cosmossdk.io/errors"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"

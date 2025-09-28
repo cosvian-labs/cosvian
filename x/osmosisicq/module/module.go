@@ -15,8 +15,8 @@ import (
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"google.golang.org/grpc"
 
-	"bitora/x/osmosisicq/keeper"
-	"bitora/x/osmosisicq/types"
+	"cosvian/x/osmosisicq/keeper"
+	"cosvian/x/osmosisicq/types"
 )
 
 var (

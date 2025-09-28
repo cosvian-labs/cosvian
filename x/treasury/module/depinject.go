@@ -9,8 +9,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
-	"bitora/x/treasury/keeper"
-	"bitora/x/treasury/types"
+	"cosvian/x/treasury/keeper"
+	"cosvian/x/treasury/types"
 )
 
 var _ depinject.OnePerModuleType = AppModule{}

@@ -1,0 +1,13 @@
+syntax = "proto3";
+package cosvian.cosvian.v1;
+
+import "amino/amino.proto";
+import "gogoproto/gogo.proto";
+
+option go_package = "cosvian/x/cosvian/types";
+
+// Params defines the parameters for the module.
+message Params {
+  option (amino.name) = "cosvian/x/cosvian/Params";
+  option (gogoproto.equal) = true;
+}

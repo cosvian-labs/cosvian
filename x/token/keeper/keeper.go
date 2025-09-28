@@ -11,9 +11,9 @@ import (
 	corestore "cosmossdk.io/core/store"
 	"github.com/cosmos/cosmos-sdk/codec"
 
-	"bitora/x/token/types"
+	"cosvian/x/token/types"
 
-	feesTypes "bitora/x/fees/types"
+	feesTypes "cosvian/x/fees/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )

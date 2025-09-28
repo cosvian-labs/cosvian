@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"bitora/x/fees/types"
+	"cosvian/x/fees/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"google.golang.org/grpc/codes"
@@ -18,10 +18,10 @@ func (q queryServer) OraclePrice(ctx context.Context, req *types.QueryOraclePric
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
-	// Get price from oracle keeper (BTO per USD)
-	price, err := q.k.oracleKeeper.GetExchangeRate(sdkCtx, "BTO")
+	// Get price from oracle keeper (CSV per USD)
+	price, err := q.k.oracleKeeper.GetExchangeRate(sdkCtx, "CSV")
 	if err != nil {
-		return nil, status.Error(codes.Internal, "failed to get BTO price from oracle")
+		return nil, status.Error(codes.Internal, "failed to get CSV price from oracle")
 	}
 
 	// Create mock price data for testing

@@ -8,8 +8,8 @@ import (
 func NewParams() Params {
 	return Params{
 		MaxTokensPerCreator: 10,
-		ReservedSymbols:     []string{"bto"}, // Only reserve native token
-		CreationFeeAmount:   math.NewInt(0),  // 3 BTO (with 6 decimals)
+		ReservedSymbols:     []string{"csv"}, // Only reserve native token
+		CreationFeeAmount:   math.NewInt(0),  // 3 CSV (with 6 decimals)
 	}
 }
 

@@ -28,12 +28,12 @@ const (
 
 // ChargeAndSplitFee memotong fee dari sender dan membagi 50:50 ke treasury dan infrastructure
 func (k Keeper) ChargeAndSplitFee(ctx sdk.Context, sender sdk.AccAddress, usdAmount math.LegacyDec) error {
-	// Use the central fees keeper to convert USD to BTO/ubto
+	// Use the central fees keeper to convert USD to CSV/ubto
 	feeBTO, _, err := k.feesKeeper.ConvertUSDToBTO(ctx, usdAmount)
 	if err != nil {
-		return errors.Wrapf(err, "failed to convert USD to BTO")
+		return errors.Wrapf(err, "failed to convert USD to CSV")
 	}
-	// scale BTO to ubto (assume 6 decimals)
+	// scale CSV to ubto (assume 6 decimals)
 	feeCoin := sdk.NewCoin("ubto", feeBTO.MulInt64(1_000_000).TruncateInt())
 
 	// 3. Cek apakah sender memiliki saldo yang cukup
@@ -68,7 +68,7 @@ func (k Keeper) ChargeAndSplitFee(ctx sdk.Context, sender sdk.AccAddress, usdAmo
 func (k Keeper) GetFeeInUBTO(ctx sdk.Context, usdAmount math.LegacyDec) (sdk.Coin, error) {
 	feeBTO, _, err := k.feesKeeper.ConvertUSDToBTO(ctx, usdAmount)
 	if err != nil {
-		return sdk.Coin{}, errors.Wrapf(err, "failed to convert USD to BTO")
+		return sdk.Coin{}, errors.Wrapf(err, "failed to convert USD to CSV")
 	}
 	return sdk.NewCoin("ubto", feeBTO.MulInt64(1_000_000).TruncateInt()), nil
 }
@@ -95,10 +95,10 @@ func (k Keeper) ChargeAndDistributeFeeByType(
 		return nil
 	}
 
-	// Calculate BTO amount using central fees keeper
+	// Calculate CSV amount using central fees keeper
 	feeBTO, _, err := k.feesKeeper.ConvertUSDToBTO(ctx, feeUSD)
 	if err != nil {
-		return errors.Wrapf(err, "failed to convert USD to BTO")
+		return errors.Wrapf(err, "failed to convert USD to CSV")
 	}
 	feeCoin := sdk.NewCoin("ubto", feeBTO.MulInt64(1_000_000).TruncateInt())
 

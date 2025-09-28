@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"bitora/x/icqcontroller/types"
+	"cosvian/x/icqcontroller/types"
 
 	"cosmossdk.io/collections"
 	sdk "github.com/cosmos/cosmos-sdk/types"

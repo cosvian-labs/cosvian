@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 
-	"bitora/x/token/types"
+	"cosvian/x/token/types"
 
 	errorsmod "cosmossdk.io/errors"
 	"cosmossdk.io/math"

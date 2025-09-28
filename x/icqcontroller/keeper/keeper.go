@@ -15,7 +15,7 @@ import (
 	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
 	ibckeeper "github.com/cosmos/ibc-go/v10/modules/core/keeper"
 
-	"bitora/x/icqcontroller/types"
+	"cosvian/x/icqcontroller/types"
 )
 
 type Keeper struct {
@@ -74,14 +74,14 @@ func NewKeeper(
 		addressCodec: addressCodec,
 		authority:    authority,
 
-	ibcKeeperFn:  ibcKeeperFn,
+		ibcKeeperFn:  ibcKeeperFn,
 		scopedKeeper: scopedKeeper,
-	// default to no consumer; can be set later via SetKVConsumer
-	consumer:     nil,
-	Port:          collections.NewItem(sb, types.PortKey, "port", collections.StringValue),
-	Params:        collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
-	ActiveChannel: collections.NewMap(sb, collections.NewPrefix("ac_icqcontroller"), "active_channel", collections.StringKey, collections.StringValue),
-	Pending:       collections.NewMap(sb, collections.NewPrefix("pnd_icqcontroller"), "pending", collections.StringKey, collections.StringValue),
+		// default to no consumer; can be set later via SetKVConsumer
+		consumer:      nil,
+		Port:          collections.NewItem(sb, types.PortKey, "port", collections.StringValue),
+		Params:        collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
+		ActiveChannel: collections.NewMap(sb, collections.NewPrefix("ac_icqcontroller"), "active_channel", collections.StringKey, collections.StringValue),
+		Pending:       collections.NewMap(sb, collections.NewPrefix("pnd_icqcontroller"), "pending", collections.StringKey, collections.StringValue),
 	}
 
 	schema, err := sb.Build()
@@ -103,6 +103,7 @@ func (k Keeper) GetAuthority() []byte {
 
 // IBCKeeper returns the injected IBC keeper instance (if available).
 func (k Keeper) IBCKeeper() *ibckeeper.Keeper { return k.ibcKeeperFn() }
+
 // SetActiveChannel records the active channel-id for a given connection-id.
 func (k Keeper) SetActiveChannel(ctx sdk.Context, connectionID, channelID string) error {
 	return k.ActiveChannel.Set(ctx, connectionID, channelID)
@@ -219,7 +220,7 @@ func (k Keeper) HandlePacketAcknowledgement(ctx sdk.Context, portID, channelID s
 	// Tests may inject a seam to override decoding without async-icq imports.
 	var (
 		value []byte
-		err error
+		err   error
 	)
 	if testAckExtractor != nil {
 		value, err = testAckExtractor(ctx, acknowledgement)

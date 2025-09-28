@@ -3,7 +3,7 @@ package types_test
 import (
 	"testing"
 
-	"bitora/x/registry/types"
+	"cosvian/x/registry/types"
 
 	"github.com/stretchr/testify/require"
 )

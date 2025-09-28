@@ -3,7 +3,7 @@ package conversionpool
 import (
 	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
 
-	"bitora/x/conversionpool/types"
+	"cosvian/x/conversionpool/types"
 )
 
 // AutoCLIOptions implements the autocli.HasAutoCLIConfig interface.

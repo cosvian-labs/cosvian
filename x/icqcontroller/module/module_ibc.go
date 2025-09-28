@@ -5,8 +5,8 @@ import (
 
 	errorsmod "cosmossdk.io/errors"
 
-	"bitora/x/icqcontroller/keeper"
-	"bitora/x/icqcontroller/types"
+	"cosvian/x/icqcontroller/keeper"
+	"cosvian/x/icqcontroller/types"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"

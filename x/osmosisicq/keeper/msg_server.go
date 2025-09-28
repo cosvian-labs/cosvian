@@ -1,7 +1,7 @@
 package keeper
 
 import (
-	"bitora/x/osmosisicq/types"
+	"cosvian/x/osmosisicq/types"
 )
 
 type msgServer struct {

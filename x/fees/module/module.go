@@ -14,8 +14,8 @@ import (
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"google.golang.org/grpc"
 
-	"bitora/x/fees/keeper"
-	"bitora/x/fees/types"
+	"cosvian/x/fees/keeper"
+	"cosvian/x/fees/types"
 )
 
 var (

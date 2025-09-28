@@ -10,10 +10,10 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 
-	"bitora/x/token/keeper"
-	"bitora/x/token/types"
+	"cosvian/x/token/keeper"
+	"cosvian/x/token/types"
 
-	feesTypes "bitora/x/fees/types"
+	feesTypes "cosvian/x/fees/types"
 )
 
 var _ depinject.OnePerModuleType = AppModule{}

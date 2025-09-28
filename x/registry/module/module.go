@@ -14,8 +14,8 @@ import (
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"google.golang.org/grpc"
 
-	"bitora/x/registry/keeper"
-	"bitora/x/registry/types"
+	"cosvian/x/registry/keeper"
+	"cosvian/x/registry/types"
 )
 
 var (

@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/cast"
 	"github.com/spf13/cobra"
 
-	"bitora/x/pricefeed/types"
+	"cosvian/x/pricefeed/types"
 )
 
 // CmdSendOracleResponse() returns the OracleResponse send packet command.

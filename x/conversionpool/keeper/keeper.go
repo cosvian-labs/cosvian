@@ -8,7 +8,7 @@ import (
 	corestore "cosmossdk.io/core/store"
 	"github.com/cosmos/cosmos-sdk/codec"
 
-	"bitora/x/conversionpool/types"
+	"cosvian/x/conversionpool/types"
 )
 
 type Keeper struct {

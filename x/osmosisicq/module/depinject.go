@@ -12,9 +12,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
-	icqctrltypes "bitora/x/icqcontroller/types"
-	"bitora/x/osmosisicq/keeper"
-	"bitora/x/osmosisicq/types"
+	icqctrltypes "cosvian/x/icqcontroller/types"
+	"cosvian/x/osmosisicq/keeper"
+	"cosvian/x/osmosisicq/types"
 )
 
 var _ depinject.OnePerModuleType = AppModule{}

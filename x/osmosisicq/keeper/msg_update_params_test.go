@@ -5,8 +5,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"bitora/x/osmosisicq/keeper"
-	"bitora/x/osmosisicq/types"
+	"cosvian/x/osmosisicq/keeper"
+	"cosvian/x/osmosisicq/types"
 )
 
 func TestMsgUpdateParams(t *testing.T) {

@@ -8,8 +8,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 
-	"bitora/x/token/keeper"
-	"bitora/x/token/types"
+	"cosvian/x/token/keeper"
+	"cosvian/x/token/types"
 )
 
 func SimulateMsgBurn(

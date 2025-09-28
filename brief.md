@@ -1,9 +1,9 @@
-# 🚀 BITORA Project Development Plan
+# 🚀 COSVIAN Project Development Plan
 
 ## ✅ Current Status (Phase 1 Complete)
 
 - Cosmos SDK initialization completed
-- BTO token module created
+- CSV token module created
 - Genesis validator setup and chain test completed
 
 ---
@@ -13,10 +13,10 @@
 ### 🔧 Backend Tasks
 
 - [ ] Implement **fixed-fee mechanism** ($1 for ops, $0.15 for POS tx)
-- [ ] Implement **deflationary burn mechanism** on every BTO usage
+- [ ] Implement **deflationary burn mechanism** on every CSV usage
 - [ ] Integrate **Oracle Module**:
-  - Fetch real-time USD price of BTO
-  - Peg fees in BTO equivalent to USD
+  - Fetch real-time USD price of CSV
+  - Peg fees in CSV equivalent to USD
 
 ### 💻 Frontend Tasks
 

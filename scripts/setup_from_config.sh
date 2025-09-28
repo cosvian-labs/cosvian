@@ -2,14 +2,14 @@
 set -euo pipefail
 
 ROOT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
-BINARY=${BINARY:-"$ROOT_DIR/build/bitorad"}
-CHAIN_ID=${CHAIN_ID:-bitora-local-1}
-HOME_DIR=${HOME_DIR:-"$HOME/.bitora-stub"}
+BINARY=${BINARY:-"$ROOT_DIR/build/cosviand"}
+CHAIN_ID=${CHAIN_ID:-cosvian-local-1}
+HOME_DIR=${HOME_DIR:-"$HOME/.cosvian-stub"}
 MONIKER=${MONIKER:-infra-validator}
 KEYRING_BACKEND=${KEYRING_BACKEND:-test}
 
 if [[ ! -x "$BINARY" ]]; then
-  echo "Binary '$BINARY' not found or not executable. Build it first (e.g. go build -o build/bitorad ./cmd/bitorad)." >&2
+  echo "Binary '$BINARY' not found or not executable. Build it first (e.g. go build -o build/cosviand ./cmd/cosviand)." >&2
   exit 1
 fi
 
@@ -84,14 +84,14 @@ jq \
    .app_state.bank.denom_metadata = [
      {
        "base": "ubto",
-       "display": "BTO",
-       "description": "Bitora native token",
+       "display": "CSV",
+       "description": "Cosvian native token",
        "denom_units": [
          {"denom": "ubto", "exponent": 0},
-         {"denom": "BTO", "exponent": 6}
+         {"denom": "CSV", "exponent": 6}
        ],
-       "name": "Bitora Token",
-       "symbol": "BTO"
+       "name": "Cosvian Token",
+       "symbol": "CSV"
      }
    ] |
    .app_state.wasm.params.code_upload_access.permission = "Everybody" |

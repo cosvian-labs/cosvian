@@ -3,7 +3,7 @@ package keeper_test
 import (
 	"testing"
 
-	"bitora/x/token/types"
+	"cosvian/x/token/types"
 
 	"github.com/stretchr/testify/require"
 )

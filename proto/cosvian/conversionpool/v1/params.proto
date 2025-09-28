@@ -1,0 +1,17 @@
+syntax = "proto3";
+package cosvian.conversionpool.v1;
+
+import "amino/amino.proto";
+import "gogoproto/gogo.proto";
+
+option go_package = "cosvian/x/conversionpool/types";
+
+// Params defines the parameters for the module.
+message Params {
+  option (amino.name) = "cosvian/x/conversionpool/Params";
+  option (gogoproto.equal) = true;
+
+  string max_conversion_supply = 1;
+  string conversion_rate = 2;
+  string min_pool_reserve = 3;
+}

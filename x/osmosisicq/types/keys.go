@@ -28,5 +28,5 @@ var NextUpdateKey = collections.NewPrefix("nu_osmosisicq")
 var LastResultTimeKey = collections.NewPrefix("lrt_osmosisicq")
 
 // QueryIDsKey is a prefix for persisted query IDs (per logical query name)
-// Map key example: "twap:BTO:USDC" -> id string
+// Map key example: "twap:CSV:USDC" -> id string
 var QueryIDsKey = collections.NewPrefix("qid_osmosisicq")

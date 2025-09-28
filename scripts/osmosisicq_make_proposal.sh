@@ -6,9 +6,9 @@
 #        --quote ibc/<HASH> [--no-twap] [--interval 30] [--min-liq 0] [--max-dev 0.8]
 #
 # Requirements:
-#   - bitorad binary running (same version / build tag icq_async)
+#   - cosviand binary running (same version / build tag icq_async)
 #   - FUND_SOURCE account exists in keyring-backend test
-#   - Environment vars: BITORA_CHAIN, FUND_SOURCE, RELAYER_FEE (optional)
+#   - Environment vars: COSVIAN_CHAIN, FUND_SOURCE, RELAYER_FEE (optional)
 #
 set -euo pipefail
 
@@ -44,7 +44,7 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-: "${BITORA_CHAIN:?env BITORA_CHAIN required}"
+: "${COSVIAN_CHAIN:?env COSVIAN_CHAIN required}"
 : "${FUND_SOURCE:?env FUND_SOURCE required}"
 RELAYER_FEE=${RELAYER_FEE:-500000ubto}
 BROADCAST_MODE=${BROADCAST_MODE:-sync}
@@ -52,7 +52,7 @@ TX_POLL_MAX=${TX_POLL_MAX:-40}
 TX_POLL_INTERVAL=${TX_POLL_INTERVAL:-2}
 
 if [[ "$BROADCAST_MODE" == "block" ]]; then
-  echo "[WARN] BROADCAST_MODE=block unsupported by bitorad; defaulting to sync" >&2
+  echo "[WARN] BROADCAST_MODE=block unsupported by cosviand; defaulting to sync" >&2
   BROADCAST_MODE=sync
 elif [[ "$BROADCAST_MODE" != "sync" && "$BROADCAST_MODE" != "async" ]]; then
   echo "[WARN] BROADCAST_MODE=$BROADCAST_MODE invalid; defaulting to sync" >&2
@@ -63,9 +63,9 @@ if [[ -z "${CONNECTION_ID:-}" ]]; then echo "--connection required" >&2; exit 1;
 if [[ -z "$BASE" || -z "$QUOTE" ]]; then echo "--base and --quote required" >&2; exit 1; fi
 if [[ $USE_TWAP -eq 1 && $TWAP_WINDOW -eq 0 ]]; then echo "TWAP window must be > 0 when TWAP enabled" >&2; exit 1; fi
 
-# determine pagination flags supported by this bitorad binary
+# determine pagination flags supported by this cosviand binary
 QUERY_PAGINATION_ARGS=()
-if GOV_HELP=$(bitorad q gov proposals --help 2>/dev/null); then
+if GOV_HELP=$(cosviand q gov proposals --help 2>/dev/null); then
   if grep -q -- '--pagination.limit' <<<"$GOV_HELP"; then
     QUERY_PAGINATION_ARGS=(--pagination.limit 200)
   elif grep -q -- '--limit' <<<"$GOV_HELP"; then
@@ -74,9 +74,9 @@ if GOV_HELP=$(bitorad q gov proposals --help 2>/dev/null); then
 fi
 
 # Resolve gov module authority address
-GOV=$(bitorad q auth module-accounts -o json 2>/dev/null | jq -r '.accounts[] | select(.value.name=="gov") | .value.address')
+GOV=$(cosviand q auth module-accounts -o json 2>/dev/null | jq -r '.accounts[] | select(.value.name=="gov") | .value.address')
 if [[ -z "$GOV" || "$GOV" == null ]]; then
-  GOV=$(jq -r '.app_state.auth.accounts[] | select(.name=="gov") | .base_account.address // empty' "$HOME/.bitora/config/genesis.json" 2>/dev/null || true)
+  GOV=$(jq -r '.app_state.auth.accounts[] | select(.name=="gov") | .base_account.address // empty' "$HOME/.cosvian/config/genesis.json" 2>/dev/null || true)
 fi
 if [[ -z "$GOV" ]]; then echo "Failed to resolve gov authority" >&2; exit 1; fi
 
@@ -84,7 +84,7 @@ cat > "$PROPOSAL_FILE" <<JSON
 {
   "messages": [
     {
-      "@type": "/bitora.osmosisicq.v1.MsgUpdateParams",
+      "@type": "/cosvian.osmosisicq.v1.MsgUpdateParams",
       "authority": "$GOV",
       "params": {
         "connection_id": "$CONNECTION_ID",
@@ -109,19 +109,19 @@ echo "[INFO] Wrote proposal JSON to $PROPOSAL_FILE" >&2
 jq '.' "$PROPOSAL_FILE" >/dev/null || { echo "Invalid JSON" >&2; exit 1; }
 
 echo "[INFO] Sanity checking type wrapper..." >&2
-WRAP_TYPE=$(bitorad tx gov submit-proposal "$PROPOSAL_FILE" --from $FUND_SOURCE --chain-id $BITORA_CHAIN --fees $RELAYER_FEE --keyring-backend test --generate-only -o json | jq -r '.body.messages[0]."@type"')
-INNER_TYPE=$(bitorad tx gov submit-proposal "$PROPOSAL_FILE" --from $FUND_SOURCE --chain-id $BITORA_CHAIN --fees $RELAYER_FEE --keyring-backend test --generate-only -o json | jq -r '.body.messages[0].messages[0]."@type"')
+WRAP_TYPE=$(cosviand tx gov submit-proposal "$PROPOSAL_FILE" --from $FUND_SOURCE --chain-id $COSVIAN_CHAIN --fees $RELAYER_FEE --keyring-backend test --generate-only -o json | jq -r '.body.messages[0]."@type"')
+INNER_TYPE=$(cosviand tx gov submit-proposal "$PROPOSAL_FILE" --from $FUND_SOURCE --chain-id $COSVIAN_CHAIN --fees $RELAYER_FEE --keyring-backend test --generate-only -o json | jq -r '.body.messages[0].messages[0]."@type"')
 
 echo "Wrapper: $WRAP_TYPE" >&2
 echo "Inner:   $INNER_TYPE" >&2
 if [[ "$WRAP_TYPE" != "/cosmos.gov.v1.MsgSubmitProposal" ]]; then echo "[WARN] Unexpected wrapper type: $WRAP_TYPE" >&2; fi
-if [[ "$INNER_TYPE" != "/bitora.osmosisicq.v1.MsgUpdateParams" ]]; then echo "[ERROR] Unexpected inner type: $INNER_TYPE" >&2; fi
+if [[ "$INNER_TYPE" != "/cosvian.osmosisicq.v1.MsgUpdateParams" ]]; then echo "[ERROR] Unexpected inner type: $INNER_TYPE" >&2; fi
 
 if [[ $SUBMIT -eq 1 ]]; then
   echo "[INFO] Broadcasting proposal..." >&2
-  PRE_LAST=$(bitorad q gov proposals "${QUERY_PAGINATION_ARGS[@]}" -o json 2>/dev/null | jq -r '.proposals | last? | .proposal_id // 0')
-  TX=$(bitorad tx gov submit-proposal "$PROPOSAL_FILE" \
-    --from $FUND_SOURCE --chain-id $BITORA_CHAIN \
+  PRE_LAST=$(cosviand q gov proposals "${QUERY_PAGINATION_ARGS[@]}" -o json 2>/dev/null | jq -r '.proposals | last? | .proposal_id // 0')
+  TX=$(cosviand tx gov submit-proposal "$PROPOSAL_FILE" \
+    --from $FUND_SOURCE --chain-id $COSVIAN_CHAIN \
     --fees $RELAYER_FEE --keyring-backend test \
     --broadcast-mode "$BROADCAST_MODE" -y -o json)
   echo "$TX" > /tmp/submit_osmosisicq_proposal.json
@@ -138,7 +138,7 @@ if [[ $SUBMIT -eq 1 ]]; then
   if [[ -n "$TXHASH" ]]; then
     ATTEMPT=0
     while (( ATTEMPT < TX_POLL_MAX )); do
-      DELIVER_JSON=$(bitorad q tx "$TXHASH" -o json 2>/dev/null || true)
+      DELIVER_JSON=$(cosviand q tx "$TXHASH" -o json 2>/dev/null || true)
       if [[ -n "$DELIVER_JSON" ]] && jq -e '.raw_log != null and .raw_log != ""' <<<"$DELIVER_JSON" >/dev/null 2>&1; then
         DELIVER_CODE=$(jq -r '.code // 0' <<<"$DELIVER_JSON")
         if [[ "$DELIVER_CODE" != "0" ]]; then
@@ -175,7 +175,7 @@ if [[ $SUBMIT -eq 1 ]]; then
     ATTEMPT=0
     while (( ATTEMPT < 10 )); do
       sleep 1
-      POST_LAST=$(bitorad q gov proposals "${QUERY_PAGINATION_ARGS[@]}" -o json 2>/dev/null | jq -r '.proposals | last? | .proposal_id // 0')
+      POST_LAST=$(cosviand q gov proposals "${QUERY_PAGINATION_ARGS[@]}" -o json 2>/dev/null | jq -r '.proposals | last? | .proposal_id // 0')
       if [[ -n "$POST_LAST" && "$POST_LAST" != "0" && "$POST_LAST" != "$PRE_LAST" ]]; then
         PROPID=$POST_LAST
         echo "[INFO] Fallback proposal id: $PROPID" >&2
@@ -191,11 +191,11 @@ if [[ $SUBMIT -eq 1 ]]; then
   echo "[INFO] Proposal ID: $PROPID" >&2
   if [[ -n "$PROPID" && $PROPID != null ]]; then
     echo "[INFO] Depositing $DEPOSIT_AMT..." >&2
-    bitorad tx gov deposit $PROPID $DEPOSIT_AMT --from $FUND_SOURCE --chain-id $BITORA_CHAIN --fees $RELAYER_FEE --keyring-backend test --broadcast-mode "$BROADCAST_MODE" -y >/dev/null
+    cosviand tx gov deposit $PROPID $DEPOSIT_AMT --from $FUND_SOURCE --chain-id $COSVIAN_CHAIN --fees $RELAYER_FEE --keyring-backend test --broadcast-mode "$BROADCAST_MODE" -y >/dev/null
     if [[ $VOTE -eq 1 ]]; then
       echo "[INFO] Voting YES..." >&2
-      bitorad tx gov vote $PROPID yes --from $FUND_SOURCE --chain-id $BITORA_CHAIN --fees $RELAYER_FEE --keyring-backend test --broadcast-mode "$BROADCAST_MODE" -y >/dev/null
+      cosviand tx gov vote $PROPID yes --from $FUND_SOURCE --chain-id $COSVIAN_CHAIN --fees $RELAYER_FEE --keyring-backend test --broadcast-mode "$BROADCAST_MODE" -y >/dev/null
     fi
-    echo "[INFO] Track status: bitorad q gov proposal $PROPID -o json | jq -r '.status'" >&2
+    echo "[INFO] Track status: cosviand q gov proposal $PROPID -o json | jq -r '.status'" >&2
   fi
 fi

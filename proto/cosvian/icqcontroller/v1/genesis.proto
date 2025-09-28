@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package cosvian.icqcontroller.v1;
+
+import "amino/amino.proto";
+import "cosvian/icqcontroller/v1/params.proto";
+import "gogoproto/gogo.proto";
+
+option go_package = "cosvian/x/icqcontroller/types";
+
+// GenesisState defines the icqcontroller module's genesis state.
+message GenesisState {
+  // params defines all the parameters of the module.
+  Params params = 1 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+  string port_id = 2;
+}

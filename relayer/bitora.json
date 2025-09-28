@@ -1,11 +1,11 @@
 {
   "type": "cosmos",
   "value": {
-    "key-directory": "/home/munra/.relayer/keys/bitora",
+    "key-directory": "/home/munra/.relayer/keys/cosvian",
     "key": "default",
-    "chain-id": "bitora",
+    "chain-id": "cosvian",
     "rpc-addr": "http://127.0.0.1:26657",
-    "account-prefix": "bto",
+    "account-prefix": "csv",
     "keyring-backend": "test",
     "gas-adjustment": 1.2,
     "gas-prices": "0.025ubto",

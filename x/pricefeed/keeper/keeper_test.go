@@ -20,10 +20,10 @@ import (
 	ibckeeper "github.com/cosmos/ibc-go/v10/modules/core/keeper"
 	ibctypes "github.com/cosmos/ibc-go/v10/modules/core/types"
 
-	feesTypes "bitora/x/fees/types"
-	"bitora/x/pricefeed/keeper"
-	module "bitora/x/pricefeed/module"
-	"bitora/x/pricefeed/types"
+	feesTypes "cosvian/x/fees/types"
+	"cosvian/x/pricefeed/keeper"
+	module "cosvian/x/pricefeed/module"
+	"cosvian/x/pricefeed/types"
 
 	"cosmossdk.io/math"
 )
@@ -118,7 +118,7 @@ func TestProcessPriceResponse_Rates(t *testing.T) {
 	msg := types.OracleResponsePacketData{
 		RequestId: 1,
 		Prices:    "",
-		Rates:     `{"BTO":"0.25"}`,
+		Rates:     `{"CSV":"0.25"}`,
 		Error:     "",
 	}
 	if err := fx.keeper.ProcessPriceResponse(fx.ctx, msg); err != nil {
@@ -130,7 +130,7 @@ func TestProcessPriceResponse_PricesInvert(t *testing.T) {
 	fx := initFixture(t)
 	msg := types.OracleResponsePacketData{
 		RequestId: 2,
-		Prices:    `{"BTO":"4"}`, // 4 USD per BTO -> BTO/USD = 0.25
+		Prices:    `{"CSV":"4"}`, // 4 USD per CSV -> CSV/USD = 0.25
 		Rates:     "",
 		Error:     "",
 	}
@@ -168,7 +168,7 @@ func TestOnRecvOracleResponse_StoresPrice(t *testing.T) {
 
 	// Build a fake packet and data
 	pkt := channeltypes.Packet{}
-	data := types.OracleResponsePacketData{RequestId: 10, Rates: `{"BTO":"0.5"}`}
+	data := types.OracleResponsePacketData{RequestId: 10, Rates: `{"CSV":"0.5"}`}
 	_, err := k.OnRecvOracleResponsePacket(ctx, pkt, data)
 	if err != nil {
 		t.Fatalf("unexpected: %v", err)

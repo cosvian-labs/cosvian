@@ -3,7 +3,7 @@ package fees
 import (
 	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
 
-	"bitora/x/fees/types"
+	"cosvian/x/fees/types"
 )
 
 // AutoCLIOptions implements the autocli.HasAutoCLIConfig interface.

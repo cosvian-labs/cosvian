@@ -1,6 +1,6 @@
 BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
 COMMIT := $(shell git log -1 --format='%H')
-APPNAME := bitora
+APPNAME := cosvian
 
 # do not override user values
 ifeq (,$(VERSION))

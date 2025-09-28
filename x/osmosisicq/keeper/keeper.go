@@ -12,7 +12,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"bitora/x/osmosisicq/types"
+	"cosvian/x/osmosisicq/types"
 )
 
 type Keeper struct {
@@ -23,7 +23,7 @@ type Keeper struct {
 	// Typically, this should be the x/gov module account.
 	authority []byte
 
-	// oracleKeeper is used to persist computed BTO/USD.
+	// oracleKeeper is used to persist computed CSV/USD.
 	oracleKeeper types.OracleKeeper
 	// icqClient is optional and used to register KV queries when present
 	icqClient types.ICQClient
@@ -237,10 +237,10 @@ func (k Keeper) ValidateAndPersistPrice(ctx sdk.Context, price sdkmath.LegacyDec
 	return nil
 }
 
-// normalizeToBTOPerUSD converts a quote/base price into canonical BTO per USD using params.BaseDenom/QuoteDenom.
-// If BaseDenom=="ubto" and QuoteDenom=="uusdc", given price is USDC per BTO, so BTO per USD = 1/price.
-// If BaseDenom=="uusdc" and QuoteDenom=="ubto", given price is BTO per USD already.
-// Otherwise, assume provided price is already BTO per USD (e.g., two-hop aggregated externally).
+// normalizeToBTOPerUSD converts a quote/base price into canonical CSV per USD using params.BaseDenom/QuoteDenom.
+// If BaseDenom=="ubto" and QuoteDenom=="uusdc", given price is USDC per CSV, so CSV per USD = 1/price.
+// If BaseDenom=="uusdc" and QuoteDenom=="ubto", given price is CSV per USD already.
+// Otherwise, assume provided price is already CSV per USD (e.g., two-hop aggregated externally).
 func (k Keeper) normalizeToBTOPerUSD(ctx sdk.Context, priceQuotePerBase sdkmath.LegacyDec) sdkmath.LegacyDec {
 	params, err := k.Params.Get(ctx)
 	if err != nil {

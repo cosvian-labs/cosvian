@@ -16,8 +16,8 @@ import (
 	ibcante "github.com/cosmos/ibc-go/v10/modules/core/ante"
 	ibckeeper "github.com/cosmos/ibc-go/v10/modules/core/keeper"
 
-	feeskeeper "bitora/x/fees/keeper"
-	tokenkeeper "bitora/x/token/keeper"
+	feeskeeper "cosvian/x/fees/keeper"
+	tokenkeeper "cosvian/x/token/keeper"
 )
 
 // AnteHandlerOptions holds the options for creating the ante handler
@@ -36,7 +36,7 @@ type AnteHandlerOptions struct {
 	CircuitKeeper         *circuitkeeper.Keeper
 }
 
-// NewAnteHandler creates a new zero gas fee ante handler for bitora blockchain
+// NewAnteHandler creates a new zero gas fee ante handler for cosvian blockchain
 // This implementation completely bypasses gas consumption for a true gasless experience
 func NewAnteHandler(options AnteHandlerOptions) (sdk.AnteHandler, error) {
 	// Validation for required WASM components
@@ -68,10 +68,7 @@ func NewAnteHandler(options AnteHandlerOptions) (sdk.AnteHandler, error) {
 		ante.NewValidateBasicDecorator(),
 		ante.NewTxTimeoutHeightDecorator(),
 		ante.NewValidateMemoDecorator(options.AccountKeeper),
-
-		// 5. (Removed) BitoraFeeDecorator disabled in favor of centralized FeeAnteHandler wiring in app.go
-		// NewBitoraFeeDecorator(options.TokenKeeper, options.FeesKeeper),
-
+		
 		// 6. Skip gas fee deduction (protocol gas fees) - application fees handled elsewhere
 		NewZeroGasFeeDecorator(), // 7. Public key and signature handling (no gas consumption)
 		ante.NewSetPubKeyDecorator(options.AccountKeeper),
@@ -117,7 +114,7 @@ func NewZeroGasFeeDecorator() ZeroGasFeeDecorator {
 
 func (zgfd ZeroGasFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (newCtx sdk.Context, err error) {
 	// Skip all fee deduction logic
-	// In bitora blockchain, we use custom application-level fees instead of gas fees
+	// In cosvian blockchain, we use custom application-level fees instead of gas fees
 	// This decorator ensures no gas fees are charged at the protocol level
 
 	return next(ctx, tx, simulate)
@@ -177,5 +174,3 @@ func (zgsv ZeroGasSigVerificationDecorator) AnteHandle(ctx sdk.Context, tx sdk.T
 
 	return next(ctx, tx, simulate)
 }
-
-// BitoraFeeDecorator implements the new fee system where Gas Used = Fee Amount

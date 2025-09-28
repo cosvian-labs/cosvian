@@ -82,15 +82,15 @@ func DefaultParams() Params {
 			},
 		},
 		OracleParams: OracleParams{
-			BandRequestId:  1, // BTO/USD request ID on Band
+			BandRequestId:  1, // CSV/USD request ID on Band
 			TwapWindow:     5 * time.Minute,
 			DeviationLimit: math.LegacyMustNewDecFromStr("0.05"), // 5% deviation limit
 			FallbackTtl:    30 * time.Minute,
 			MaxPriceAge:    10 * time.Minute,
 		},
 		GuardRails: GuardRails{
-			MinGasPriceBto: math.LegacyMustNewDecFromStr("0.000001"), // 1 micro BTO
-			MaxGasPriceBto: math.LegacyMustNewDecFromStr("1.0"),      // 1 BTO
+			MinGasPriceBto: math.LegacyMustNewDecFromStr("0.000001"), // 1 micro CSV
+			MaxGasPriceBto: math.LegacyMustNewDecFromStr("1.0"),      // 1 CSV
 			MaxGasWizard:   100000,                                   // 100k gas for wizard
 			MaxGasDeploy:   500000,                                   // 500k gas for deploy
 		},

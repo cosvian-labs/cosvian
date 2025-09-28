@@ -1,0 +1,59 @@
+syntax = "proto3";
+
+package cosvian.fees.v1;
+
+import "amino/amino.proto";
+import "cosvian/fees/v1/params.proto";
+import "cosmos/msg/v1/msg.proto";
+import "cosmos_proto/cosmos.proto";
+import "gogoproto/gogo.proto";
+
+option go_package = "cosvian/x/fees/types";
+
+// Msg defines the Msg service.
+service Msg {
+  option (cosmos.msg.v1.service) = true;
+
+  // UpdateParams defines a (governance) operation for updating the module
+  // parameters. The authority defaults to the x/gov module account.
+  rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
+
+  // ChargeFee defines the ChargeFee RPC.
+  rpc ChargeFee(MsgChargeFee) returns (MsgChargeFeeResponse);
+}
+
+// MsgUpdateParams is the Msg/UpdateParams request type.
+message MsgUpdateParams {
+  option (cosmos.msg.v1.signer) = "authority";
+  option (amino.name) = "cosvian/x/fees/MsgUpdateParams";
+
+  // authority is the address that controls the module (defaults to x/gov unless overwritten).
+  string authority = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+
+  // params defines the module parameters to update.
+
+  // NOTE: All parameters must be supplied.
+  Params params = 2 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
+// MsgUpdateParamsResponse defines the response structure for executing a
+// MsgUpdateParams message.
+message MsgUpdateParamsResponse {}
+
+// MsgChargeFee defines the MsgChargeFee message.
+message MsgChargeFee {
+  option (cosmos.msg.v1.signer) = "creator";
+  string creator = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  string category = 2;
+  string amount = 3;
+  string metadata = 4;
+}
+
+// MsgChargeFeeResponse defines the MsgChargeFeeResponse message.
+message MsgChargeFeeResponse {
+  string gas_used = 1;
+  string fee_charged = 2;
+}

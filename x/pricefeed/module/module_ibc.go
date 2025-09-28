@@ -5,8 +5,8 @@ import (
 
 	errorsmod "cosmossdk.io/errors"
 
-	"bitora/x/pricefeed/keeper"
-	"bitora/x/pricefeed/types"
+	"cosvian/x/pricefeed/keeper"
+	"cosvian/x/pricefeed/types"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
