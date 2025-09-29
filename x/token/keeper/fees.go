@@ -29,12 +29,12 @@ const (
 // ChargeAndSplitFee memotong fee dari sender dan membagi 50:50 ke treasury dan infrastructure
 func (k Keeper) ChargeAndSplitFee(ctx sdk.Context, sender sdk.AccAddress, usdAmount math.LegacyDec) error {
 	// Use the central fees keeper to convert USD to CSV/ucsv
-	feeBTO, _, err := k.feesKeeper.ConvertUSDToBTO(ctx, usdAmount)
+	feeCSV, _, err := k.feesKeeper.ConvertUSDToCSV(ctx, usdAmount)
 	if err != nil {
 		return errors.Wrapf(err, "failed to convert USD to CSV")
 	}
 	// scale CSV to ucsv (assume 6 decimals)
-	feeCoin := sdk.NewCoin("ucsv", feeBTO.MulInt64(1_000_000).TruncateInt())
+	feeCoin := sdk.NewCoin("ucsv", feeCSV.MulInt64(1_000_000).TruncateInt())
 
 	// 3. Cek apakah sender memiliki saldo yang cukup
 	balance := k.bankKeeper.SpendableCoins(ctx, sender)
@@ -66,11 +66,11 @@ func (k Keeper) ChargeAndSplitFee(ctx sdk.Context, sender sdk.AccAddress, usdAmo
 
 // GetFeeInucsv menghitung berapa ucsv yang dibutuhkan untuk fee USD tertentu
 func (k Keeper) GetFeeInucsv(ctx sdk.Context, usdAmount math.LegacyDec) (sdk.Coin, error) {
-	feeBTO, _, err := k.feesKeeper.ConvertUSDToBTO(ctx, usdAmount)
+	feeCSV, _, err := k.feesKeeper.ConvertUSDToCSV(ctx, usdAmount)
 	if err != nil {
 		return sdk.Coin{}, errors.Wrapf(err, "failed to convert USD to CSV")
 	}
-	return sdk.NewCoin("ucsv", feeBTO.MulInt64(1_000_000).TruncateInt()), nil
+	return sdk.NewCoin("ucsv", feeCSV.MulInt64(1_000_000).TruncateInt()), nil
 }
 
 // GetFeeByType returns the USD fee amount for a given fee type
@@ -96,11 +96,11 @@ func (k Keeper) ChargeAndDistributeFeeByType(
 	}
 
 	// Calculate CSV amount using central fees keeper
-	feeBTO, _, err := k.feesKeeper.ConvertUSDToBTO(ctx, feeUSD)
+	feeCSV, _, err := k.feesKeeper.ConvertUSDToCSV(ctx, feeUSD)
 	if err != nil {
 		return errors.Wrapf(err, "failed to convert USD to CSV")
 	}
-	feeCoin := sdk.NewCoin("ucsv", feeBTO.MulInt64(1_000_000).TruncateInt())
+	feeCoin := sdk.NewCoin("ucsv", feeCSV.MulInt64(1_000_000).TruncateInt())
 
 	// Check if sender has enough balance
 	balance := k.bankKeeper.SpendableCoins(ctx, sender)

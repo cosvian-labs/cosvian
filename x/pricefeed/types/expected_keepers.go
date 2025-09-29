@@ -30,5 +30,5 @@ type ParamSubspace interface {
 // OracleKeeper defines the minimal interface from x/oracle used by pricefeed.
 // This lets pricefeed persist Band-derived prices into the canonical oracle store.
 type OracleKeeper interface {
-	SetBTOPerUSD(ctx sdk.Context, price math.LegacyDec) error
+	SetCSVPerUSD(ctx sdk.Context, price math.LegacyDec) error
 }

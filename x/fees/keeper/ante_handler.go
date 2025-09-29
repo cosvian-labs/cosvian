@@ -186,7 +186,7 @@ func (fah *FeeAnteHandler) emitFeeChargedEvent(ctx sdk.Context, estimate *FeeEst
 	attributes := []sdk.Attribute{
 		sdk.NewAttribute(types.AttributeKeyCategory, string(estimate.Category)),
 		sdk.NewAttribute(types.AttributeKeyUsdAmount, estimate.USDAmount.String()),
-		sdk.NewAttribute(types.AttributeKeyCsvAmount, estimate.BTOAmount.String()),
+		sdk.NewAttribute(types.AttributeKeyCsvAmount, estimate.CSVAmount.String()),
 		// Backcompat alias (temporary): fee_type mirrors category
 		sdk.NewAttribute("fee_type", string(estimate.Category)),
 		sdk.NewAttribute("gas_wanted", fmt.Sprintf("%d", estimate.GasWanted)),

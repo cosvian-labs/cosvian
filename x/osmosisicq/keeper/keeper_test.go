@@ -112,16 +112,16 @@ func TestScheduleQueriesIfDue_IntervalSetsLastUpdate(t *testing.T) {
 // mockOracleKeeper implements types.OracleKeeper for tests
 type mockOracleKeeper struct{}
 
-func (mockOracleKeeper) SetBTOPerUSD(ctx sdk.Context, price sdkmath.LegacyDec) error { return nil }
-func (mockOracleKeeper) GetBTOPerUSD(ctx sdk.Context) sdkmath.LegacyDec {
+func (mockOracleKeeper) SetCSVPerUSD(ctx sdk.Context, price sdkmath.LegacyDec) error { return nil }
+func (mockOracleKeeper) GetCSVPerUSD(ctx sdk.Context) sdkmath.LegacyDec {
 	return sdkmath.LegacyZeroDec()
 }
 
 // mockOracleWithLGP returns a fixed Last Good Price
 type mockOracleWithLGP struct{ lgp sdkmath.LegacyDec }
 
-func (m mockOracleWithLGP) SetBTOPerUSD(ctx sdk.Context, price sdkmath.LegacyDec) error { return nil }
-func (m mockOracleWithLGP) GetBTOPerUSD(ctx sdk.Context) sdkmath.LegacyDec              { return m.lgp }
+func (m mockOracleWithLGP) SetCSVPerUSD(ctx sdk.Context, price sdkmath.LegacyDec) error { return nil }
+func (m mockOracleWithLGP) GetCSVPerUSD(ctx sdk.Context) sdkmath.LegacyDec              { return m.lgp }
 
 // mock ICQ client for tests
 type mockICQClient struct{}
@@ -245,19 +245,19 @@ type mockCaptureOracle struct {
 	set  bool
 }
 
-func (m *mockCaptureOracle) SetBTOPerUSD(ctx sdk.Context, price sdkmath.LegacyDec) error {
+func (m *mockCaptureOracle) SetCSVPerUSD(ctx sdk.Context, price sdkmath.LegacyDec) error {
 	m.last = price
 	m.set = true
 	return nil
 }
-func (m *mockCaptureOracle) GetBTOPerUSD(ctx sdk.Context) sdkmath.LegacyDec {
+func (m *mockCaptureOracle) GetCSVPerUSD(ctx sdk.Context) sdkmath.LegacyDec {
 	if !m.set {
 		return sdkmath.LegacyZeroDec()
 	}
 	return m.last
 }
 
-func TestHandleSpot_NormalizesBTOUSD(t *testing.T) {
+func TestHandleSpot_NormalizesCSVUSD(t *testing.T) {
 	encCfg := moduletestutil.MakeTestEncodingConfig(module.AppModule{})
 	addressCodec := addresscodec.NewBech32Codec(sdk.GetConfig().GetBech32AccountAddrPrefix())
 	storeKey := storetypes.NewKVStoreKey(types.StoreKey)

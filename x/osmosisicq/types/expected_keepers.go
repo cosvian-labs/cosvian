@@ -30,6 +30,6 @@ type ParamSubspace interface {
 // OracleKeeper defines the expected interface for the Oracle module used by osmosisicq.
 // We only need to set the canonical CSV per USD price.
 type OracleKeeper interface {
-	SetBTOPerUSD(ctx sdk.Context, price sdkmath.LegacyDec) error
-	GetBTOPerUSD(ctx sdk.Context) sdkmath.LegacyDec
+	SetCSVPerUSD(ctx sdk.Context, price sdkmath.LegacyDec) error
+	GetCSVPerUSD(ctx sdk.Context) sdkmath.LegacyDec
 }

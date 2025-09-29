@@ -106,8 +106,8 @@ type spyOracleKeeper struct {
 	val    math.LegacyDec
 }
 
-func (mockOracleKeeper) SetBTOPerUSD(ctx sdk.Context, price math.LegacyDec) error { return nil }
-func (s *spyOracleKeeper) SetBTOPerUSD(ctx sdk.Context, price math.LegacyDec) error {
+func (mockOracleKeeper) SetCSVPerUSD(ctx sdk.Context, price math.LegacyDec) error { return nil }
+func (s *spyOracleKeeper) SetCSVPerUSD(ctx sdk.Context, price math.LegacyDec) error {
 	s.called = true
 	s.val = price
 	return nil

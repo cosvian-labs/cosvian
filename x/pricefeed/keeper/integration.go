@@ -94,7 +94,7 @@ func (k Keeper) ProcessPriceResponse(ctx context.Context, response types.OracleR
 					rateStr = fmt.Sprintf("%v", vv)
 				}
 				if dec, err := math.LegacyNewDecFromStr(rateStr); err == nil && dec.IsPositive() {
-					_ = k.oracleKeeper.SetBTOPerUSD(sdkCtx, dec)
+					_ = k.oracleKeeper.SetCSVPerUSD(sdkCtx, dec)
 					sdkCtx.EventManager().EmitEvent(
 						sdk.NewEvent(
 							"price_updated",
@@ -115,16 +115,16 @@ func (k Keeper) ProcessPriceResponse(ctx context.Context, response types.OracleR
 		var priceData map[string]interface{}
 		if err := json.Unmarshal([]byte(response.Prices), &priceData); err == nil {
 			if v, ok := priceData["CSV"]; ok {
-				var usdPerBTOStr string
+				var usdPerCSVStr string
 				switch vv := v.(type) {
 				case string:
-					usdPerBTOStr = vv
+					usdPerCSVStr = vv
 				default:
-					usdPerBTOStr = fmt.Sprintf("%v", vv)
+					usdPerCSVStr = fmt.Sprintf("%v", vv)
 				}
-				if usdPerBTO, err := math.LegacyNewDecFromStr(usdPerBTOStr); err == nil && usdPerBTO.IsPositive() {
-					csvPerUSD := math.LegacyOneDec().Quo(usdPerBTO)
-					_ = k.oracleKeeper.SetBTOPerUSD(sdkCtx, csvPerUSD)
+				if usdPerCSV, err := math.LegacyNewDecFromStr(usdPerCSVStr); err == nil && usdPerCSV.IsPositive() {
+					csvPerUSD := math.LegacyOneDec().Quo(usdPerCSV)
+					_ = k.oracleKeeper.SetCSVPerUSD(sdkCtx, csvPerUSD)
 					sdkCtx.EventManager().EmitEvent(
 						sdk.NewEvent(
 							"price_updated",

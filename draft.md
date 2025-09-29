@@ -332,9 +332,9 @@ func (k Keeper) ChargeAndDistributeFeeByType(
 
     // 2. Calculate CSV amount using existing oracle logic
     oracleKeeper := k.getOracleKeeper(ctx)
-    csvPrice := oracleKeeper.GetBTOPerUSD(ctx)
-    feeBTO := feeConfig.AmountUSD.Quo(csvPrice).Mul(math.LegacyNewDec(1_000_000))
-    feeCoin := sdk.NewCoin("ucsv", feeBTO.TruncateInt())
+    csvPrice := oracleKeeper.GetCSVPerUSD(ctx)
+    feeCSV := feeConfig.AmountUSD.Quo(csvPrice).Mul(math.LegacyNewDec(1_000_000))
+    feeCoin := sdk.NewCoin("ucsv", feeCSV.TruncateInt())
 
     // 3. Charge fee dari sender
     err = k.bankKeeper.SendCoinsFromAccountToModule(ctx, sender, "treasury", sdk.NewCoins(feeCoin))

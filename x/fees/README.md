@@ -25,7 +25,7 @@ This module implements a comprehensive fee table mechanism for the Cosvian block
 
 - USD fees converted to CSV using oracle prices
 - Conservative rounding (ceil) to prevent under-collection
-- Gas price calculated as: `gasPrice = feeBTO / gasWanted`
+- Gas price calculated as: `gasPrice = feeCSV / gasWanted`
 - Guard rails for min/max gas prices
 
 ### 4. Free Tier Support

@@ -60,7 +60,7 @@ func (k msgServer) ChargeFee(ctx context.Context, msg *types.MsgChargeFee) (*typ
 	feeUSD := feeEntry.UsdAmount
 
 	// Convert USD to CSV using the module's oracle adapter (with fallback)
-	csvAmount, _, err := k.ConvertUSDToBTO(sdkCtx, feeUSD)
+	csvAmount, _, err := k.ConvertUSDToCSV(sdkCtx, feeUSD)
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "failed to convert USD to CSV")
 	}

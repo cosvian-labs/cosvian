@@ -24,8 +24,8 @@ func NewOracleAdapter(keeper Keeper, oracleKeeper types.OracleKeeper) *OracleAda
 	}
 }
 
-// GetBTOUSDPrice retrieves CSV/USD price with fallback logic
-func (oa *OracleAdapter) GetBTOUSDPrice(ctx sdk.Context) (*types.PriceData, error) {
+// GetCSVUSDPrice retrieves CSV/USD price with fallback logic
+func (oa *OracleAdapter) GetCSVUSDPrice(ctx sdk.Context) (*types.PriceData, error) {
 	params, err := oa.keeper.Params.Get(ctx)
 	if err != nil {
 		// During genesis or very early boot, params may be absent; fallback to DefaultParams silently.
@@ -116,9 +116,9 @@ func (oa *OracleAdapter) emitOracleEvent(ctx sdk.Context, priceData *types.Price
 	)
 }
 
-// ConvertUSDToBTO converts USD amount to CSV using current oracle price
-func (oa *OracleAdapter) ConvertUSDToBTO(ctx sdk.Context, usdAmount math.LegacyDec) (math.LegacyDec, *types.PriceData, error) {
-	priceData, err := oa.GetBTOUSDPrice(ctx)
+// ConvertUSDToCSV converts USD amount to CSV using current oracle price
+func (oa *OracleAdapter) ConvertUSDToCSV(ctx sdk.Context, usdAmount math.LegacyDec) (math.LegacyDec, *types.PriceData, error) {
+	priceData, err := oa.GetCSVUSDPrice(ctx)
 	if err != nil {
 		return math.LegacyZeroDec(), nil, err
 	}

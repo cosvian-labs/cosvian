@@ -68,10 +68,10 @@ func (k Keeper) GetAuthority() []byte {
 	return k.authority
 }
 
-// ConvertUSDToBTO converts a USD amount to CSV using the module's oracle adapter
-func (k Keeper) ConvertUSDToBTO(ctx sdk.Context, usd math.LegacyDec) (math.LegacyDec, *types.PriceData, error) {
+// ConvertUSDToCSV converts a USD amount to CSV using the module's oracle adapter
+func (k Keeper) ConvertUSDToCSV(ctx sdk.Context, usd math.LegacyDec) (math.LegacyDec, *types.PriceData, error) {
 	oa := NewOracleAdapter(k, k.oracleKeeper)
-	csv, pd, err := oa.ConvertUSDToBTO(ctx, usd)
+	csv, pd, err := oa.ConvertUSDToCSV(ctx, usd)
 	return csv, pd, err
 }
 

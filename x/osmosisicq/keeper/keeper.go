@@ -196,7 +196,7 @@ func (k Keeper) ValidateAndPersistPrice(ctx sdk.Context, price sdkmath.LegacyDec
 	if err != nil {
 		return err
 	}
-	lgp := k.oracleKeeper.GetBTOPerUSD(ctx)
+	lgp := k.oracleKeeper.GetCSVPerUSD(ctx)
 	if !lgp.IsZero() && maxDev.IsPositive() {
 		// dev = |price - lgp| / lgp
 		diff := price.Sub(lgp)
@@ -222,7 +222,7 @@ func (k Keeper) ValidateAndPersistPrice(ctx sdk.Context, price sdkmath.LegacyDec
 	}
 
 	// Accept and persist
-	if err := k.oracleKeeper.SetBTOPerUSD(ctx, price); err != nil {
+	if err := k.oracleKeeper.SetCSVPerUSD(ctx, price); err != nil {
 		return err
 	}
 	now := ctx.BlockTime().Unix()
@@ -237,11 +237,11 @@ func (k Keeper) ValidateAndPersistPrice(ctx sdk.Context, price sdkmath.LegacyDec
 	return nil
 }
 
-// normalizeToBTOPerUSD converts a quote/base price into canonical CSV per USD using params.BaseDenom/QuoteDenom.
+// normalizeToCSVPerUSD converts a quote/base price into canonical CSV per USD using params.BaseDenom/QuoteDenom.
 // If BaseDenom=="ucsv" and QuoteDenom=="uusdc", given price is USDC per CSV, so CSV per USD = 1/price.
 // If BaseDenom=="uusdc" and QuoteDenom=="ucsv", given price is CSV per USD already.
 // Otherwise, assume provided price is already CSV per USD (e.g., two-hop aggregated externally).
-func (k Keeper) normalizeToBTOPerUSD(ctx sdk.Context, priceQuotePerBase sdkmath.LegacyDec) sdkmath.LegacyDec {
+func (k Keeper) normalizeToCSVPerUSD(ctx sdk.Context, priceQuotePerBase sdkmath.LegacyDec) sdkmath.LegacyDec {
 	params, err := k.Params.Get(ctx)
 	if err != nil {
 		return priceQuotePerBase
@@ -263,12 +263,12 @@ func (k Keeper) normalizeToBTOPerUSD(ctx sdk.Context, priceQuotePerBase sdkmath.
 
 // HandleTwapResult consumes a TWAP price (quote/base) and a liquidity indicator, applies guardrails, and persists.
 func (k Keeper) HandleTwapResult(ctx sdk.Context, priceQuotePerBase, liquidity sdkmath.LegacyDec) error {
-	csvPerUSD := k.normalizeToBTOPerUSD(ctx, priceQuotePerBase)
+	csvPerUSD := k.normalizeToCSVPerUSD(ctx, priceQuotePerBase)
 	return k.ValidateAndPersistPrice(ctx, csvPerUSD, liquidity)
 }
 
 // HandleSpotResult consumes a spot price (quote/base) and a liquidity indicator, applies guardrails, and persists.
 func (k Keeper) HandleSpotResult(ctx sdk.Context, priceQuotePerBase, liquidity sdkmath.LegacyDec) error {
-	csvPerUSD := k.normalizeToBTOPerUSD(ctx, priceQuotePerBase)
+	csvPerUSD := k.normalizeToCSVPerUSD(ctx, priceQuotePerBase)
 	return k.ValidateAndPersistPrice(ctx, csvPerUSD, liquidity)
 }

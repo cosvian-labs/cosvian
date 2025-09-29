@@ -23,7 +23,7 @@ type Keeper struct {
 
 	Schema   collections.Schema
 	Params   collections.Item[types.Params]
-	BTOPrice collections.Map[string, string] // Store CSV/USD price as string
+	CSVPrice collections.Map[string, string] // Store CSV/USD price as string
 }
 
 func NewKeeper(
@@ -45,7 +45,7 @@ func NewKeeper(
 		authority:    authority,
 
 		Params:   collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
-		BTOPrice: collections.NewMap(sb, []byte("csv_price"), "csv_price", collections.StringKey, collections.StringValue),
+		CSVPrice: collections.NewMap(sb, []byte("csv_price"), "csv_price", collections.StringKey, collections.StringValue),
 	}
 
 	schema, err := sb.Build()
@@ -62,9 +62,9 @@ func (k Keeper) GetAuthority() []byte {
 	return k.authority
 }
 
-// GetBTOPerUSD returns the current CSV/USD exchange rate
-func (k Keeper) GetBTOPerUSD(ctx sdk.Context) math.LegacyDec {
-	priceStr, err := k.BTOPrice.Get(ctx, "BTO_USD")
+// GetCSVPerUSD returns the current CSV/USD exchange rate
+func (k Keeper) GetCSVPerUSD(ctx sdk.Context) math.LegacyDec {
+	priceStr, err := k.CSVPrice.Get(ctx, "CSV_USD")
 	if err != nil {
 		// Return zero decimal if price not found
 		return math.LegacyZeroDec()
@@ -79,15 +79,15 @@ func (k Keeper) GetBTOPerUSD(ctx sdk.Context) math.LegacyDec {
 	return price
 }
 
-// SetBTOPerUSD sets the CSV/USD exchange rate
-func (k Keeper) SetBTOPerUSD(ctx sdk.Context, price math.LegacyDec) error {
-	return k.BTOPrice.Set(ctx, "BTO_USD", price.String())
+// SetCSVPerUSD sets the CSV/USD exchange rate
+func (k Keeper) SetCSVPerUSD(ctx sdk.Context, price math.LegacyDec) error {
+	return k.CSVPrice.Set(ctx, "CSV_USD", price.String())
 }
 
 // GetExchangeRate gets exchange rate for any symbol (implements BandOracleKeeper interface)
 func (k Keeper) GetExchangeRate(ctx sdk.Context, symbol string) (math.LegacyDec, error) {
 	if symbol == "CSV" {
-		price := k.GetBTOPerUSD(ctx)
+		price := k.GetCSVPerUSD(ctx)
 		if price.IsZero() {
 			return math.LegacyZeroDec(), fmt.Errorf("CSV price not available")
 		}

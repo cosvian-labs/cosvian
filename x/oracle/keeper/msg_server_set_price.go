@@ -37,7 +37,7 @@ func (k msgServer) SetPrice(ctx context.Context, msg *types.MsgSetPrice) (*types
 	}
 
 	// Set the price
-	err = k.SetBTOPerUSD(sdkCtx, price)
+	err = k.SetCSVPerUSD(sdkCtx, price)
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "failed to set price")
 	}

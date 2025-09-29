@@ -44,7 +44,7 @@ const (
 type FeeEstimate struct {
 	Category  TransactionCategory `json:"category"`
 	USDAmount math.LegacyDec      `json:"usd_amount"`
-	BTOAmount math.LegacyDec      `json:"csv_amount"`
+	CSVAmount math.LegacyDec      `json:"csv_amount"`
 	GasWanted uint64              `json:"gas_wanted"`
 	GasPrice  math.LegacyDec      `json:"gas_price"`
 	IsFree    bool                `json:"is_free"`
@@ -90,7 +90,7 @@ func (fc *FeeCalculator) EstimateFee(ctx sdk.Context, msgs []sdk.Msg, memo strin
 		return &FeeEstimate{
 			Category:  category,
 			USDAmount: math.LegacyZeroDec(),
-			BTOAmount: math.LegacyZeroDec(),
+			CSVAmount: math.LegacyZeroDec(),
 			GasWanted: gasWanted,
 			GasPrice:  math.LegacyZeroDec(),
 			IsFree:    true,
@@ -111,7 +111,7 @@ func (fc *FeeCalculator) EstimateFee(ctx sdk.Context, msgs []sdk.Msg, memo strin
 		return &FeeEstimate{
 			Category:  category,
 			USDAmount: math.LegacyZeroDec(),
-			BTOAmount: math.LegacyZeroDec(),
+			CSVAmount: math.LegacyZeroDec(),
 			GasWanted: gasWanted,
 			GasPrice:  math.LegacyZeroDec(),
 			IsFree:    true,
@@ -119,7 +119,7 @@ func (fc *FeeCalculator) EstimateFee(ctx sdk.Context, msgs []sdk.Msg, memo strin
 	}
 
 	// Convert USD fee to CSV
-	csvAmount, priceData, err := fc.oracleAdapter.ConvertUSDToBTO(ctx, feeConfig.UsdAmount)
+	csvAmount, priceData, err := fc.oracleAdapter.ConvertUSDToCSV(ctx, feeConfig.UsdAmount)
 	if err != nil {
 		return nil, fmt.Errorf("failed to convert USD to CSV: %w", err)
 	}
@@ -130,7 +130,7 @@ func (fc *FeeCalculator) EstimateFee(ctx sdk.Context, msgs []sdk.Msg, memo strin
 		return nil, fmt.Errorf("guard rails validation failed: %w", err)
 	}
 
-	// Calculate gas price: gasPrice = feeBTO / gasWanted
+	// Calculate gas price: gasPrice = feeCSV / gasWanted
 	var gasPrice math.LegacyDec
 	if gasWanted > 0 {
 		gasPrice = csvAmount.QuoInt64(int64(gasWanted))
@@ -139,7 +139,7 @@ func (fc *FeeCalculator) EstimateFee(ctx sdk.Context, msgs []sdk.Msg, memo strin
 	return &FeeEstimate{
 		Category:  category,
 		USDAmount: feeConfig.UsdAmount,
-		BTOAmount: csvAmount,
+		CSVAmount: csvAmount,
 		GasWanted: gasWanted,
 		GasPrice:  gasPrice,
 		IsFree:    false,
@@ -345,15 +345,15 @@ func (fc *FeeCalculator) applyGuardRails(csvAmount math.LegacyDec, gasWanted uin
 
 // BuildFeeFromEstimate creates a fee object from the estimate for transaction building
 func (fc *FeeCalculator) BuildFeeFromEstimate(estimate *FeeEstimate, denom string) sdk.Coins {
-	if estimate.IsFree || estimate.BTOAmount.IsZero() {
+	if estimate.IsFree || estimate.CSVAmount.IsZero() {
 		return sdk.NewCoins()
 	}
 
 	// Convert decimal to integer amount
-	amount := estimate.BTOAmount.TruncateInt()
+	amount := estimate.CSVAmount.TruncateInt()
 	// If building a fee in micro-denom (e.g., "ucsv"), scale by 1e6
 	if strings.HasPrefix(denom, "u") {
-		amount = estimate.BTOAmount.MulInt64(1_000_000).TruncateInt()
+		amount = estimate.CSVAmount.MulInt64(1_000_000).TruncateInt()
 	}
 	if amount.IsZero() {
 		// Ensure minimum fee of 1 unit if not free
