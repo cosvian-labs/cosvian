@@ -43,16 +43,6 @@ accounts:
   - name: cosvian_relayer
     coins: ["0ucsv"] # 0 CSV
 
-  # Developer / testing account (added for permanent availability)
-  - name: tester
-    coins: ["100000000ucsv"] # 100 CSV (adjust as needed)
-
-faucet:
-  name: public_sale
-  coins: ["1000000000000ucsv"] # 1M CSV
-  coins_max: ["5000000000000ucsv"] # 5M CSV
-  port: 4500
-
 validators:
   - name: infra_validators
     bonded: "6000000000000ucsv"

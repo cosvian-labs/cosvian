@@ -89,8 +89,8 @@ func DefaultParams() Params {
 			MaxPriceAge:    10 * time.Minute,
 		},
 		GuardRails: GuardRails{
-			MinGasPriceBto: math.LegacyMustNewDecFromStr("0.000001"), // 1 micro CSV
-			MaxGasPriceBto: math.LegacyMustNewDecFromStr("1.0"),      // 1 CSV
+			MinGasPriceCsv: math.LegacyMustNewDecFromStr("0.000001"), // 1 micro CSV
+			MaxGasPriceCsv: math.LegacyMustNewDecFromStr("1.0"),      // 1 CSV
 			MaxGasWizard:   100000,                                   // 100k gas for wizard
 			MaxGasDeploy:   500000,                                   // 500k gas for deploy
 		},
@@ -100,10 +100,10 @@ func DefaultParams() Params {
 			AllowPerTxOverride: true,
 		},
 		// Default wallet addresses (to be configured in production)
-		TreasuryWallet:     "bto1team00000000000000000000000000000000000", // Placeholder
-		RetailWallet:       "bto1retail000000000000000000000000000000000", // Placeholder
-		TokenDevWallet:     "bto1dev000000000000000000000000000000000000", // Placeholder
-		TokenCreatorWallet: "bto1creator00000000000000000000000000000000", // Placeholder
+		TreasuryWallet:     "csv1team00000000000000000000000000000000000", // Placeholder
+		RetailWallet:       "csv1retail000000000000000000000000000000000", // Placeholder
+		TokenDevWallet:     "csv1dev000000000000000000000000000000000000", // Placeholder
+		TokenCreatorWallet: "csv1creator00000000000000000000000000000000", // Placeholder
 		// Enable hybrid mode by default on this branch so IBC system txs are gas-only out of the box.
 		FeeMode: FeeModeHybrid,
 		SystemMsgTypeUrls: []string{
@@ -256,13 +256,13 @@ func (p Params) validateOracleParams() error {
 }
 
 func (p Params) validateGuardRails() error {
-	if p.GuardRails.MinGasPriceBto.IsNegative() {
+	if p.GuardRails.MinGasPriceCsv.IsNegative() {
 		return fmt.Errorf("min gas price cannot be negative")
 	}
-	if p.GuardRails.MaxGasPriceBto.IsNegative() {
+	if p.GuardRails.MaxGasPriceCsv.IsNegative() {
 		return fmt.Errorf("max gas price cannot be negative")
 	}
-	if p.GuardRails.MinGasPriceBto.GT(p.GuardRails.MaxGasPriceBto) {
+	if p.GuardRails.MinGasPriceCsv.GT(p.GuardRails.MaxGasPriceCsv) {
 		return fmt.Errorf("min gas price cannot be greater than max gas price")
 	}
 	if p.GuardRails.MaxGasWizard == 0 {

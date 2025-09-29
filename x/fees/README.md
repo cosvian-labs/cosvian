@@ -117,8 +117,8 @@ OracleParams{
 
 ```go
 GuardRails{
-    MinGasPriceBto: sdk.NewDecWithPrec(1, 6),    // 0.000001 CSV
-    MaxGasPriceBto: sdk.NewDecWithPrec(1000, 6), // 0.001 CSV
+    MinGasPriceCsv: sdk.NewDecWithPrec(1, 6),    // 0.000001 CSV
+    MaxGasPriceCsv: sdk.NewDecWithPrec(1000, 6), // 0.001 CSV
     MaxGasWizard: 2000000,   // 2M gas for wizard
     MaxGasDeploy: 10000000,  // 10M gas for deploy
 }

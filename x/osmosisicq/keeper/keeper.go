@@ -263,12 +263,12 @@ func (k Keeper) normalizeToBTOPerUSD(ctx sdk.Context, priceQuotePerBase sdkmath.
 
 // HandleTwapResult consumes a TWAP price (quote/base) and a liquidity indicator, applies guardrails, and persists.
 func (k Keeper) HandleTwapResult(ctx sdk.Context, priceQuotePerBase, liquidity sdkmath.LegacyDec) error {
-	btoPerUSD := k.normalizeToBTOPerUSD(ctx, priceQuotePerBase)
-	return k.ValidateAndPersistPrice(ctx, btoPerUSD, liquidity)
+	csvPerUSD := k.normalizeToBTOPerUSD(ctx, priceQuotePerBase)
+	return k.ValidateAndPersistPrice(ctx, csvPerUSD, liquidity)
 }
 
 // HandleSpotResult consumes a spot price (quote/base) and a liquidity indicator, applies guardrails, and persists.
 func (k Keeper) HandleSpotResult(ctx sdk.Context, priceQuotePerBase, liquidity sdkmath.LegacyDec) error {
-	btoPerUSD := k.normalizeToBTOPerUSD(ctx, priceQuotePerBase)
-	return k.ValidateAndPersistPrice(ctx, btoPerUSD, liquidity)
+	csvPerUSD := k.normalizeToBTOPerUSD(ctx, priceQuotePerBase)
+	return k.ValidateAndPersistPrice(ctx, csvPerUSD, liquidity)
 }

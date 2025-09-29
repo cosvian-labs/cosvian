@@ -73,7 +73,7 @@ func (fah *FeeAnteHandler) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool,
 
 	// params sudah diambil di awal; gunakan langsung.
 
-	btoDenom := "ucsv" // Default CSV denom - should be configurable
+	csvDenom := "ucsv" // Default CSV denom - should be configurable
 
 	// Hybrid / gas-only branching
 	switch {
@@ -92,13 +92,13 @@ func (fah *FeeAnteHandler) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool,
 		// For user or mixed categories use normal validation.
 		if estimate.Category != CategorySystem {
 			tolerance := math.LegacyNewDecWithPrec(5, 2)
-			if err := fah.feeCalculator.ValidateFeeAgainstEstimate(providedFee, estimate, btoDenom, tolerance); err != nil {
+			if err := fah.feeCalculator.ValidateFeeAgainstEstimate(providedFee, estimate, csvDenom, tolerance); err != nil {
 				return ctx, sdkerrors.ErrInsufficientFee.Wrapf("fee validation failed (hybrid): %v", err)
 			}
 		}
 	default: // table mode
 		tolerance := math.LegacyNewDecWithPrec(5, 2) // 5% tolerance
-		if err := fah.feeCalculator.ValidateFeeAgainstEstimate(providedFee, estimate, btoDenom, tolerance); err != nil {
+		if err := fah.feeCalculator.ValidateFeeAgainstEstimate(providedFee, estimate, csvDenom, tolerance); err != nil {
 			return ctx, sdkerrors.ErrInsufficientFee.Wrapf("fee validation failed: %v", err)
 		}
 	}
@@ -186,7 +186,7 @@ func (fah *FeeAnteHandler) emitFeeChargedEvent(ctx sdk.Context, estimate *FeeEst
 	attributes := []sdk.Attribute{
 		sdk.NewAttribute(types.AttributeKeyCategory, string(estimate.Category)),
 		sdk.NewAttribute(types.AttributeKeyUsdAmount, estimate.USDAmount.String()),
-		sdk.NewAttribute(types.AttributeKeyBtoAmount, estimate.BTOAmount.String()),
+		sdk.NewAttribute(types.AttributeKeyCsvAmount, estimate.BTOAmount.String()),
 		// Backcompat alias (temporary): fee_type mirrors category
 		sdk.NewAttribute("fee_type", string(estimate.Category)),
 		sdk.NewAttribute("gas_wanted", fmt.Sprintf("%d", estimate.GasWanted)),

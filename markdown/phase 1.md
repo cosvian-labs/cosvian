@@ -33,7 +33,7 @@ Berdasarkan hasil evaluasi kode pada Phase 1, berikut adalah pekerjaan yang haru
 ### 5. 🧩 Integrasi ke Aplikasi
 
 - [ ] Register modul `csv` di `app.go`
-- [ ] Tambahkan keeper `BtoKeeper`
+- [ ] Tambahkan keeper `CsvKeeper`
 - [ ] Tambahkan modul ke `ModuleBasics` dan `app.ModuleManager`
 
 ### 6. ⚙️ Genesis

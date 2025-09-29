@@ -60,13 +60,13 @@ func (k msgServer) ChargeFee(ctx context.Context, msg *types.MsgChargeFee) (*typ
 	feeUSD := feeEntry.UsdAmount
 
 	// Convert USD to CSV using the module's oracle adapter (with fallback)
-	btoAmount, _, err := k.ConvertUSDToBTO(sdkCtx, feeUSD)
+	csvAmount, _, err := k.ConvertUSDToBTO(sdkCtx, feeUSD)
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "failed to convert USD to CSV")
 	}
 
 	// Scale CSV to ucsv (assume 6 decimals)
-	feeucsv := btoAmount.MulInt64(1_000_000).TruncateInt()
+	feeucsv := csvAmount.MulInt64(1_000_000).TruncateInt()
 
 	// Check if user has sufficient balance
 	userBalance := k.bankKeeper.SpendableCoins(sdkCtx, creatorAddr)
@@ -98,7 +98,7 @@ func (k msgServer) ChargeFee(ctx context.Context, msg *types.MsgChargeFee) (*typ
 			// alias for backward compatibility
 			sdk.NewAttribute("fee_type", msg.Category),
 			sdk.NewAttribute("usd_amount", feeUSD.String()),
-			sdk.NewAttribute("bto_amount", btoAmount.String()),
+			sdk.NewAttribute("csv_amount", csvAmount.String()),
 			sdk.NewAttribute("provided_fee", sdk.NewCoins(sdk.NewCoin("ucsv", feeucsv)).String()),
 			sdk.NewAttribute("system_exempt", "false"),
 		),

@@ -123,13 +123,13 @@ func (k Keeper) ProcessPriceResponse(ctx context.Context, response types.OracleR
 					usdPerBTOStr = fmt.Sprintf("%v", vv)
 				}
 				if usdPerBTO, err := math.LegacyNewDecFromStr(usdPerBTOStr); err == nil && usdPerBTO.IsPositive() {
-					btoPerUSD := math.LegacyOneDec().Quo(usdPerBTO)
-					_ = k.oracleKeeper.SetBTOPerUSD(sdkCtx, btoPerUSD)
+					csvPerUSD := math.LegacyOneDec().Quo(usdPerBTO)
+					_ = k.oracleKeeper.SetBTOPerUSD(sdkCtx, csvPerUSD)
 					sdkCtx.EventManager().EmitEvent(
 						sdk.NewEvent(
 							"price_updated",
 							sdk.NewAttribute("symbol", "CSV/USD"),
-							sdk.NewAttribute("price", btoPerUSD.String()),
+							sdk.NewAttribute("price", csvPerUSD.String()),
 							sdk.NewAttribute("source", "band_protocol_prices_inverted"),
 							sdk.NewAttribute("request_id", fmt.Sprintf("%d", response.RequestId)),
 						),

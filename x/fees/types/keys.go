@@ -39,7 +39,7 @@ const (
 	AttributeKeyIsFallback = "is_fallback"
 	AttributeKeyCategory   = "category"
 	AttributeKeyUsdAmount  = "usd_amount"
-	AttributeKeyBtoAmount  = "bto_amount"
+	AttributeKeyCsvAmount  = "csv_amount"
 	AttributeKeyTxHash     = "tx_hash"
 )
 

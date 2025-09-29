@@ -45,7 +45,7 @@ func NewKeeper(
 		authority:    authority,
 
 		Params:   collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
-		BTOPrice: collections.NewMap(sb, []byte("bto_price"), "bto_price", collections.StringKey, collections.StringValue),
+		BTOPrice: collections.NewMap(sb, []byte("csv_price"), "csv_price", collections.StringKey, collections.StringValue),
 	}
 
 	schema, err := sb.Build()

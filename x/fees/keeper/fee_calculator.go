@@ -44,7 +44,7 @@ const (
 type FeeEstimate struct {
 	Category  TransactionCategory `json:"category"`
 	USDAmount math.LegacyDec      `json:"usd_amount"`
-	BTOAmount math.LegacyDec      `json:"bto_amount"`
+	BTOAmount math.LegacyDec      `json:"csv_amount"`
 	GasWanted uint64              `json:"gas_wanted"`
 	GasPrice  math.LegacyDec      `json:"gas_price"`
 	IsFree    bool                `json:"is_free"`
@@ -119,13 +119,13 @@ func (fc *FeeCalculator) EstimateFee(ctx sdk.Context, msgs []sdk.Msg, memo strin
 	}
 
 	// Convert USD fee to CSV
-	btoAmount, priceData, err := fc.oracleAdapter.ConvertUSDToBTO(ctx, feeConfig.UsdAmount)
+	csvAmount, priceData, err := fc.oracleAdapter.ConvertUSDToBTO(ctx, feeConfig.UsdAmount)
 	if err != nil {
 		return nil, fmt.Errorf("failed to convert USD to CSV: %w", err)
 	}
 
 	// Apply guard rails
-	btoAmount, err = fc.applyGuardRails(btoAmount, gasWanted, params.GuardRails)
+	csvAmount, err = fc.applyGuardRails(csvAmount, gasWanted, params.GuardRails)
 	if err != nil {
 		return nil, fmt.Errorf("guard rails validation failed: %w", err)
 	}
@@ -133,13 +133,13 @@ func (fc *FeeCalculator) EstimateFee(ctx sdk.Context, msgs []sdk.Msg, memo strin
 	// Calculate gas price: gasPrice = feeBTO / gasWanted
 	var gasPrice math.LegacyDec
 	if gasWanted > 0 {
-		gasPrice = btoAmount.QuoInt64(int64(gasWanted))
+		gasPrice = csvAmount.QuoInt64(int64(gasWanted))
 	}
 
 	return &FeeEstimate{
 		Category:  category,
 		USDAmount: feeConfig.UsdAmount,
-		BTOAmount: btoAmount,
+		BTOAmount: csvAmount,
 		GasWanted: gasWanted,
 		GasPrice:  gasPrice,
 		IsFree:    false,
@@ -320,27 +320,27 @@ func (fc *FeeCalculator) getMaxGasForFreeCategory(category TransactionCategory, 
 }
 
 // applyGuardRails applies min/max gas price limits and validates the fee
-func (fc *FeeCalculator) applyGuardRails(btoAmount math.LegacyDec, gasWanted uint64, guardRails types.GuardRails) (math.LegacyDec, error) {
+func (fc *FeeCalculator) applyGuardRails(csvAmount math.LegacyDec, gasWanted uint64, guardRails types.GuardRails) (math.LegacyDec, error) {
 	if gasWanted == 0 {
-		return btoAmount, nil
+		return csvAmount, nil
 	}
 
 	// Calculate effective gas price
-	gasPrice := btoAmount.QuoInt64(int64(gasWanted))
+	gasPrice := csvAmount.QuoInt64(int64(gasWanted))
 
 	// Apply minimum gas price
-	if gasPrice.LT(guardRails.MinGasPriceBto) {
+	if gasPrice.LT(guardRails.MinGasPriceCsv) {
 		// Adjust CSV amount to meet minimum gas price
-		btoAmount = guardRails.MinGasPriceBto.MulInt64(int64(gasWanted))
+		csvAmount = guardRails.MinGasPriceCsv.MulInt64(int64(gasWanted))
 	}
 
 	// Apply maximum gas price
-	if gasPrice.GT(guardRails.MaxGasPriceBto) {
+	if gasPrice.GT(guardRails.MaxGasPriceCsv) {
 		// Cap CSV amount to maximum gas price
-		btoAmount = guardRails.MaxGasPriceBto.MulInt64(int64(gasWanted))
+		csvAmount = guardRails.MaxGasPriceCsv.MulInt64(int64(gasWanted))
 	}
 
-	return btoAmount, nil
+	return csvAmount, nil
 }
 
 // BuildFeeFromEstimate creates a fee object from the estimate for transaction building

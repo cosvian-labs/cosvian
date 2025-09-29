@@ -124,7 +124,7 @@ func (oa *OracleAdapter) ConvertUSDToBTO(ctx sdk.Context, usdAmount math.LegacyD
 	}
 
 	// priceData.TwapPrice represents CSV per USD. For a USD amount, multiply to get CSV.
-	btoAmount := usdAmount.Mul(priceData.TwapPrice)
+	csvAmount := usdAmount.Mul(priceData.TwapPrice)
 
-	return btoAmount, priceData, nil
+	return csvAmount, priceData, nil
 }

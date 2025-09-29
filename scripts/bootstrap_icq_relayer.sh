@@ -37,10 +37,10 @@ ACCOUNTS=(
 )
 
 FEE_SPLIT_KEYS=(
-  "treasury_wallet:bto1team00000000000000000000000000000000000"
-  "retail_wallet:bto1retail000000000000000000000000000000000"
-  "token_dev_wallet:bto1dev000000000000000000000000000000000000"
-  "token_creator_wallet:bto1creator00000000000000000000000000000000"
+  "treasury_wallet:csv1team00000000000000000000000000000000000"
+  "retail_wallet:csv1retail000000000000000000000000000000000"
+  "token_dev_wallet:csv1dev000000000000000000000000000000000000"
+  "token_creator_wallet:csv1creator00000000000000000000000000000000"
 )
 
 require_cmd() {
@@ -147,8 +147,8 @@ initialize_genesis() {
      .app_state.fees.params.oracle_params.deviation_limit = "0.050000000000000000" |
      .app_state.fees.params.oracle_params.fallback_ttl = "1800s" |
      .app_state.fees.params.oracle_params.max_price_age = "600s" |
-     .app_state.fees.params.guard_rails.min_gas_price_bto = "0.000001000000000000" |
-     .app_state.fees.params.guard_rails.max_gas_price_bto = "1.000000000000000000" |
+     .app_state.fees.params.guard_rails.min_gas_price_csv = "0.000001000000000000" |
+     .app_state.fees.params.guard_rails.max_gas_price_csv = "1.000000000000000000" |
      .app_state.fees.params.guard_rails.max_gas_wizard = "100000" |
      .app_state.fees.params.guard_rails.max_gas_deploy = "500000" |
      .app_state.fees.params.min_gas_policy.enabled = true |

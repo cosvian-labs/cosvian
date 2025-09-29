@@ -4,13 +4,14 @@
 package types
 
 import (
-	cosmossdk_io_math "cosmossdk.io/math"
 	fmt "fmt"
-	_ "github.com/cosmos/gogoproto/gogoproto"
-	proto "github.com/cosmos/gogoproto/proto"
 	io "io"
 	math "math"
 	math_bits "math/bits"
+
+	cosmossdk_io_math "cosmossdk.io/math"
+	_ "github.com/cosmos/gogoproto/gogoproto"
+	proto "github.com/cosmos/gogoproto/proto"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -26,8 +27,8 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 // GuardRails defines min/max limits for gas prices and gas caps
 type GuardRails struct {
-	MinGasPriceBto cosmossdk_io_math.LegacyDec `protobuf:"bytes,1,opt,name=min_gas_price_bto,json=minGasPriceBto,proto3,customtype=cosmossdk.io/math.LegacyDec" json:"min_gas_price_bto"`
-	MaxGasPriceBto cosmossdk_io_math.LegacyDec `protobuf:"bytes,2,opt,name=max_gas_price_bto,json=maxGasPriceBto,proto3,customtype=cosmossdk.io/math.LegacyDec" json:"max_gas_price_bto"`
+	MinGasPriceCsv cosmossdk_io_math.LegacyDec `protobuf:"bytes,1,opt,name=min_gas_price_csv,json=minGasPriceCsv,proto3,customtype=cosmossdk.io/math.LegacyDec" json:"min_gas_price_csv"`
+	MaxGasPriceCsv cosmossdk_io_math.LegacyDec `protobuf:"bytes,2,opt,name=max_gas_price_csv,json=maxGasPriceCsv,proto3,customtype=cosmossdk.io/math.LegacyDec" json:"max_gas_price_csv"`
 	MaxGasWizard   uint64                      `protobuf:"varint,3,opt,name=max_gas_wizard,json=maxGasWizard,proto3" json:"max_gas_wizard,omitempty"`
 	MaxGasDeploy   uint64                      `protobuf:"varint,4,opt,name=max_gas_deploy,json=maxGasDeploy,proto3" json:"max_gas_deploy,omitempty"`
 }
@@ -126,10 +127,10 @@ func (this *GuardRails) Equal(that interface{}) bool {
 	} else if this == nil {
 		return false
 	}
-	if !this.MinGasPriceBto.Equal(that1.MinGasPriceBto) {
+	if !this.MinGasPriceCsv.Equal(that1.MinGasPriceCsv) {
 		return false
 	}
-	if !this.MaxGasPriceBto.Equal(that1.MaxGasPriceBto) {
+	if !this.MaxGasPriceCsv.Equal(that1.MaxGasPriceCsv) {
 		return false
 	}
 	if this.MaxGasWizard != that1.MaxGasWizard {
@@ -171,9 +172,9 @@ func (m *GuardRails) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		dAtA[i] = 0x18
 	}
 	{
-		size := m.MaxGasPriceBto.Size()
+		size := m.MaxGasPriceCsv.Size()
 		i -= size
-		if _, err := m.MaxGasPriceBto.MarshalTo(dAtA[i:]); err != nil {
+		if _, err := m.MaxGasPriceCsv.MarshalTo(dAtA[i:]); err != nil {
 			return 0, err
 		}
 		i = encodeVarintGuardRails(dAtA, i, uint64(size))
@@ -181,9 +182,9 @@ func (m *GuardRails) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i--
 	dAtA[i] = 0x12
 	{
-		size := m.MinGasPriceBto.Size()
+		size := m.MinGasPriceCsv.Size()
 		i -= size
-		if _, err := m.MinGasPriceBto.MarshalTo(dAtA[i:]); err != nil {
+		if _, err := m.MinGasPriceCsv.MarshalTo(dAtA[i:]); err != nil {
 			return 0, err
 		}
 		i = encodeVarintGuardRails(dAtA, i, uint64(size))
@@ -210,9 +211,9 @@ func (m *GuardRails) Size() (n int) {
 	}
 	var l int
 	_ = l
-	l = m.MinGasPriceBto.Size()
+	l = m.MinGasPriceCsv.Size()
 	n += 1 + l + sovGuardRails(uint64(l))
-	l = m.MaxGasPriceBto.Size()
+	l = m.MaxGasPriceCsv.Size()
 	n += 1 + l + sovGuardRails(uint64(l))
 	if m.MaxGasWizard != 0 {
 		n += 1 + sovGuardRails(uint64(m.MaxGasWizard))
@@ -260,7 +261,7 @@ func (m *GuardRails) Unmarshal(dAtA []byte) error {
 		switch fieldNum {
 		case 1:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field MinGasPriceBto", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field MinGasPriceCsv", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -288,13 +289,13 @@ func (m *GuardRails) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if err := m.MinGasPriceBto.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			if err := m.MinGasPriceCsv.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
 		case 2:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field MaxGasPriceBto", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field MaxGasPriceCsv", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -322,7 +323,7 @@ func (m *GuardRails) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if err := m.MaxGasPriceBto.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			if err := m.MaxGasPriceCsv.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
