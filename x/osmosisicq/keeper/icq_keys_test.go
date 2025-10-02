@@ -1,3 +1,5 @@
+//go:build osmosis_removed
+
 package keeper
 
 import (

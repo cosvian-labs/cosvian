@@ -1,17 +1,5 @@
 #!/usr/bin/env bash
-# Simple looped ICQ packet relay using Hermes tx commands.
+set -euo pipefail
 
-SRC_CHAIN=${SRC_CHAIN:-cosvian}
-DST_CHAIN=${DST_CHAIN:-osmo-test-5}
-SRC_PORT=${SRC_PORT:-icqcontroller}
-SRC_CHANNEL=${SRC_CHANNEL:-channel-0}
-DST_PORT=${DST_PORT:-icqhost}
-DST_CHANNEL=${DST_CHANNEL:-channel-10925}
-SLEEP_SECS=${SLEEP_SECS:-5}
-
-echo "[hermes-icq-loop] Starting relay loop for $SRC_PORT/$SRC_CHANNEL <-> $DST_PORT/$DST_CHANNEL"
-
-while true; do
-  ./scripts/hermes_icq_once.sh || true
-  sleep "$SLEEP_SECS"
-done
+echo "[ERROR] Hermes ICQ relayer scripts for Osmosis have been removed." >&2
+exit 1

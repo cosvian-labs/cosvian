@@ -1,3 +1,5 @@
+//go:build osmosis_removed
+
 package types
 
 // DefaultGenesis returns the default genesis state

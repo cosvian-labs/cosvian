@@ -7,8 +7,6 @@ import (
 	feesmoduletypes "cosvian/x/fees/types"
 	_ "cosvian/x/icqcontroller/module"
 	icqcontrollermoduletypes "cosvian/x/icqcontroller/types"
-	_ "cosvian/x/osmosisicq/module"
-	osmosisicqmoduletypes "cosvian/x/osmosisicq/types"
 
 	// _ "cosvian/x/conversionpool/module" // Temporarily commented for testing
 	// conversionpoolmoduletypes "cosvian/x/conversionpool/types" // Temporarily commented for testing
@@ -94,7 +92,7 @@ import (
 )
 
 var (
-	moduleAccPerms = []*authmodulev1.ModuleAccountPermission{
+		moduleAccPerms = []*authmodulev1.ModuleAccountPermission{
 		{Account: authtypes.FeeCollectorName},
 		{Account: distrtypes.ModuleName},
 		{Account: minttypes.ModuleName, Permissions: []string{authtypes.Minter}},
@@ -173,7 +171,6 @@ var (
 						// conversionpoolmoduletypes.ModuleName, // Temporarily commented for testing
 						registrymoduletypes.ModuleName,
 						feesmoduletypes.ModuleName,
-						osmosisicqmoduletypes.ModuleName,
 						icqcontrollermoduletypes.ModuleName,
 						// this line is used by starport scaffolding # stargate/app/beginBlockers
 					},
@@ -193,7 +190,6 @@ var (
 						// conversionpoolmoduletypes.ModuleName, // Temporarily commented for testing
 						registrymoduletypes.ModuleName,
 						feesmoduletypes.ModuleName,
-						osmosisicqmoduletypes.ModuleName,
 						icqcontrollermoduletypes.ModuleName,
 						// this line is used by starport scaffolding # stargate/app/endBlockers
 					},
@@ -241,7 +237,6 @@ var (
 						// conversionpoolmoduletypes.ModuleName, // Temporarily commented for testing
 						registrymoduletypes.ModuleName,
 						feesmoduletypes.ModuleName,
-						osmosisicqmoduletypes.ModuleName,
 						icqcontrollermoduletypes.ModuleName,
 						// this line is used by starport scaffolding # stargate/app/initGenesis
 					},
@@ -371,10 +366,6 @@ var (
 			{
 				Name:   feesmoduletypes.ModuleName,
 				Config: appconfig.WrapAny(&feesmoduletypes.Module{}),
-			},
-			{
-				Name:   osmosisicqmoduletypes.ModuleName,
-				Config: appconfig.WrapAny(&osmosisicqmoduletypes.Module{}),
 			},
 			{
 				Name:   icqcontrollermoduletypes.ModuleName,

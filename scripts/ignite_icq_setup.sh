@@ -277,3 +277,6 @@ printf '[+] Running Go pricefeed tests (%s)\n' "$GO_TEST_PKGS"
 GOFLAGS=${GOFLAGS:-""} go test $GO_TEST_PKGS
 
 printf '[✓] Hermes relayer environment prepared. You can now run: %s --config %s start\n' "$HERMES_BIN" "$HERMES_CONFIG"
+
+echo "[ERROR] Ignite ICQ setup for Osmosis has been retired." >&2
+exit 1

@@ -1,3 +1,5 @@
+//go:build osmosis_removed
+
 package osmosisicq
 
 // Deprecated: previously used as a stub when async ICQ was behind a build tag.

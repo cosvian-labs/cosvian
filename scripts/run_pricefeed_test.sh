@@ -17,3 +17,7 @@ echo $! > /tmp/hermes_icq_loop.pid
 echo "Run node separately if not already running, then to observe events:\n  tail -f ~/.cosvian/logs/app.log | grep -E 'osmosisicq_|icq_'\n  cosviand q osmosisicq status\n"
 
 popd >/dev/null
+
+echo "[ERROR] The Osmosis-based pricefeed test harness has been removed." >&2
+echo "Use the updated oracle/pricefeed test flows instead." >&2
+exit 1

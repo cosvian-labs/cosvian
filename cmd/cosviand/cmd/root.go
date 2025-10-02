@@ -18,7 +18,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"cosvian/app"
-	osmosisicqtypes "cosvian/x/osmosisicq/types"
 )
 
 // NewRootCmd creates a new root command for cosviand. It is called once in the main function.
@@ -89,72 +88,7 @@ func NewRootCmd() *cobra.Command {
 		panic(err)
 	}
 
-	// Fallback: if auto-cli did not inject the osmosisicq query namespace, add it manually.
-	if add := ensureOsmosisICQQueryFallback(rootCmd, clientCtx); add {
-		// no-op; function performs registration when needed
-	}
-
 	return rootCmd
-}
-
-// addOsmosisICQManualQueries injects a lightweight manual query command group for the
-// osmosisicq module when auto-cli generation does not expose it. Safe to call even if
-// auto-cli later gains support (guarded by existence check above).
-func addOsmosisICQManualQueries(root *cobra.Command, clientCtx client.Context) {
-	queryCmd, _, err := root.Find([]string{"query"})
-	if err != nil || queryCmd == nil {
-		return
-	}
-
-	osmoCmd := &cobra.Command{
-		Use:   "osmosisicq",
-		Short: "Querying commands for the osmosisicq module (manual fallback)",
-	}
-
-	paramsCmd := &cobra.Command{
-		Use:   "params",
-		Short: "Shows the parameters of the osmosisicq module",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			qc := osmosisicqtypes.NewQueryClient(clientCtx)
-			res, err := qc.Params(cmd.Context(), &osmosisicqtypes.QueryParamsRequest{})
-			if err != nil {
-				return err
-			}
-			return clientCtx.PrintProto(res)
-		},
-	}
-
-	statusCmd := &cobra.Command{
-		Use:   "status",
-		Short: "Shows scheduler timing and registered ICQ query IDs",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			qc := osmosisicqtypes.NewQueryClient(clientCtx)
-			res, err := qc.Status(cmd.Context(), &osmosisicqtypes.QueryStatusRequest{})
-			if err != nil {
-				return err
-			}
-			return clientCtx.PrintProto(res)
-		},
-	}
-
-	osmoCmd.AddCommand(paramsCmd, statusCmd)
-	queryCmd.AddCommand(osmoCmd)
-}
-
-// ensureOsmosisICQQueryFallback checks presence of the osmosisicq query group; if absent, registers it.
-// Returns true if it added the group.
-func ensureOsmosisICQQueryFallback(root *cobra.Command, clientCtx client.Context) bool {
-	queryCmd, _, err := root.Find([]string{"query"})
-	if err != nil || queryCmd == nil {
-		return false
-	}
-	for _, c := range queryCmd.Commands() {
-		if c.Name() == "osmosisicq" {
-			return false // already present
-		}
-	}
-	addOsmosisICQManualQueries(root, clientCtx)
-	return true
 }
 
 // ProvideClientContext creates and provides a fully initialized client.Context,
@@ -165,9 +99,6 @@ func ProvideClientContext(
 	txConfigOpts tx.ConfigOptions,
 	legacyAmino *codec.LegacyAmino,
 ) client.Context {
-	// Defensive registration: ensure custom osmosisicq Msg types are available to CLI JSON decoding
-	// even if wiring misses them in certain build/tag scenarios.
-	osmosisicqtypes.RegisterInterfaces(interfaceRegistry)
 	clientCtx := client.Context{}.
 		WithCodec(appCodec).
 		WithInterfaceRegistry(interfaceRegistry).

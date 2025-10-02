@@ -57,8 +57,6 @@ import (
 
 	// conversionpoolmodulekeeper "cosvian/x/conversionpool/keeper" // Temporarily commented for testing
 	oraclemodulekeeper "cosvian/x/oracle/keeper"
-	osmosisicqkeeper "cosvian/x/osmosisicq/keeper"
-	osmosisicqtypes "cosvian/x/osmosisicq/types"
 	pricefeedmodulekeeper "cosvian/x/pricefeed/keeper"
 	registrymodulekeeper "cosvian/x/registry/keeper"
 	tokenmodulekeeper "cosvian/x/token/keeper"
@@ -120,10 +118,9 @@ type App struct {
 	PricefeedKeeper pricefeedmodulekeeper.Keeper
 	// TreasuryKeeper       treasurymodulekeeper.Keeper // Temporarily commented for testing
 	// ConversionpoolKeeper conversionpoolmodulekeeper.Keeper // Temporarily commented for testing
-	RegistryKeeper   registrymodulekeeper.Keeper
-	OracleKeeper     oraclemodulekeeper.Keeper
-	FeeGrantKeeper   feegrantkeeper.Keeper
-	OsmosisicqKeeper osmosisicqkeeper.Keeper // exposed (may be used directly by other modules / debugging)
+	RegistryKeeper registrymodulekeeper.Keeper
+	OracleKeeper   oraclemodulekeeper.Keeper
+	FeeGrantKeeper feegrantkeeper.Keeper
 
 	// CosmWasm
 	WasmKeeper wasmkeeper.Keeper
@@ -237,11 +234,6 @@ func New(
 		} else {
 			logger.Info("gov module MISSING in wiring (unexpected)")
 		}
-		if _, ok := appModules["osmosisicq"]; ok {
-			logger.Info("osmosisicq module detected in wiring")
-		} else {
-			logger.Info("osmosisicq module NOT present in DI map (check app_config)")
-		}
 	}
 
 	// add to default baseapp options
@@ -252,12 +244,7 @@ func New(
 	app.App = appBuilder.Build(db, traceStore, baseAppOptions...)
 
 	// NOTE: Legacy router removed in newer SDK; governance executes Msg services directly.
-	// If proposals still fail, focus on interface registration & Msg service registration (already handled)
-	// plus legacy sdk.Msg methods (implemented in x/osmosisicq/types/legacy_msg.go).
-
-	// Explicitly (re)register osmosisicq interfaces to guarantee type URLs available to CLI JSON decoder.
-	// This is defensive; runtime wiring should already register, but avoids 'unable to resolve type URL /cosvian.osmosisicq.v1.MsgUpdateParams'.
-	osmosisicqtypes.RegisterInterfaces(app.interfaceRegistry)
+	// If proposals still fail, focus on interface registration & Msg service registration (already handled).
 
 	// register legacy modules
 	if err := app.registerIBCModules(appOpts); err != nil {

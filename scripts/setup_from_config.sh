@@ -115,18 +115,7 @@ jq \
    .app_state.fees.params.guard_rails.max_gas_deploy = "500000" |
    .app_state.fees.params.min_gas_policy.enabled = true |
    .app_state.fees.params.min_gas_policy.global_min_gas_price = "0.000001000000000000" |
-   .app_state.fees.params.min_gas_policy.allow_per_tx_override = true |
-   .app_state.osmosisicq.params = {
-     "connection_id": "connection-0",
-     "update_interval_seconds": "30",
-     "pool_id": "1464",
-     "base_denom": "uosmo",
-     "quote_denom": "ibc/PLACEHOLDER_HASH",
-     "use_twap": true,
-     "twap_window_seconds": "300",
-     "min_liquidity": "0",
-     "max_deviation": "0.5"
-   }
+   .app_state.fees.params.min_gas_policy.allow_per_tx_override = true
   ' "$GEN_FILE" > "$tmp"
 
 mv "$tmp" "$GEN_FILE"

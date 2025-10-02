@@ -1,20 +1,4 @@
 {
-  "type": "cosmos",
-  "value": {
-    "key-directory": "/home/munra/.relayer/keys/osmo-test-5",
-    "key": "default",
-    "chain-id": "osmo-test-5",
-    "rpc-addr": "https://rpc.testnet.osmosis.zone:443",
-    "account-prefix": "osmo",
-    "keyring-backend": "test",
-    "gas-adjustment": 1.3,
-    "gas-prices": "0.01uosmo",
-    "min-gas-amount": 1,
-    "debug": true,
-    "timeout": "30s",
-    "output-format": "json",
-    "sign-mode": "direct",
-    "coin-type": 118,
-    "broadcast-mode": "batch"
-  }
+  "deprecated": true,
+  "reason": "Osmosis relayer configuration removed."
 }

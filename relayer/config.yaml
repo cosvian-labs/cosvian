@@ -29,56 +29,6 @@ chains:
       min-loop-duration: 0s
       extension-options: []
 
-  osmosis-1:
-    type: cosmos
-    value:
-      key-directory: /home/munra/.relayer/keys/osmosis-1
-      key: relayer-osmo-main
-      chain-id: osmosis-1
-      rpc-addr: https://rpc.osmosis.zone:443
-      grpc-addr: grpc.osmosis.zone:9090
-      account-prefix: osmo
-      keyring-backend: test
-      gas-adjustment: 1.3
-      gas-prices: 0.025uosmo
-      min-gas-amount: 1
-      debug: false
-      timeout: 20s
-      block-timeout: ""
-      output-format: json
-      sign-mode: direct
-      extra-codecs: []
-      coin-type: 118
-      signing-algorithm: ""
-      broadcast-mode: batch
-      min-loop-duration: 0s
-      extension-options: []
-
-  osmo-test-5:
-    type: cosmos
-    value:
-      key-directory: /home/munra/.relayer/keys/osmo-test-5
-      key: relayer-osmo-test
-      chain-id: osmo-test-5
-      rpc-addr: https://rpc.osmotest5.osmosis.zone:443
-      grpc-addr: https://grpc.osmotest5.osmosis.zone:443
-      account-prefix: osmo
-      keyring-backend: test
-      gas-adjustment: 1.3
-      gas-prices: 0.01uosmo
-      min-gas-amount: 1
-      debug: true
-      timeout: 30s
-      block-timeout: ""
-      output-format: json
-      sign-mode: direct
-      extra-codecs: []
-      coin-type: 118
-      signing-algorithm: ""
-      broadcast-mode: batch
-      min-loop-duration: 0s
-      extension-options: []
-
   bandchain:
     type: cosmos
     value:
@@ -194,28 +144,3 @@ paths:
       rule: allowlist
       channel-list: []
 
-  osmosis_mainnet_path:
-    src:
-      chain-id: cosvian
-      client-id: ""
-      connection-id: ""
-    dst:
-      chain-id: osmosis-1
-      client-id: ""
-      connection-id: ""
-    src-channel-filter:
-      rule: allowlist
-      channel-list: []
-
-  osmosis_testnet_path:
-    src:
-      chain-id: cosvian
-      client-id: ""
-      connection-id: connection-0
-    dst:
-      chain-id: osmo-test-5
-      client-id: ""
-      connection-id: connection-4287
-    src-channel-filter:
-      rule: allowlist
-      channel-list: ["icqcontroller/channel-4"]

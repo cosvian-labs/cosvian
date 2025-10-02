@@ -1,4 +1,4 @@
-//go:build never_osmosis_real
+//go:build osmosis_removed
 
 package keeper
 
